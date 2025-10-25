@@ -12,7 +12,7 @@ TagManager:
   - 
   - Water
   - UI
-  - Backgound
+  - LocationBackgound
   - TvBackgound
   - DarknessOverlay
   - Spotlight
@@ -45,7 +45,7 @@ TagManager:
   - name: TVBackgound
     uniqueID: 4160272803
     locked: 0
-  - name: Backgound
+  - name: LocationBackgound
     uniqueID: 1038784771
     locked: 0
   - name: DarknessOverlay
