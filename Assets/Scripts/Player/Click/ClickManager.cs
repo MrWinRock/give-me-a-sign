@@ -35,11 +35,21 @@ namespace Player.Click
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
-        RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
+        RaycastHit2D[] hits = Physics2D.GetRayIntersectionAll(ray);
         
-        if (hit.collider.CompareTag("Cancel"))
+        // Check if we hit anything
+        if (hits.Length == 0)
         {
-            return;    
+            return; // No hit, do nothing
+        }
+        
+        // Check for Cancel tag first
+        foreach (var hit in hits)
+        {
+            if (hit.collider.CompareTag("Cancel"))
+            {
+                return;
+            }
         }
         
         infoPanel.SetActive(true);
@@ -48,14 +58,34 @@ namespace Player.Click
         worldPos.z = 0;
         Instantiate(clickEffectPrefab, worldPos, Quaternion.identity);
 
-        if (hit.collider.CompareTag("LocationBackgound"))
+        // Prioritize Anomaly over other colliders
+        RaycastHit2D? anomalyHit = null;
+        RaycastHit2D? backgroundHit = null;
+        
+        foreach (var hit in hits)
         {
-            infoText.text = "No Anomaly Detect!";
+            Debug.Log($"Hit object: {hit.collider.name} with tag: {hit.collider.tag}");
+            
+            if (hit.collider.CompareTag("Anomaly"))
+            {
+                anomalyHit = hit;
+                break; // Anomaly has highest priority, stop looking
+            }
+            else if (hit.collider.CompareTag("LocationBackgound"))
+            {
+                backgroundHit = hit;
+            }
         }
-        else if (hit.collider.CompareTag("Anomaly"))
+
+        // Handle based on priority
+        if (anomalyHit.HasValue)
         {
             infoText.text = "Anomaly Detect!";
-            hit.collider.GetComponent<Anomaly>()?.Respond();
+            anomalyHit.Value.collider.GetComponent<Anomaly>()?.Respond();
+        }
+        else if (backgroundHit.HasValue)
+        {
+            infoText.text = "No Anomaly Detect!";
         }
         else
         {
