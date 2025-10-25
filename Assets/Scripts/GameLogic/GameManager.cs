@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -41,13 +41,23 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    private void OnNextClick()
+    public void OnNextClick()
     {
+        if (currentBackgroundIndex == 2)
+        {
+            currentBackgroundIndex = 0;
+            return;
+        }
         currentBackgroundIndex = currentBackgroundIndex + 1;
     }
     
-    private void OnPreviousClick()
+    public void OnPreviousClick()
     {
+        if (currentBackgroundIndex == 0)
+        {
+            currentBackgroundIndex = 2;
+            return;
+        }
         currentBackgroundIndex = currentBackgroundIndex - 1;
     }
 }
