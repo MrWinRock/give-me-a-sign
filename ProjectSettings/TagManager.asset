@@ -14,8 +14,8 @@ TagManager:
   - UI
   - Backgound
   - TvBackgound
-  - 
-  - 
+  - DarknessOverlay
+  - Spotlight
   - 
   - 
   - 
@@ -47,6 +47,12 @@ TagManager:
     locked: 0
   - name: Backgound
     uniqueID: 1038784771
+    locked: 0
+  - name: DarknessOverlay
+    uniqueID: 1245708193
+    locked: 0
+  - name: Spotlight
+    uniqueID: 1519287591
     locked: 0
   m_RenderingLayers:
   - Default
