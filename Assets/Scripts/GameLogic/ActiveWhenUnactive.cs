@@ -18,14 +18,14 @@ public class ActiveWhenUnactive : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (checkerObject1.activeSelf == true)
+        if (checkerObject1.activeSelf)
         {
             foreach (GameObject obj in activeUnactiveObject)
             {
                 obj.SetActive(false);
             }
         }
-        else if (checkerObject1.activeSelf == false)
+        else if (!checkerObject1.activeSelf)
         {
             foreach (GameObject obj in activeUnactiveObject)
             {
