@@ -55,14 +55,7 @@ namespace Whisper
                 var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-small.bin" : modelPath;
                 if (modelPathInStreamingAssets && !string.IsNullOrEmpty(desiredModel))
                 {
-                    desiredModel = desiredModel.TrimStart('\\', '/');
-                    // If user pasted full Assets/StreamingAssets path, reduce to relative under StreamingAssets
-                    const string assetsPrefixWin = "Assets\\StreamingAssets\\";
-                    const string assetsPrefixUnix = "Assets/StreamingAssets/";
-                    if (desiredModel.StartsWith(assetsPrefixWin, StringComparison.OrdinalIgnoreCase))
-                        desiredModel = desiredModel.Substring(assetsPrefixWin.Length);
-                    else if (desiredModel.StartsWith(assetsPrefixUnix, StringComparison.OrdinalIgnoreCase))
-                        desiredModel = desiredModel.Substring(assetsPrefixUnix.Length);
+                    desiredModel = NormalizeModelPath(desiredModel);
                 }
                 try
                 {
@@ -108,13 +101,7 @@ namespace Whisper
                         var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-base.bin" : modelPath;
                         if (modelPathInStreamingAssets && !string.IsNullOrEmpty(desiredModel))
                         {
-                            desiredModel = desiredModel.TrimStart('\\', '/');
-                            const string assetsPrefixWin = "Assets\\StreamingAssets\\";
-                            const string assetsPrefixUnix = "Assets/StreamingAssets/";
-                            if (desiredModel.StartsWith(assetsPrefixWin, StringComparison.OrdinalIgnoreCase))
-                                desiredModel = desiredModel.Substring(assetsPrefixWin.Length);
-                            else if (desiredModel.StartsWith(assetsPrefixUnix, StringComparison.OrdinalIgnoreCase))
-                                desiredModel = desiredModel.Substring(assetsPrefixUnix.Length);
+                            desiredModel = NormalizeModelPath(desiredModel);
                         }
                         whisperManager.IsModelPathInStreamingAssets = modelPathInStreamingAssets;
                         whisperManager.ModelPath = desiredModel;
@@ -155,6 +142,26 @@ namespace Whisper
             _isListening = false;
         }
 
+        private string NormalizeModelPath(string inputPath)
+        {
+            if (string.IsNullOrEmpty(inputPath))
+                return inputPath;
+
+            var normalized = inputPath.TrimStart('\\', '/');
+
+            // Handle both Windows and Unix style paths
+            const string assetsPrefixWin = "Assets\\StreamingAssets\\";
+            const string assetsPrefixUnix = "Assets/StreamingAssets/";
+
+            if (normalized.StartsWith(assetsPrefixWin, StringComparison.OrdinalIgnoreCase))
+                normalized = normalized.Substring(assetsPrefixWin.Length);
+            else if (normalized.StartsWith(assetsPrefixUnix, StringComparison.OrdinalIgnoreCase))
+                normalized = normalized.Substring(assetsPrefixUnix.Length);
+
+            return normalized;
+        }
+
+        
         private void ConfigureMicrophoneIfNeeded()
         {
             if (microphone == null)
