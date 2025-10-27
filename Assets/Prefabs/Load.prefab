@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 101824197176849452}
   - component: {fileID: 1756857917973278992}
   - component: {fileID: 1622157873693879189}
-  - component: {fileID: 3221227565832929763}
+  - component: {fileID: 4383476082390872154}
   m_Layer: 11
   m_Name: Load
   m_TagString: Untagged
@@ -114,7 +114,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &3221227565832929763
+--- !u!114 &4383476082390872154
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -123,7 +123,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 2548095194020679492}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de179c561d154d84f8a2f7ae8c2e8394, type: 3}
+  m_Script: {fileID: 11500000, guid: e1df05480e335534ea89ed70d9d593e0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UnActiveSelf
-  deactivateDelay: 4
+  m_EditorClassIdentifier: Assembly-CSharp::ClickEffect
+  duration: 5
+  scaleUp: 0.5
