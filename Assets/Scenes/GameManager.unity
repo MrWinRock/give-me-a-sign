@@ -1106,7 +1106,6 @@ GameObject:
   m_Component:
   - component: {fileID: 517907873}
   - component: {fileID: 517907872}
-  - component: {fileID: 517907871}
   m_Layer: 0
   m_Name: ClickManager
   m_TagString: Untagged
@@ -1114,20 +1113,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &517907871
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 517907870}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1df05480e335534ea89ed70d9d593e0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClickEffect
-  duration: 0.5
-  scaleUp: 1.5
 --- !u!114 &517907872
 MonoBehaviour:
   m_ObjectHideFlags: 0
