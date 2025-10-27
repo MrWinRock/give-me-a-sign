@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class Anomaly : MonoBehaviour
@@ -24,6 +25,8 @@ public class Anomaly : MonoBehaviour
 
     private bool isMoving = false;
     private Vector3 originalScale;
+    private bool canPrayDisappear = false; // Can disappear with spacebar
+    private PrayUiManager prayManager;
     
     // Event fired when anomaly disappears (for scoring system)
     public System.Action<Anomaly> OnAnomalyDisappeared;
@@ -31,6 +34,17 @@ public class Anomaly : MonoBehaviour
     void Start()
     {
         originalScale = transform.localScale;
+        prayManager = FindObjectOfType<PrayUiManager>();
+    }
+
+    void Update()
+    {
+        // Check for spacebar input when anomaly is moving to target and can pray disappear
+        if (canPrayDisappear && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            StopAllCoroutines();
+            HandlePrayDisappear();
+        }
     }
 
     public void Respond()
@@ -68,6 +82,15 @@ public class Anomaly : MonoBehaviour
     {
         isMoving = true;
         
+        // Enable prayer disappearing only for MoveToTargetThenDisappear type
+        if (respondType == RespondType.MoveToTargetThenDisappear)
+        {
+            canPrayDisappear = true;
+            // Show prayer UI
+            if (prayManager != null)
+                prayManager.ShowPrayPanel();
+        }
+        
         // Start scale up animation
         StartCoroutine(ScaleUpAnimation());
 
@@ -82,11 +105,34 @@ public class Anomaly : MonoBehaviour
         }
 
         isMoving = false;
-
+        
         if (disappearAfter)
         {
-            yield return new WaitForSeconds(disappearDelay);
-            HandleDisappear();
+            // Keep prayer UI active and wait for spacebar input
+            if (respondType == RespondType.MoveToTargetThenDisappear)
+            {
+                canPrayDisappear = true;
+                // Wait indefinitely for spacebar input - player must press spacebar to banish
+                while (canPrayDisappear)
+                {
+                    yield return null;
+                }
+            }
+            else
+            {
+                canPrayDisappear = false;
+                yield return new WaitForSeconds(disappearDelay);
+                HandleDisappear();
+            }
+        }
+        else
+        {
+            canPrayDisappear = false;
+            // For MoveOnly type, fire the disappear event for scoring even though it doesn't actually disappear
+            if (respondType == RespondType.MoveOnly)
+            {
+                OnAnomalyDisappeared?.Invoke(this);
+            }
         }
     }
 
@@ -105,6 +151,10 @@ public class Anomaly : MonoBehaviour
 
     private void HandleDisappear()
     {
+        // Hide prayer UI
+        if (prayManager != null)
+            prayManager.HidePrayPanel();
+            
         // Fire event before disappearing (for scoring system)
         OnAnomalyDisappeared?.Invoke(this);
         
@@ -112,5 +162,12 @@ public class Anomaly : MonoBehaviour
             Destroy(gameObject);
         else
             gameObject.SetActive(false);
+    }
+
+    private void HandlePrayDisappear()
+    {
+        canPrayDisappear = false;
+        isMoving = false;
+        HandleDisappear();
     }
 }

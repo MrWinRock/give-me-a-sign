@@ -59,6 +59,25 @@ public class ScoreManager : MonoBehaviour
     void Start()
     {
         InitializeSystem();
+        
+        // Start periodic check for new anomalies every 2 seconds
+        InvokeRepeating(nameof(CheckForNewAnomalies), 2f, 2f);
+    }
+    
+    private void CheckForNewAnomalies()
+    {
+        if (gameEnded) return;
+        
+        // Find all anomaly components in the scene
+        Anomaly[] allAnomalies = FindObjectsOfType<Anomaly>();
+        
+        foreach (Anomaly anomaly in allAnomalies)
+        {
+            // Check if this anomaly is already subscribed by trying to unsubscribe and resubscribe
+            // This is a safe way to ensure we don't double-subscribe
+            anomaly.OnAnomalyDisappeared -= OnAnomalyDisappeared;
+            anomaly.OnAnomalyDisappeared += OnAnomalyDisappeared;
+        }
     }
     
     private void InitializeSystem()
@@ -99,6 +118,9 @@ public class ScoreManager : MonoBehaviour
             }
         }
         
+        // Find and subscribe to all existing anomalies in the scene
+        SubscribeToAllExistingAnomalies();
+        
         // Initialize UI
         UpdateUI();
         
@@ -108,6 +130,28 @@ public class ScoreManager : MonoBehaviour
         if (showDebugInfo)
         {
             Debug.Log($"ScoreManager initialized. Win threshold: {winThreshold}");
+        }
+    }
+    
+    private void SubscribeToAllExistingAnomalies()
+    {
+        // Find all anomaly components in the scene
+        Anomaly[] allAnomalies = FindObjectsOfType<Anomaly>();
+        
+        foreach (Anomaly anomaly in allAnomalies)
+        {
+            // Subscribe to each anomaly's disappear event
+            anomaly.OnAnomalyDisappeared += OnAnomalyDisappeared;
+            
+            if (showDebugInfo)
+            {
+                Debug.Log($"ScoreManager: Subscribed to existing anomaly '{anomaly.name}' disappear event.");
+            }
+        }
+        
+        if (showDebugInfo)
+        {
+            Debug.Log($"ScoreManager: Found and subscribed to {allAnomalies.Length} existing anomalies.");
         }
     }
     
@@ -123,6 +167,27 @@ public class ScoreManager : MonoBehaviour
             if (showDebugInfo)
             {
                 Debug.Log($"ScoreManager: Subscribed to {entry.entryName} disappear event.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"ScoreManager: Spawned object '{anomaly.name}' doesn't have an Anomaly component!");
+        }
+    }
+    
+    /// <summary>
+    /// Call this method to manually subscribe a new anomaly to the scoring system
+    /// Useful for anomalies created at runtime
+    /// </summary>
+    public void SubscribeToAnomaly(Anomaly anomaly)
+    {
+        if (anomaly != null && !gameEnded)
+        {
+            anomaly.OnAnomalyDisappeared += OnAnomalyDisappeared;
+            
+            if (showDebugInfo)
+            {
+                Debug.Log($"ScoreManager: Manually subscribed to anomaly '{anomaly.name}' disappear event.");
             }
         }
     }

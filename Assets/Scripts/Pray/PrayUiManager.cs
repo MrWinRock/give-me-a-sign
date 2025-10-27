@@ -1,16 +1,44 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class PrayUiManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [Header("Prayer UI Components")]
+    [SerializeField] private GameObject prayPanel;
+    [SerializeField] private Image prayImage1;
+    [SerializeField] private Image prayImage2;
+    [SerializeField] private TextMeshProUGUI instructionText;
+    
+    [Header("Prayer Settings")]
+    [SerializeField] private string defaultInstructionText = "Press SPACEBAR to pray and banish the anomaly!";
+
     void Start()
     {
-        
+        // Initially hide the pray panel
+        if (prayPanel != null)
+            prayPanel.SetActive(false);
+            
+        // Set default instruction text
+        if (instructionText != null)
+            instructionText.text = defaultInstructionText;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ShowPrayPanel()
     {
-        
+        if (prayPanel != null)
+            prayPanel.SetActive(true);
+    }
+
+    public void HidePrayPanel()
+    {
+        if (prayPanel != null)
+            prayPanel.SetActive(false);
+    }
+
+    public void SetInstructionText(string text)
+    {
+        if (instructionText != null)
+            instructionText.text = text;
     }
 }
