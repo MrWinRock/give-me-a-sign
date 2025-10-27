@@ -11,6 +11,7 @@ public class AnomalySpawnManager : MonoBehaviour
     [Header("Spawn Management")]
     [SerializeField] private bool autoFindReferences = true;
     [SerializeField] private Transform anomalyParent; // Optional parent for spawned anomalies
+    [SerializeField] private bool autoTriggerAnomalyResponse = false; // Whether to automatically call Respond() on spawned anomalies
     
     [Header("Debug Settings")]
     [SerializeField] private bool showDebugInfo = false;
@@ -167,11 +168,19 @@ public class AnomalySpawnManager : MonoBehaviour
         // Mark as spawned
         entry.hasSpawned = true;
         
-        // Trigger anomaly response if it has the Anomaly component
-        Anomaly anomalyComponent = spawnedAnomaly.GetComponent<Anomaly>();
-        if (anomalyComponent != null)
+        // Optionally trigger anomaly response if enabled
+        if (autoTriggerAnomalyResponse)
         {
-            anomalyComponent.Respond();
+            Anomaly anomalyComponent = spawnedAnomaly.GetComponent<Anomaly>();
+            if (anomalyComponent != null)
+            {
+                anomalyComponent.Respond();
+                
+                if (showDebugInfo)
+                {
+                    Debug.Log($"Auto-triggered response for {entry.entryName}");
+                }
+            }
         }
         
         // Show spawn effects if enabled
@@ -275,6 +284,39 @@ public class AnomalySpawnManager : MonoBehaviour
         return GetRemainingSpawns() == 0;
     }
     
+    // Manual anomaly response triggering
+    public void TriggerResponseForAnomaly(GameObject anomaly)
+    {
+        if (anomaly != null)
+        {
+            Anomaly anomalyComponent = anomaly.GetComponent<Anomaly>();
+            if (anomalyComponent != null)
+            {
+                anomalyComponent.Respond();
+                
+                if (showDebugInfo)
+                {
+                    Debug.Log($"Manually triggered response for {anomaly.name}");
+                }
+            }
+        }
+    }
+    
+    public void TriggerResponseForAllSpawnedAnomalies()
+    {
+        CleanupSpawnedAnomalies();
+        
+        foreach (GameObject anomaly in spawnedAnomalies)
+        {
+            TriggerResponseForAnomaly(anomaly);
+        }
+        
+        if (showDebugInfo)
+        {
+            Debug.Log($"Triggered response for all {spawnedAnomalies.Count} spawned anomalies");
+        }
+    }
+    
     // Manual spawn for testing
     [ContextMenu("Force Spawn Next Anomaly")]
     public void ForceSpawnNext()
@@ -301,6 +343,12 @@ public class AnomalySpawnManager : MonoBehaviour
                 scheduledEntries.RemoveAt(0);
             }
         }
+    }
+    
+    [ContextMenu("Trigger Response for All Spawned Anomalies")]
+    public void TriggerResponseForAllSpawnedAnomaliesContextMenu()
+    {
+        TriggerResponseForAllSpawnedAnomalies();
     }
     
     void OnDestroy()
