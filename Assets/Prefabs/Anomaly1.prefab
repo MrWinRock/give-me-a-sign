@@ -9,9 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1540802041383752749}
-  m_Layer: 0
+  - component: {fileID: 9169255179393860951}
+  - component: {fileID: 7704365657894509980}
+  m_Layer: 10
   m_Name: Anomaly1
-  m_TagString: Untagged
+  m_TagString: Anomaly
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -25,13 +27,69 @@ Transform:
   m_GameObject: {fileID: 4981656092691350511}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.44803, y: 1.46482, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7405007826198458091}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9169255179393860951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4981656092691350511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b844fe9e006fca04f96ecd69cf516be8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anomaly
+  respondType: 0
+  moveTarget: {fileID: 0}
+  moveSpeed: 3
+  disappearDelay: 0.5
+  destroyAfterDisappear: 0
+  scaleUpAmount: 1.5
+  scaleAnimationSpeed: 2
+--- !u!70 &7704365657894509980
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4981656092691350511}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -5.37, y: -1.44}
+  m_Size: {x: 2.01, y: 2.99}
+  m_Direction: 0
 --- !u!1 &6898085499754169365
 GameObject:
   m_ObjectHideFlags: 0
@@ -42,8 +100,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7405007826198458091}
   - component: {fileID: 7482841217151216370}
-  - component: {fileID: 771174373401794570}
-  - component: {fileID: 2206923048851840333}
   m_Layer: 10
   m_Name: VisualAndTrigger
   m_TagString: Anomaly
@@ -124,59 +180,3 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!70 &771174373401794570
-CapsuleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6898085499754169365}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 5.64, y: 8.06}
-  m_Direction: 0
---- !u!114 &2206923048851840333
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6898085499754169365}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b844fe9e006fca04f96ecd69cf516be8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Anomaly
-  respondType: 0
-  moveTarget: {fileID: 0}
-  moveSpeed: 3
-  disappearDelay: 0.5
-  destroyAfterDisappear: 0
-  scaleUpAmount: 1.5
-  scaleAnimationSpeed: 2

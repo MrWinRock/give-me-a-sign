@@ -24,6 +24,9 @@ public class Anomaly : MonoBehaviour
 
     private bool isMoving = false;
     private Vector3 originalScale;
+    
+    // Event fired when anomaly disappears (for scoring system)
+    public System.Action<Anomaly> OnAnomalyDisappeared;
 
     void Start()
     {
@@ -38,7 +41,7 @@ public class Anomaly : MonoBehaviour
     private IEnumerator DelayedRespond()
     {
         yield return new WaitForSeconds(4f); // Wait 4 seconds
-        
+
         switch (respondType)
         {
             case RespondType.DisappearInstantly:
@@ -102,6 +105,9 @@ public class Anomaly : MonoBehaviour
 
     private void HandleDisappear()
     {
+        // Fire event before disappearing (for scoring system)
+        OnAnomalyDisappeared?.Invoke(this);
+        
         if (destroyAfterDisappear)
             Destroy(gameObject);
         else
