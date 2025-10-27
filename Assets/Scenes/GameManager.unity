@@ -1029,6 +1029,7 @@ MonoBehaviour:
   spawnList: {fileID: 0}
   autoFindReferences: 1
   anomalyParent: {fileID: 0}
+  autoTriggerAnomalyResponse: 0
   showDebugInfo: 0
   showSpawnEffects: 0
 --- !u!4 &479646212
@@ -1146,7 +1147,7 @@ MonoBehaviour:
     hasSpawned: 0
     entryName: 
   - anomalyPrefab: {fileID: 649442956707240704, guid: e8da75c1a8a4e084086a88413bd0d420, type: 3}
-    spawnPoint: {fileID: 0}
+    spawnPoint: {fileID: 850090409}
     spawnGameTime: 0.2
     hasSpawned: 0
     entryName: 
@@ -1652,6 +1653,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 840163067}
   m_CullTransparentMesh: 1
+--- !u!4 &850090409 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1554079529200943554, guid: e8da75c1a8a4e084086a88413bd0d420, type: 3}
+  m_PrefabInstance: {fileID: 6871721613877523701}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &852930492
 GameObject:
   m_ObjectHideFlags: 0

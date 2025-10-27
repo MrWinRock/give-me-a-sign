@@ -4,9 +4,13 @@ using System.Collections.Generic;
 [System.Serializable]
 public class AnomalySpawnEntry
 {
-    [Header("Spawn Data")]
+    [Header("Anomaly Spawn Data")]
     public GameObject anomalyPrefab;
     public Transform spawnPoint;
+    
+    [Header("Target Spawn Data")]
+    public GameObject targetPrefab;
+    public Transform targetSpawnPoint;
     
     [Header("Timing")]
     [Range(0f, 6f)]
