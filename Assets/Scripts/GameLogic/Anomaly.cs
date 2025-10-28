@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class Anomaly : MonoBehaviour
@@ -23,10 +24,14 @@ public class Anomaly : MonoBehaviour
     [SerializeField] private float scaleUpAmount = 1.5f; // ขยายเป็น 1.5 เท่า
     [SerializeField] private float scaleAnimationSpeed = 2f; // ความเร็วการขยาย
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource jumpScareAudioSource; // AudioSource สำหรับเสียง anomaly
+    
     private bool isMoving = false;
     private Vector3 originalScale;
     private bool canPrayDisappear = false; // Can disappear with spacebar
     private PrayUiManager prayManager;
+    public float timeToDisappear;
     
     // Event fired when anomaly disappears (for scoring system)
     public System.Action<Anomaly> OnAnomalyDisappeared;
@@ -88,7 +93,10 @@ public class Anomaly : MonoBehaviour
             canPrayDisappear = true;
             // Show prayer UI
             if (prayManager != null)
+            {
                 prayManager.ShowPrayPanel();
+                jumpScareAudioSource.Play();
+            }
         }
         
         // Start scale up animation
@@ -112,10 +120,19 @@ public class Anomaly : MonoBehaviour
             if (respondType == RespondType.MoveToTargetThenDisappear)
             {
                 canPrayDisappear = true;
-                // Wait indefinitely for spacebar input - player must press spacebar to banish
-                while (canPrayDisappear)
+                // Wait 7 seconds then reload scene
+                float timer = 0f;
+                while (timer < timeToDisappear && canPrayDisappear)
                 {
+                    timer += Time.deltaTime;
                     yield return null;
+                }
+                
+                // If 7 seconds passed without spacebar press, reload scene
+                if (canPrayDisappear)
+                {
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                    yield break;
                 }
             }
             else

@@ -1155,7 +1155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33c4eb311ee9431ca4672d34bf4579b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NightTimer
-  nightDurationMinutes: 4
+  nightDurationMinutes: 0.4
   timeDisplayText: {fileID: 1785938122}
   nextSceneIndex: 1
   showDebugInfo: 0
