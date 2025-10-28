@@ -10,6 +10,10 @@ public class GameManager : MonoBehaviour
     private int currentBackgroundIndex = 0;
     [Header("CameraOBJ")]
     public GameObject cameraObjects;
+
+    [Header("GameObj")] public GameObject screen;
+    
+    [Header("Audio")] public AudioSource audioSource;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -43,6 +47,8 @@ public class GameManager : MonoBehaviour
     
     public void OnNextClick()
     {
+        screen.SetActive(true);
+        audioSource.Play();
         if (currentBackgroundIndex == 2)
         {
             currentBackgroundIndex = 0;
@@ -53,6 +59,8 @@ public class GameManager : MonoBehaviour
     
     public void OnPreviousClick()
     {
+        screen.SetActive(true);
+        audioSource.Play();
         if (currentBackgroundIndex == 0)
         {
             currentBackgroundIndex = 2;
