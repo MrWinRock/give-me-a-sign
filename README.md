@@ -37,4 +37,6 @@
 
 <https://huggingface.co/ggerganov/whisper.cpp/tree/main>
 
+<https://github.com/Macoron/whisper.unity>
+
 ---
