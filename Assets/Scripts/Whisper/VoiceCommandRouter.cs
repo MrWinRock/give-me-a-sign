@@ -1,19 +1,10 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using System;
 
 namespace Whisper
 {
     public class VoiceCommandRouter : MonoBehaviour
     {
-        [Header("Optional: wire up UI references")]
-        public Button startButton;
-        public Button optionsButton;
-        public Button backsettingButton; 
-        public Button backsoundButton; 
-        public Button soundButton; 
-        public Button exitButton;
 
         [Header("Prayer System")]
         public PrayUiManager prayUiManager;
@@ -53,114 +44,8 @@ namespace Whisper
                     // Optional: You could show feedback to player here
                 }
                 
-                // When in prayer mode, only handle prayer commands
-                return;
             }
 
-            // Priority 2: Regular menu navigation (only when not in prayer mode)
-            if (Matches(text, "เริ่มเกม", "เริ่ม", "เริ่มเล่น", "start"))
-            {
-                if (startButton != null) startButton.onClick?.Invoke();
-                else SceneManager.LoadScene("Gameplay");
-                return;
-            }
-
-            // Settings: press the options button
-            if (Matches(text, "ตั้งค่า", "การตั้งค่า", "options", "option"))
-            {
-                if (!TryPressFirst(optionsButton))
-                {
-                    Debug.LogWarning("Voice: Options command received but no optionsButton assigned.");
-                }
-                return;
-            }
-
-            // Close: press whichever back button is currently active/interactable
-            if (Matches(text, "ปิด", "ปิดเมนู", "ปิดตั้งค่า","ย้อนกลับ", "close", "close menu"))
-            {
-                if (!TryPressFirst(backsettingButton, backsoundButton))
-                {
-                    Debug.LogWarning("Voice: Close command received but no back button is available/active.");
-                }
-                return;
-            }
-
-            if (Matches(text, "เสียง", "เมนูเสียง", "ตั้งค่าเสียง", "sound", "audio"))
-            {
-                if (!TryPressFirst(soundButton))
-                {
-                    Debug.LogWarning("Voice: Sound command received but no soundButton assigned.");
-                }
-                return;
-            }
-
-            if (Matches(text, "ออกเกม", "ออก", "exit", "quit"))
-            {
-                if (exitButton != null)
-                {
-                    exitButton.onClick?.Invoke();
-                }
-                else
-                {
-#if UNITY_EDITOR
-                    UnityEditor.EditorApplication.isPlaying = false;
-#else
-                    Application.Quit();
-#endif
-                }
-                return;
-            }
-
-            // TODO: Add the rest of your in-game commands here.
-        }
-
-        private bool Matches(string text, params string[] any)
-        {
-            var normText = Normalize(text);
-            if (string.IsNullOrEmpty(normText)) return false;
-
-            float best = 0f;
-            foreach (var candidate in any)
-            {
-                var normCand = Normalize(candidate);
-                if (string.IsNullOrEmpty(normCand)) continue;
-
-                // Exact
-                if (normText == normCand) return true;
-
-                // Contains / Prefix / Suffix heuristics (useful for Thai phrases)
-                if (normText.Contains(normCand) || normCand.Contains(normText)) return true;
-
-                // Fuzzy similarity (normalized Levenshtein)
-                var sim = Similarity(normText, normCand);
-                if (sim >= fuzzyThreshold) return true;
-                if (sim > best) best = sim;
-            }
-
-            return false;
-        }
-
-        private bool TryPressFirst(params Button[] candidates)
-        {
-            // prefer active & interactable buttons
-            foreach (var b in candidates)
-            {
-                if (b != null && b.gameObject.activeInHierarchy && b.interactable)
-                {
-                    b.onClick?.Invoke();
-                    return true;
-                }
-            }
-            // fallback: any assigned button
-            foreach (var b in candidates)
-            {
-                if (b != null)
-                {
-                    b.onClick?.Invoke();
-                    return true;
-                }
-            }
-            return false;
         }
 
         private bool IsPrayPanelActive()
@@ -243,21 +128,6 @@ namespace Whisper
 
             // Optional: Add visual/audio feedback here
             // You could trigger particle effects, sound effects, etc.
-        }
-
-        private static string Normalize(string s)
-        {
-            if (string.IsNullOrWhiteSpace(s)) return string.Empty;
-            s = s.Trim().ToLowerInvariant();
-
-            // Remove spaces and punctuation; keep letters/digits only to be robust against diacritics/typos
-            var arr = s.ToCharArray();
-            var dst = new System.Text.StringBuilder(arr.Length);
-            foreach (var c in arr)
-            {
-                if (char.IsLetterOrDigit(c)) dst.Append(c);
-            }
-            return dst.ToString();
         }
 
         private static float Similarity(string a, string b)
