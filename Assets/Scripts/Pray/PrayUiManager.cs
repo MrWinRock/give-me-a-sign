@@ -41,4 +41,9 @@ public class PrayUiManager : MonoBehaviour
         if (instructionText != null)
             instructionText.text = text;
     }
+
+    public bool IsPrayPanelActive()
+    {
+        return prayPanel != null && prayPanel.activeInHierarchy;
+    }
 }
