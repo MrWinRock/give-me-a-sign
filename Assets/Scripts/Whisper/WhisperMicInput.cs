@@ -280,7 +280,9 @@ namespace Whisper
                     if (!string.IsNullOrEmpty(trimmed))
                     {
                         try { router?.Route(trimmed); }
-                        catch (Exception e) { Debug.LogException(e, this); }
+                        catch (InvalidOperationException e) { Debug.LogException(e, this); }
+                        catch (ArgumentException e) { Debug.LogException(e, this); }
+                        catch (Exception e) { Debug.LogException(e, this); throw; }
                     }
                 }
                 return;
