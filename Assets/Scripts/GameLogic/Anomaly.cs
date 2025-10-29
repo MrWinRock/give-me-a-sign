@@ -9,7 +9,7 @@ namespace GameLogic
     public class Anomaly : MonoBehaviour
     {
         // Static collection to track all active anomalies
-        private static List<Anomaly> _activeAnomalies = new List<Anomaly>();
+        private static readonly List<Anomaly> _activeAnomalies = new List<Anomaly>();
         public static IReadOnlyList<Anomaly> ActiveAnomalies => _activeAnomalies;
 
         public enum RespondType
