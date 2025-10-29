@@ -9,6 +9,8 @@ namespace GameLogic
         private static readonly int Color1 = Shader.PropertyToID("_Color");
 
         [Header("Deactivation Settings")]
+        [SerializeField] private bool noDelay;           // Skip delay and fade immediately
+        [SerializeField] private bool noFade;            // Skip fade effect and deactivate instantly
         [SerializeField] private float deactivateDelay = 4f; // Time in seconds before deactivating
         [SerializeField] private float fadeDuration = 0.5f;  // Fade out duration
 
@@ -65,10 +67,16 @@ namespace GameLogic
 
         private IEnumerator DeactivationRoutine()
         {
-            float waitBeforeFade = Mathf.Max(0f, deactivateDelay - fadeDuration);
-            if (waitBeforeFade > 0f) yield return new WaitForSeconds(waitBeforeFade);
+            if (!noDelay)
+            {
+                float waitTime = noFade ? deactivateDelay : Mathf.Max(0f, deactivateDelay - fadeDuration);
+                if (waitTime > 0f) yield return new WaitForSeconds(waitTime);
+            }
 
-            yield return StartCoroutine(FadeOut(fadeDuration));
+            if (!noFade)
+            {
+                yield return StartCoroutine(FadeOut(fadeDuration));
+            }
 
             gameObject.SetActive(false);
             _deactRoutine = null;
