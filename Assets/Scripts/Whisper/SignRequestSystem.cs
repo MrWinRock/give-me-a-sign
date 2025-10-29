@@ -1,69 +1,52 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
-using GameLogic;
-using Pray;
-using Score;
 
 namespace Whisper
 {
-    public class VoiceCommandRouter : MonoBehaviour
+    public class SignRequestSystem : MonoBehaviour
     {
-
-        [Header("Prayer System")]
-        public PrayUiManager prayUiManager;
-        public ScoreManager scoreManager;
+        [Header("Sign Request Settings")]
+        public GameObject[] signGameObjects; // GameObjects to activate when "Give me a sign" is detected
         
-        // Prayer detection settings
-        [Range(0.3f, 1f)] public float prayerThreshold = 0.7f; // Lower threshold for prayer matching
-        public string targetPrayer = "In the name of the father son and holy spirit";
-        [Range(1, 10)] public int minimumWordsRequired = 5; // Minimum words that must match
-        public int pointsForSuccessfulPrayer = 1;
-
+        // Sign detection settings
+        [Range(0.3f, 1f)] public float signThreshold = 0.7f; // Lower threshold for sign matching
+        public string targetSignRequest = "Give me a sign";
+        [Range(1, 5)] public int minimumWordsRequired = 3; // Minimum words that must match
+        
         // Fuzzy match threshold (0..1). Higher = stricter.
         [Range(0.5f, 1f)] public float fuzzyThreshold = 0.82f;
         
         // Events
-        public Action<bool> OnPrayerAttempted; // true = success, false = failed
+        public Action<bool> OnSignRequested; // true = success, false = failed
 
         public void Route(string recognizedText)
         {
             if (string.IsNullOrWhiteSpace(recognizedText)) return;
             var text = recognizedText.Trim();
 
-            // Priority 1: Check if PrayPanel is active and handle prayer detection
-            if (IsPrayPanelActive())
+            // Check for sign request
+            bool signSuccess = CheckSignMatch(text);
+            OnSignRequested?.Invoke(signSuccess);
+            
+            if (signSuccess)
             {
-                bool prayerSuccess = CheckPrayerMatch(text);
-                OnPrayerAttempted?.Invoke(prayerSuccess);
-                
-                if (prayerSuccess)
-                {
-                    Debug.Log($"Prayer successful! Recognized: '{text}'");
-                    HandleSuccessfulPrayer();
-                }
-                else
-                {
-                    Debug.Log($"Prayer not recognized or incorrect. Got: '{text}'");
-                    // Optional: You could show feedback to player here
-                }
-
+                Debug.Log($"Sign request successful! Recognized: '{text}'");
+                HandleSuccessfulSignRequest();
+            }
+            else
+            {
+                Debug.Log($"Sign request not recognized. Got: '{text}'");
             }
         }
 
-        private bool IsPrayPanelActive()
+        private bool CheckSignMatch(string recognizedText)
         {
-            if (prayUiManager == null) return false;
-            return prayUiManager.gameObject.activeInHierarchy && prayUiManager.IsPrayPanelActive();
-        }
-
-        private bool CheckPrayerMatch(string recognizedText)
-        {
-            if (string.IsNullOrWhiteSpace(recognizedText) || string.IsNullOrWhiteSpace(targetPrayer))
+            if (string.IsNullOrWhiteSpace(recognizedText) || string.IsNullOrWhiteSpace(targetSignRequest))
                 return false;
 
-            // Split target prayer into words
-            var targetWords = targetPrayer.ToLowerInvariant()
+            // Split target sign request into words
+            var targetWords = targetSignRequest.ToLowerInvariant()
                 .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
             
             // Split recognized text into words
@@ -91,7 +74,7 @@ namespace Whisper
 
             bool isMatch = matchingWords >= minimumWordsRequired; // Use configurable minimum words
 
-            Debug.Log($"Prayer word match check: '{recognizedText}' vs target '{targetPrayer}' - Matching words: {matchingWords}/{targetWords.Length}, Required: {minimumWordsRequired}, Match: {isMatch}");
+            Debug.Log($"Sign request word match check: '{recognizedText}' vs target '{targetSignRequest}' - Matching words: {matchingWords}/{targetWords.Length}, Required: {minimumWordsRequired}, Match: {isMatch}");
             
             // Also log which words were found
             var foundWords = new List<string>();
@@ -114,33 +97,24 @@ namespace Whisper
             return isMatch;
         }
 
-        private void HandleSuccessfulPrayer()
+        private void HandleSuccessfulSignRequest()
         {
-            var anomalies = new List<Anomaly>(Anomaly.ActiveAnomalies);
-            bool anomalyBanished = false;
-
-            foreach (Anomaly anomaly in anomalies)
+            // Activate all assigned GameObjects
+            if (signGameObjects != null && signGameObjects.Length > 0)
             {
-                if (anomaly != null && anomaly.CanBePrayerBanished())
+                foreach (var gameObj in signGameObjects)
                 {
-                    anomaly.OnPrayerSuccessful();
-                    anomalyBanished = true;
-                    Debug.Log($"Anomaly '{anomaly.name}' banished by prayer!");
+                    if (gameObj != null)
+                    {
+                        gameObj.SetActive(true);
+                        Debug.Log($"Activated GameObject: {gameObj.name}");
+                    }
                 }
-            }
-
-            if (anomalyBanished)
-            {
-                // Add score for successful prayer
-                if (scoreManager != null)
-                {
-                    scoreManager.AddScore(pointsForSuccessfulPrayer);
-                    Debug.Log($"Added {pointsForSuccessfulPrayer} points for successful prayer!");
-                }
+                Debug.Log($"Sign request handled! Activated {signGameObjects.Length} GameObjects.");
             }
             else
             {
-                Debug.Log("No anomalies available to banish with prayer.");
+                Debug.Log("No GameObjects assigned to activate for sign request.");
             }
         }
 
@@ -181,4 +155,3 @@ namespace Whisper
         }
     }
 }
-
