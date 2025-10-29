@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System;
 
 namespace Whisper
 {
@@ -14,14 +15,49 @@ namespace Whisper
         public Button soundButton; 
         public Button exitButton;
 
+        [Header("Prayer System")]
+        public PrayUiManager prayUiManager;
+        public ScoreManager scoreManager;
+        
+        // Prayer detection settings
+        [Range(0.3f, 1f)] public float prayerThreshold = 0.7f; // Lower threshold for prayer matching
+        public string targetPrayer = "In the name of the father son and holy spirit";
+        [Range(1, 10)] public int minimumWordsRequired = 5; // Minimum words that must match
+        public int pointsForSuccessfulPrayer = 1;
+
         // Fuzzy match threshold (0..1). Higher = stricter.
         [Range(0.5f, 1f)] public float fuzzyThreshold = 0.82f;
+        
+        // Events
+        public Action<bool> OnPrayerAttempted; // true = success, false = failed
 
         public void Route(string recognizedText)
         {
             if (string.IsNullOrWhiteSpace(recognizedText)) return;
             var text = recognizedText.Trim();
 
+            // Priority 1: Check if PrayPanel is active and handle prayer detection
+            if (IsPrayPanelActive())
+            {
+                bool prayerSuccess = CheckPrayerMatch(text);
+                OnPrayerAttempted?.Invoke(prayerSuccess);
+                
+                if (prayerSuccess)
+                {
+                    Debug.Log($"Prayer successful! Recognized: '{text}'");
+                    HandleSuccessfulPrayer();
+                }
+                else
+                {
+                    Debug.Log($"Prayer not recognized or incorrect. Got: '{text}'");
+                    // Optional: You could show feedback to player here
+                }
+                
+                // When in prayer mode, only handle prayer commands
+                return;
+            }
+
+            // Priority 2: Regular menu navigation (only when not in prayer mode)
             if (Matches(text, "เริ่มเกม", "เริ่ม", "เริ่มเล่น", "start"))
             {
                 if (startButton != null) startButton.onClick?.Invoke();
@@ -125,6 +161,88 @@ namespace Whisper
                 }
             }
             return false;
+        }
+
+        private bool IsPrayPanelActive()
+        {
+            if (prayUiManager == null) return false;
+            return prayUiManager.gameObject.activeInHierarchy && prayUiManager.IsPrayPanelActive();
+        }
+
+        private bool CheckPrayerMatch(string recognizedText)
+        {
+            if (string.IsNullOrWhiteSpace(recognizedText) || string.IsNullOrWhiteSpace(targetPrayer))
+                return false;
+
+            // Split target prayer into words
+            var targetWords = targetPrayer.ToLowerInvariant()
+                .Split(new char[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            // Split recognized text into words
+            var recognizedWords = recognizedText.ToLowerInvariant()
+                .Split(new char[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Count matching words
+            int matchingWords = 0;
+            foreach (var targetWord in targetWords)
+            {
+                // Check if any recognized word matches this target word
+                foreach (var recognizedWord in recognizedWords)
+                {
+                    // Check for exact match or similar match
+                    if (recognizedWord == targetWord || 
+                        recognizedWord.Contains(targetWord) || 
+                        targetWord.Contains(recognizedWord) ||
+                        Similarity(recognizedWord, targetWord) >= 0.7f) // High similarity for individual words
+                    {
+                        matchingWords++;
+                        break; // Found a match for this target word, move to next
+                    }
+                }
+            }
+
+            bool isMatch = matchingWords >= minimumWordsRequired; // Use configurable minimum words
+
+            Debug.Log($"Prayer word match check: '{recognizedText}' vs target '{targetPrayer}' - Matching words: {matchingWords}/{targetWords.Length}, Required: {minimumWordsRequired}, Match: {isMatch}");
+            
+            // Also log which words were found
+            var foundWords = new System.Collections.Generic.List<string>();
+            foreach (var targetWord in targetWords)
+            {
+                foreach (var recognizedWord in recognizedWords)
+                {
+                    if (recognizedWord == targetWord || 
+                        recognizedWord.Contains(targetWord) || 
+                        targetWord.Contains(recognizedWord) ||
+                        Similarity(recognizedWord, targetWord) >= 0.7f)
+                    {
+                        foundWords.Add(targetWord);
+                        break;
+                    }
+                }
+            }
+            Debug.Log($"Found words: [{string.Join(", ", foundWords)}]");
+
+            return isMatch;
+        }
+
+        private void HandleSuccessfulPrayer()
+        {
+            // Add score for successful prayer
+            if (scoreManager != null)
+            {
+                scoreManager.AddScore(pointsForSuccessfulPrayer);
+                Debug.Log($"Added {pointsForSuccessfulPrayer} points for successful prayer!");
+            }
+
+            // Hide the pray panel after successful prayer
+            if (prayUiManager != null)
+            {
+                prayUiManager.HidePrayPanel();
+            }
+
+            // Optional: Add visual/audio feedback here
+            // You could trigger particle effects, sound effects, etc.
         }
 
         private static string Normalize(string s)
