@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 namespace Whisper
 {
@@ -91,7 +92,7 @@ namespace Whisper
             Debug.Log($"Prayer word match check: '{recognizedText}' vs target '{targetPrayer}' - Matching words: {matchingWords}/{targetWords.Length}, Required: {minimumWordsRequired}, Match: {isMatch}");
             
             // Also log which words were found
-            var foundWords = new System.Collections.Generic.List<string>();
+            var foundWords = new List<string>();
             foreach (var targetWord in targetWords)
             {
                 foreach (var recognizedWord in recognizedWords)
@@ -113,13 +114,12 @@ namespace Whisper
 
         private void HandleSuccessfulPrayer()
         {
-            // Find and banish anomalies that can be prayer banished
-            Anomaly[] anomalies = FindObjectsOfType<Anomaly>();
+            var anomalies = new List<Anomaly>(Anomaly.ActiveAnomalies);
             bool anomalyBanished = false;
 
             foreach (Anomaly anomaly in anomalies)
             {
-                if (anomaly.CanBePrayerBanished())
+                if (anomaly != null && anomaly.CanBePrayerBanished())
                 {
                     anomaly.OnPrayerSuccessful();
                     anomalyBanished = true;

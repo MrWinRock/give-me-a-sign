@@ -1,9 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Anomaly : MonoBehaviour
 {
+    // Static collection to track all active anomalies
+    private static List<Anomaly> activeAnomalies = new List<Anomaly>();
+    public static IReadOnlyList<Anomaly> ActiveAnomalies => activeAnomalies;
+
     public enum RespondType
     {
         DisappearInstantly,  // หายทันที
@@ -39,6 +44,27 @@ public class Anomaly : MonoBehaviour
     {
         originalScale = transform.localScale;
         prayManager = FindObjectOfType<PrayUiManager>();
+    }
+
+    void OnEnable()
+    {
+        // Add this anomaly to the active list when enabled
+        if (!activeAnomalies.Contains(this))
+        {
+            activeAnomalies.Add(this);
+        }
+    }
+
+    void OnDisable()
+    {
+        // Remove this anomaly from the active list when disabled
+        activeAnomalies.Remove(this);
+    }
+
+    void OnDestroy()
+    {
+        // Remove this anomaly from the active list when destroyed
+        activeAnomalies.Remove(this);
     }
 
     public void Respond()
