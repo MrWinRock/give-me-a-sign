@@ -1162,7 +1162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33c4eb311ee9431ca4672d34bf4579b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NightTimer
-  nightDurationMinutes: 5
+  nightDurationMinutes: 10
   timeDisplayText: {fileID: 1785938122}
   nextSceneIndex: 1
   showDebugInfo: 0
@@ -4641,12 +4641,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25725bd48afdacf45b5c022e5b921d25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.VoiceCommandRouter
-  startButton: {fileID: 0}
-  optionsButton: {fileID: 0}
-  backsettingButton: {fileID: 0}
-  backsoundButton: {fileID: 0}
-  soundButton: {fileID: 0}
-  exitButton: {fileID: 0}
   prayUiManager: {fileID: 894996012}
   scoreManager: {fileID: 2091993505}
   prayerThreshold: 0.3

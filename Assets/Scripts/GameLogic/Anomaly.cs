@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -29,7 +28,7 @@ public class Anomaly : MonoBehaviour
     
     private bool isMoving = false;
     private Vector3 originalScale;
-    private bool canPrayDisappear = false; // Can disappear with spacebar
+    private bool canPrayDisappear = false; // Can disappear with voice prayer
     private PrayUiManager prayManager;
     public float timeToDisappear;
     
@@ -40,16 +39,6 @@ public class Anomaly : MonoBehaviour
     {
         originalScale = transform.localScale;
         prayManager = FindObjectOfType<PrayUiManager>();
-    }
-
-    void Update()
-    {
-        // Check for spacebar input when anomaly is moving to target and can pray disappear
-        if (canPrayDisappear && Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            StopAllCoroutines();
-            HandlePrayDisappear();
-        }
     }
 
     public void Respond()
@@ -64,7 +53,7 @@ public class Anomaly : MonoBehaviour
         switch (respondType)
         {
             case RespondType.DisappearInstantly:
-                
+                HandleDisappear();
                 break;
 
             case RespondType.MoveToTargetThenDisappear:
@@ -116,21 +105,23 @@ public class Anomaly : MonoBehaviour
         
         if (disappearAfter)
         {
-            // Keep prayer UI active and wait for spacebar input
+            // Keep prayer UI active and wait for voice input (prayer)
             if (respondType == RespondType.MoveToTargetThenDisappear)
             {
                 canPrayDisappear = true;
-                // Wait 7 seconds then reload scene
+                
+                // Wait for timeToDisappear seconds then reload scene if not banished by prayer
                 float timer = 0f;
-                while (timer < timeToDisappear && canPrayDisappear)
+                while (timer < timeToDisappear && canPrayDisappear && gameObject.activeInHierarchy)
                 {
                     timer += Time.deltaTime;
                     yield return null;
                 }
                 
-                // If 7 seconds passed without spacebar press, reload scene
-                if (canPrayDisappear)
+                // Double check: If canPrayDisappear is still true and object is still active, reload scene
+                if (canPrayDisappear && gameObject.activeInHierarchy)
                 {
+                    Debug.Log($"Anomaly {name} timeout reached. Reloading scene...");
                     SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                     yield break;
                 }
@@ -139,7 +130,7 @@ public class Anomaly : MonoBehaviour
             {
                 canPrayDisappear = false;
                 yield return new WaitForSeconds(disappearDelay);
-                
+                HandleDisappear();
             }
         }
         else
@@ -166,10 +157,57 @@ public class Anomaly : MonoBehaviour
         transform.localScale = targetScale;
     }
 
+    private void HandleDisappear()
+    {
+        // Hide prayer UI
+        if (prayManager != null)
+            prayManager.HidePrayPanel();
+            
+        // Fire event before disappearing (for scoring system)
+        OnAnomalyDisappeared?.Invoke(this);
+        
+        if (destroyAfterDisappear)
+            Destroy(gameObject);
+        else
+            gameObject.SetActive(false);
+    }
+
     private void HandlePrayDisappear()
     {
         canPrayDisappear = false;
         isMoving = false;
         
+        // Stop all coroutines first to prevent scene reload
+        StopAllCoroutines();
+        
+        HandleDisappear();
+    }
+
+    /// <summary>
+    /// Public method for VoiceCommandRouter to call when prayer is successful
+    /// </summary>
+    public void OnPrayerSuccessful()
+    {
+        if (canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear)
+        {
+            Debug.Log($"Prayer successful for anomaly {name}. Banishing...");
+            
+            // Set flag first to prevent scene reload
+            canPrayDisappear = false;
+            
+            // Stop all coroutines to prevent timeout
+            StopAllCoroutines();
+            
+            // Handle disappearing
+            HandleDisappear();
+        }
+    }
+
+    /// <summary>
+    /// Check if this anomaly can be banished by prayer
+    /// </summary>
+    public bool CanBePrayerBanished()
+    {
+        return canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear;
     }
 }

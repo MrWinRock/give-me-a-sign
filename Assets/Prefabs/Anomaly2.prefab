@@ -241,7 +241,7 @@ MonoBehaviour:
   scaleUpAmount: 6
   scaleAnimationSpeed: 10
   jumpScareAudioSource: {fileID: 2659839492046016456}
-  timeToDisappear: 3
+  timeToDisappear: 50
 --- !u!70 &4501048229164951954
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
