@@ -140,15 +140,6 @@ namespace Whisper
             {
                 Debug.Log("No anomalies available to banish with prayer.");
             }
-
-            // Hide the pray panel after successful prayer (anomaly will handle this)
-            // if (prayUiManager != null)
-            // {
-            //     prayUiManager.HidePrayPanel();
-            // }
-
-            // Optional: Add visual/audio feedback here
-            // You could trigger particle effects, sound effects, etc.
         }
 
         private static float Similarity(string a, string b)
