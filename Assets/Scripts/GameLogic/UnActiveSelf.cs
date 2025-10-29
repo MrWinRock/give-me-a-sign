@@ -6,25 +6,27 @@ namespace GameLogic
 {
     public class UnActiveSelf : MonoBehaviour
     {
+        private static readonly int Color1 = Shader.PropertyToID("_Color");
+
         [Header("Deactivation Settings")]
         [SerializeField] private float deactivateDelay = 4f; // Time in seconds before deactivating
         [SerializeField] private float fadeDuration = 0.5f;  // Fade out duration
 
-        private Coroutine deactRoutine;
+        private Coroutine _deactRoutine;
 
         void OnEnable()
         {
             ResetVisuals();
-            if (deactRoutine != null) StopCoroutine(deactRoutine);
-            deactRoutine = StartCoroutine(DeactivationRoutine());
+            if (_deactRoutine != null) StopCoroutine(_deactRoutine);
+            _deactRoutine = StartCoroutine(DeactivationRoutine());
         }
 
         void OnDisable()
         {
-            if (deactRoutine != null)
+            if (_deactRoutine != null)
             {
-                StopCoroutine(deactRoutine);
-                deactRoutine = null;
+                StopCoroutine(_deactRoutine);
+                _deactRoutine = null;
             }
         }
 
@@ -54,7 +56,7 @@ namespace GameLogic
             }
 
             var rend = GetComponent<Renderer>();
-            if (rend != null && rend.material != null && rend.material.HasProperty("_Color"))
+            if (rend != null && rend.material != null && rend.material.HasProperty(Color1))
             {
                 Color c = rend.material.color;
                 rend.material.color = new Color(c.r, c.g, c.b, 1f);
@@ -69,7 +71,7 @@ namespace GameLogic
             yield return StartCoroutine(FadeOut(fadeDuration));
 
             gameObject.SetActive(false);
-            deactRoutine = null;
+            _deactRoutine = null;
         }
 
         private IEnumerator FadeOut(float duration)
@@ -114,7 +116,7 @@ namespace GameLogic
             }
 
             var rend = GetComponent<Renderer>();
-            if (rend != null && rend.material != null && rend.material.HasProperty("_Color"))
+            if (rend != null && rend.material != null && rend.material.HasProperty(Color1))
             {
                 Color start = rend.material.color;
                 for (float t = 0f; t < duration; t += Time.deltaTime)

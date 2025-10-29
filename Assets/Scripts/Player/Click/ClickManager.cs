@@ -1,3 +1,4 @@
+using GameLogic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem; // New Input System

@@ -1,34 +1,37 @@
 using UnityEngine;
 
-public class ClickEffect : MonoBehaviour
+namespace Player.Click
 {
-    public float duration = 0.5f; // เวลาที่ใช้ก่อนหายไป
-    public float scaleUp = 1.5f;
-
-    private float timer = 0f;
-    private SpriteRenderer sr;
-    private Color startColor;
-
-    void Start()
+    public class ClickEffect : MonoBehaviour
     {
-        sr = GetComponent<SpriteRenderer>();
-        startColor = sr.color;
-    }
+        public float duration = 0.5f; // เวลาที่ใช้ก่อนหายไป
+        public float scaleUp = 1.5f;
 
-    void Update()
-    {
-        timer += Time.deltaTime;
-        float t = timer / duration;
+        private float _timer;
+        private SpriteRenderer _sr;
+        private Color _startColor;
 
-        // ขยายขนาด
-        transform.localScale = Vector3.Lerp(Vector3.one, Vector3.one * scaleUp, t);
-
-        // ค่อย ๆ จางหาย
-        sr.color = new Color(startColor.r, startColor.g, startColor.b, 1 - t);
-
-        if (timer >= duration)
+        void Start()
         {
-            Destroy(gameObject);
+            _sr = GetComponent<SpriteRenderer>();
+            _startColor = _sr.color;
+        }
+
+        void Update()
+        {
+            _timer += Time.deltaTime;
+            float t = _timer / duration;
+
+            // ขยายขนาด
+            transform.localScale = Vector3.Lerp(Vector3.one, Vector3.one * scaleUp, t);
+
+            // ค่อย ๆ จางหาย
+            _sr.color = new Color(_startColor.r, _startColor.g, _startColor.b, 1 - t);
+
+            if (_timer >= duration)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

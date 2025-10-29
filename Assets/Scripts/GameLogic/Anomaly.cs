@@ -1,239 +1,231 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using Pray;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class Anomaly : MonoBehaviour
+namespace GameLogic
 {
-    // Static collection to track all active anomalies
-    private static List<Anomaly> activeAnomalies = new List<Anomaly>();
-    public static IReadOnlyList<Anomaly> ActiveAnomalies => activeAnomalies;
-
-    public enum RespondType
+    public class Anomaly : MonoBehaviour
     {
-        DisappearInstantly,  // หายทันที
-        MoveToTargetThenDisappear, // เคลื่อนไปหา target แล้วค่อยหาย
-        MoveOnly             // แค่เคลื่อนไปหา target ไม่หาย
-    }
+        // Static collection to track all active anomalies
+        private static List<Anomaly> _activeAnomalies = new List<Anomaly>();
+        public static IReadOnlyList<Anomaly> ActiveAnomalies => _activeAnomalies;
 
-    [Header("Respond Settings")]
-    public RespondType respondType = RespondType.MoveToTargetThenDisappear;
-
-    [SerializeField] private Transform moveTarget; // Empty GameObject ที่กำหนดจาก Hierarchy
-    [SerializeField] private float moveSpeed = 3f; // ความเร็วในการเคลื่อน
-    [SerializeField] private float disappearDelay = 0.5f; // เวลาหลังถึงเป้าหมายก่อนหาย (ถ้ามี)
-    [SerializeField] private bool destroyAfterDisappear = false; // จะลบ object ทิ้งไหม
-    
-    [Header("Scale Animation")]
-    [SerializeField] private float scaleUpAmount = 1.5f; // ขยายเป็น 1.5 เท่า
-    [SerializeField] private float scaleAnimationSpeed = 2f; // ความเร็วการขยาย
-
-    [Header("Audio")]
-    [SerializeField] private AudioSource jumpScareAudioSource; // AudioSource สำหรับเสียง anomaly
-    
-    private bool isMoving = false;
-    private Vector3 originalScale;
-    private bool canPrayDisappear = false; // Can disappear with voice prayer
-    private PrayUiManager prayManager;
-    public float timeToDisappear;
-    
-    // Event fired when anomaly disappears (for scoring system)
-    public System.Action<Anomaly> OnAnomalyDisappeared;
-
-    void Start()
-    {
-        originalScale = transform.localScale;
-        prayManager = FindObjectOfType<PrayUiManager>();
-    }
-
-    void OnEnable()
-    {
-        // Add this anomaly to the active list when enabled
-        if (!activeAnomalies.Contains(this))
+        public enum RespondType
         {
-            activeAnomalies.Add(this);
+            DisappearInstantly,  // หายทันที
+            MoveToTargetThenDisappear, // เคลื่อนไปหา target แล้วค่อยหาย
+            MoveOnly             // แค่เคลื่อนไปหา target ไม่หาย
         }
-    }
 
-    void OnDisable()
-    {
-        // Remove this anomaly from the active list when disabled
-        activeAnomalies.Remove(this);
-    }
+        [Header("Respond Settings")]
+        public RespondType respondType = RespondType.MoveToTargetThenDisappear;
 
-    void OnDestroy()
-    {
-        // Remove this anomaly from the active list when destroyed
-        activeAnomalies.Remove(this);
-    }
+        [SerializeField] private Transform moveTarget; // Empty GameObject ที่กำหนดจาก Hierarchy
+        [SerializeField] private float moveSpeed = 3f; // ความเร็วในการเคลื่อน
+        [SerializeField] private float disappearDelay = 0.5f; // เวลาหลังถึงเป้าหมายก่อนหาย (ถ้ามี)
+        [SerializeField] private bool destroyAfterDisappear ; // จะลบ object ทิ้งไหม
+    
+        [Header("Scale Animation")]
+        [SerializeField] private float scaleUpAmount = 1.5f; // ขยายเป็น 1.5 เท่า
+        [SerializeField] private float scaleAnimationSpeed = 2f; // ความเร็วการขยาย
 
-    public void Respond()
-    {
-        StartCoroutine(DelayedRespond());
-    }
+        [Header("Audio")]
+        [SerializeField] private AudioSource jumpScareAudioSource; // AudioSource สำหรับเสียง anomaly
+    
+        private bool _isMoving;
+        private Vector3 _originalScale;
+        private bool _canPrayDisappear; // Can disappear with voice prayer
+        private PrayUiManager _prayManager;
+        public float timeToDisappear;
+    
+        // Event fired when anomaly disappears (for scoring system)
+        public System.Action<Anomaly> OnAnomalyDisappeared;
 
-    private IEnumerator DelayedRespond()
-    {
-        yield return new WaitForSeconds(4f); // Wait 4 seconds
-
-        switch (respondType)
+        void Start()
         {
-            case RespondType.DisappearInstantly:
-                HandleDisappear();
-                break;
-
-            case RespondType.MoveToTargetThenDisappear:
-                if (moveTarget != null)
-                    StartCoroutine(MoveToTargetCoroutine(true));
-                else
-                    Debug.LogWarning($"{name} has no target assigned!");
-                break;
-
-            case RespondType.MoveOnly:
-                if (moveTarget != null)
-                    StartCoroutine(MoveToTargetCoroutine(false));
-                else
-                    Debug.LogWarning($"{name} has no target assigned!");
-                break;
+            _originalScale = transform.localScale;
+            _prayManager = FindObjectOfType<PrayUiManager>();
         }
-    }
 
-    private IEnumerator MoveToTargetCoroutine(bool disappearAfter)
-    {
-        isMoving = true;
-        
-        // Enable prayer disappearing only for MoveToTargetThenDisappear type
-        if (respondType == RespondType.MoveToTargetThenDisappear)
+        void OnEnable()
         {
-            canPrayDisappear = true;
-            // Show prayer UI
-            if (prayManager != null)
+            // Add this anomaly to the active list when enabled
+            if (!_activeAnomalies.Contains(this))
             {
-                prayManager.ShowPrayPanel();
-                jumpScareAudioSource.Play();
+                _activeAnomalies.Add(this);
             }
         }
-        
-        // Start scale up animation
-        StartCoroutine(ScaleUpAnimation());
 
-        while (moveTarget != null && Vector3.Distance(transform.position, moveTarget.position) > 0.05f)
+        void OnDisable()
         {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                moveTarget.position,
-                moveSpeed * Time.deltaTime
-            );
-            yield return null;
+            // Remove this anomaly from the active list when disabled
+            _activeAnomalies.Remove(this);
         }
 
-        isMoving = false;
-        
-        if (disappearAfter)
+        void OnDestroy()
         {
-            // Keep prayer UI active and wait for voice input (prayer)
+            // Remove this anomaly from the active list when destroyed
+            _activeAnomalies.Remove(this);
+        }
+
+        public void Respond()
+        {
+            StartCoroutine(DelayedRespond());
+        }
+
+        private IEnumerator DelayedRespond()
+        {
+            yield return new WaitForSeconds(4f); // Wait 4 seconds
+
+            switch (respondType)
+            {
+                case RespondType.DisappearInstantly:
+                    HandleDisappear();
+                    break;
+
+                case RespondType.MoveToTargetThenDisappear:
+                    if (moveTarget != null)
+                        StartCoroutine(MoveToTargetCoroutine(true));
+                    else
+                        Debug.LogWarning($"{name} has no target assigned!");
+                    break;
+
+                case RespondType.MoveOnly:
+                    if (moveTarget != null)
+                        StartCoroutine(MoveToTargetCoroutine(false));
+                    else
+                        Debug.LogWarning($"{name} has no target assigned!");
+                    break;
+            }
+        }
+
+        private IEnumerator MoveToTargetCoroutine(bool disappearAfter)
+        {
+            _isMoving = true;
+        
+            // Enable prayer disappearing only for MoveToTargetThenDisappear type
             if (respondType == RespondType.MoveToTargetThenDisappear)
             {
-                canPrayDisappear = true;
-                
-                // Wait for timeToDisappear seconds then reload scene if not banished by prayer
-                float timer = 0f;
-                while (timer < timeToDisappear && canPrayDisappear && gameObject.activeInHierarchy)
+                _canPrayDisappear = true;
+                // Show prayer UI
+                if (_prayManager != null)
                 {
-                    timer += Time.deltaTime;
-                    yield return null;
+                    _prayManager.ShowPrayPanel();
+                    jumpScareAudioSource.Play();
                 }
-                
-                // Double check: If canPrayDisappear is still true and object is still active, reload scene
-                if (canPrayDisappear && gameObject.activeInHierarchy)
+            }
+        
+            // Start scale up animation
+            StartCoroutine(ScaleUpAnimation());
+
+            while (moveTarget != null && Vector3.Distance(transform.position, moveTarget.position) > 0.05f)
+            {
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    moveTarget.position,
+                    moveSpeed * Time.deltaTime
+                );
+                yield return null;
+            }
+
+            _isMoving = false;
+        
+            if (disappearAfter)
+            {
+                // Keep prayer UI active and wait for voice input (prayer)
+                if (respondType == RespondType.MoveToTargetThenDisappear)
                 {
-                    Debug.Log($"Anomaly {name} timeout reached. Reloading scene...");
-                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-                    yield break;
+                    _canPrayDisappear = true;
+                
+                    // Wait for timeToDisappear seconds then reload scene if not banished by prayer
+                    float timer = 0f;
+                    while (timer < timeToDisappear && _canPrayDisappear && gameObject.activeInHierarchy)
+                    {
+                        timer += Time.deltaTime;
+                        yield return null;
+                    }
+                
+                    // Double check: If canPrayDisappear is still true and object is still active, reload scene
+                    if (_canPrayDisappear && gameObject.activeInHierarchy)
+                    {
+                        Debug.Log($"Anomaly {name} timeout reached. Reloading scene...");
+                        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                    }
+                }
+                else
+                {
+                    _canPrayDisappear = false;
+                    yield return new WaitForSeconds(disappearDelay);
+                    HandleDisappear();
                 }
             }
             else
             {
-                canPrayDisappear = false;
-                yield return new WaitForSeconds(disappearDelay);
+                _canPrayDisappear = false;
+                // For MoveOnly type, fire the disappear event for scoring even though it doesn't actually disappear
+                if (respondType == RespondType.MoveOnly)
+                {
+                    OnAnomalyDisappeared?.Invoke(this);
+                }
+            }
+        }
+
+        private IEnumerator ScaleUpAnimation()
+        {
+            Vector3 targetScale = _originalScale * scaleUpAmount;
+        
+            while (Vector3.Distance(transform.localScale, targetScale) > 0.01f)
+            {
+                transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleAnimationSpeed * Time.deltaTime);
+                yield return null;
+            }
+        
+            transform.localScale = targetScale;
+        }
+
+        private void HandleDisappear()
+        {
+            // Hide prayer UI
+            if (_prayManager != null)
+                _prayManager.HidePrayPanel();
+            
+            // Fire event before disappearing (for scoring system)
+            OnAnomalyDisappeared?.Invoke(this);
+        
+            if (destroyAfterDisappear)
+                Destroy(gameObject);
+            else
+                gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Public method for VoiceCommandRouter to call when prayer is successful
+        /// </summary>
+        public void OnPrayerSuccessful()
+        {
+            if (_canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear)
+            {
+                Debug.Log($"Prayer successful for anomaly {name}. Banishing...");
+            
+                // Set flag first to prevent scene reload
+                _canPrayDisappear = false;
+            
+                // Stop all coroutines to prevent timeout
+                StopAllCoroutines();
+            
+                // Handle disappearing
                 HandleDisappear();
             }
         }
-        else
+
+        /// <summary>
+        /// Check if this anomaly can be banished by prayer
+        /// </summary>
+        public bool CanBePrayerBanished()
         {
-            canPrayDisappear = false;
-            // For MoveOnly type, fire the disappear event for scoring even though it doesn't actually disappear
-            if (respondType == RespondType.MoveOnly)
-            {
-                OnAnomalyDisappeared?.Invoke(this);
-            }
+            return _canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear;
         }
-    }
-
-    private IEnumerator ScaleUpAnimation()
-    {
-        Vector3 targetScale = originalScale * scaleUpAmount;
-        
-        while (Vector3.Distance(transform.localScale, targetScale) > 0.01f)
-        {
-            transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleAnimationSpeed * Time.deltaTime);
-            yield return null;
-        }
-        
-        transform.localScale = targetScale;
-    }
-
-    private void HandleDisappear()
-    {
-        // Hide prayer UI
-        if (prayManager != null)
-            prayManager.HidePrayPanel();
-            
-        // Fire event before disappearing (for scoring system)
-        OnAnomalyDisappeared?.Invoke(this);
-        
-        if (destroyAfterDisappear)
-            Destroy(gameObject);
-        else
-            gameObject.SetActive(false);
-    }
-
-    private void HandlePrayDisappear()
-    {
-        canPrayDisappear = false;
-        isMoving = false;
-        
-        // Stop all coroutines first to prevent scene reload
-        StopAllCoroutines();
-        
-        HandleDisappear();
-    }
-
-    /// <summary>
-    /// Public method for VoiceCommandRouter to call when prayer is successful
-    /// </summary>
-    public void OnPrayerSuccessful()
-    {
-        if (canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear)
-        {
-            Debug.Log($"Prayer successful for anomaly {name}. Banishing...");
-            
-            // Set flag first to prevent scene reload
-            canPrayDisappear = false;
-            
-            // Stop all coroutines to prevent timeout
-            StopAllCoroutines();
-            
-            // Handle disappearing
-            HandleDisappear();
-        }
-    }
-
-    /// <summary>
-    /// Check if this anomaly can be banished by prayer
-    /// </summary>
-    public bool CanBePrayerBanished()
-    {
-        return canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear;
     }
 }

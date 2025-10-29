@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using Pray;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Whisper.Utils;
@@ -13,7 +14,7 @@ namespace Whisper
         public int sampleRate = 16000;          // Whisper models are usually 16 kHz
         public float windowSec = 2.5f;          // target segment length
         public float hopSec = 0.8f;             // step size between updates
-        public string deviceName = null;        // null = default mic
+        public string deviceName;        // null = default mic
         public string modelPath = "Models/ggml-medium.en.bin"; // Updated default model path
         public bool modelPathInStreamingAssets = true; // whisper manager flag
         public bool toggleWithSpacebar = true;  // press Space to start/stop listening
@@ -21,7 +22,7 @@ namespace Whisper
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
-        public global::PrayUiManager prayUiManager; // Reference to prayer system
+        public PrayUiManager prayUiManager; // Reference to prayer system
 
         [Header("Optional (auto-created if null)")]
         public WhisperManager whisperManager;

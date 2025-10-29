@@ -1,6 +1,9 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using GameLogic;
+using Pray;
+using Score;
 
 namespace Whisper
 {
@@ -46,7 +49,6 @@ namespace Whisper
                 }
                 
             }
-
         }
 
         private bool IsPrayPanelActive()
@@ -62,11 +64,11 @@ namespace Whisper
 
             // Split target prayer into words
             var targetWords = targetPrayer.ToLowerInvariant()
-                .Split(new char[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+                .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
             
             // Split recognized text into words
             var recognizedWords = recognizedText.ToLowerInvariant()
-                .Split(new char[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+                .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
 
             // Count matching words
             int matchingWords = 0;
