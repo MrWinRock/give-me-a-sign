@@ -17,6 +17,7 @@ namespace Whisper
         public string modelPath = "Models/ggml-medium.en.bin"; // Updated default model path
         public bool modelPathInStreamingAssets = true; // whisper manager flag
         public bool toggleWithSpacebar = true;  // press Space to start/stop listening
+        public bool holdToTalk = true;          // if true, hold spacebar to talk; if false, toggle mode
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
@@ -230,7 +231,11 @@ namespace Whisper
             _isListening = true;
             _lastQueuedText = null;
             _nextDispatchTime = 0f;
-            Debug.Log("[Voice] Listening started (Spacebar to stop)");
+            
+            if (holdToTalk)
+                Debug.Log("[Voice] Listening started (Hold Spacebar to talk)");
+            else
+                Debug.Log("[Voice] Listening started (Spacebar to stop)");
         }
 
         private void StopListening()
@@ -249,30 +254,79 @@ namespace Whisper
             finally
             {
                 _isListening = false;
-                Debug.Log("[Voice] Listening stopped (Spacebar to start)");
+                
+                if (holdToTalk)
+                    Debug.Log("[Voice] Listening stopped (Hold Spacebar to talk again)");
+                else
+                    Debug.Log("[Voice] Listening stopped (Spacebar to start)");
             }
         }
 
         private void Update()
         {
-            // Toggle with Spacebar only when PrayPanel is active
+            // Only work when PrayPanel is active
+            if (!IsPrayPanelActive())
+            {
+                // Auto-stop listening if PrayPanel becomes inactive
+                if (_isListening)
+                {
+                    StopListening();
+                }
+                
+                // Drain recognized texts on main thread and route
+                while (_pendingRoutes.TryDequeue(out var text))
+                {
+                    var trimmed = (text ?? string.Empty).Trim();
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        try { router?.Route(trimmed); }
+                        catch (Exception e) { Debug.LogException(e, this); }
+                    }
+                }
+                return;
+            }
+
+            // Check spacebar input
             bool spacePressed = false;
+            bool spaceHeld = false;
+            bool spaceReleased = false;
+
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null)
+            {
                 spacePressed = Keyboard.current.spaceKey.wasPressedThisFrame;
+                spaceHeld = Keyboard.current.spaceKey.isPressed;
+                spaceReleased = Keyboard.current.spaceKey.wasReleasedThisFrame;
+            }
 #else
             spacePressed = Input.GetKeyDown(KeyCode.Space);
+            spaceHeld = Input.GetKey(KeyCode.Space);
+            spaceReleased = Input.GetKeyUp(KeyCode.Space);
 #endif
-            if (toggleWithSpacebar && spacePressed && IsPrayPanelActive())
+
+            if (toggleWithSpacebar)
             {
-                if (_isListening) StopListening();
-                else StartListening();
-            }
-            
-            // Auto-stop listening if PrayPanel becomes inactive
-            if (_isListening && !IsPrayPanelActive())
-            {
-                StopListening();
+                if (holdToTalk)
+                {
+                    // Hold-to-talk mode: hold spacebar to listen, release to stop
+                    if (spacePressed && !_isListening)
+                    {
+                        StartListening();
+                    }
+                    else if (spaceReleased && _isListening)
+                    {
+                        StopListening();
+                    }
+                }
+                else
+                {
+                    // Toggle mode: press spacebar to toggle listening
+                    if (spacePressed)
+                    {
+                        if (_isListening) StopListening();
+                        else StartListening();
+                    }
+                }
             }
 
             // Drain recognized texts on main thread and route
