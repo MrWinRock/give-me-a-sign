@@ -113,18 +113,39 @@ namespace Whisper
 
         private void HandleSuccessfulPrayer()
         {
-            // Add score for successful prayer
-            if (scoreManager != null)
+            // Find and banish anomalies that can be prayer banished
+            Anomaly[] anomalies = FindObjectsOfType<Anomaly>();
+            bool anomalyBanished = false;
+
+            foreach (Anomaly anomaly in anomalies)
             {
-                scoreManager.AddScore(pointsForSuccessfulPrayer);
-                Debug.Log($"Added {pointsForSuccessfulPrayer} points for successful prayer!");
+                if (anomaly.CanBePrayerBanished())
+                {
+                    anomaly.OnPrayerSuccessful();
+                    anomalyBanished = true;
+                    Debug.Log($"Anomaly '{anomaly.name}' banished by prayer!");
+                }
             }
 
-            // Hide the pray panel after successful prayer
-            if (prayUiManager != null)
+            if (anomalyBanished)
             {
-                prayUiManager.HidePrayPanel();
+                // Add score for successful prayer
+                if (scoreManager != null)
+                {
+                    scoreManager.AddScore(pointsForSuccessfulPrayer);
+                    Debug.Log($"Added {pointsForSuccessfulPrayer} points for successful prayer!");
+                }
             }
+            else
+            {
+                Debug.Log("No anomalies available to banish with prayer.");
+            }
+
+            // Hide the pray panel after successful prayer (anomaly will handle this)
+            // if (prayUiManager != null)
+            // {
+            //     prayUiManager.HidePrayPanel();
+            // }
 
             // Optional: Add visual/audio feedback here
             // You could trigger particle effects, sound effects, etc.
