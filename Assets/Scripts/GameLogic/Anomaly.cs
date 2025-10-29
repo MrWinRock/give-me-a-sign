@@ -64,7 +64,7 @@ public class Anomaly : MonoBehaviour
         switch (respondType)
         {
             case RespondType.DisappearInstantly:
-                HandleDisappear();
+                
                 break;
 
             case RespondType.MoveToTargetThenDisappear:
@@ -139,7 +139,7 @@ public class Anomaly : MonoBehaviour
             {
                 canPrayDisappear = false;
                 yield return new WaitForSeconds(disappearDelay);
-                HandleDisappear();
+                
             }
         }
         else
@@ -166,25 +166,10 @@ public class Anomaly : MonoBehaviour
         transform.localScale = targetScale;
     }
 
-    private void HandleDisappear()
-    {
-        // Hide prayer UI
-        if (prayManager != null)
-            prayManager.HidePrayPanel();
-            
-        // Fire event before disappearing (for scoring system)
-        OnAnomalyDisappeared?.Invoke(this);
-        
-        if (destroyAfterDisappear)
-            Destroy(gameObject);
-        else
-            gameObject.SetActive(false);
-    }
-
     private void HandlePrayDisappear()
     {
         canPrayDisappear = false;
         isMoving = false;
-        HandleDisappear();
+        
     }
 }
