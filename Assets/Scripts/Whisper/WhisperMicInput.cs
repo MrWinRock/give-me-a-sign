@@ -300,7 +300,6 @@ namespace Whisper
             }
 #else
             spacePressed = Input.GetKeyDown(KeyCode.Space);
-            spaceHeld = Input.GetKey(KeyCode.Space);
             spaceReleased = Input.GetKeyUp(KeyCode.Space);
 #endif
 
