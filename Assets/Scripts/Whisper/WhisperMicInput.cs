@@ -14,12 +14,13 @@ namespace Whisper
         public float windowSec = 2.5f;          // target segment length
         public float hopSec = 0.8f;             // step size between updates
         public string deviceName = null;        // null = default mic
-        public string modelPath;                // relative to StreamingAssets if isModelPathInStreamingAssets = true
+        public string modelPath = "Models/ggml-medium.en.bin"; // Updated default model path
         public bool modelPathInStreamingAssets = true; // whisper manager flag
         public bool toggleWithSpacebar = true;  // press Space to start/stop listening
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
+        public global::PrayUiManager prayUiManager; // Reference to prayer system
 
         [Header("Optional (auto-created if null)")]
         public WhisperManager whisperManager;
@@ -254,7 +255,7 @@ namespace Whisper
 
         private void Update()
         {
-            // Toggle with Spacebar (New Input System or Legacy fallback)
+            // Toggle with Spacebar only when PrayPanel is active
             bool spacePressed = false;
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null)
@@ -262,10 +263,16 @@ namespace Whisper
 #else
             spacePressed = Input.GetKeyDown(KeyCode.Space);
 #endif
-            if (toggleWithSpacebar && spacePressed)
+            if (toggleWithSpacebar && spacePressed && IsPrayPanelActive())
             {
                 if (_isListening) StopListening();
                 else StartListening();
+            }
+            
+            // Auto-stop listening if PrayPanel becomes inactive
+            if (_isListening && !IsPrayPanelActive())
+            {
+                StopListening();
             }
 
             // Drain recognized texts on main thread and route
@@ -278,6 +285,12 @@ namespace Whisper
                     catch (Exception e) { Debug.LogException(e, this); }
                 }
             }
+        }
+
+        private bool IsPrayPanelActive()
+        {
+            if (prayUiManager == null) return false;
+            return prayUiManager.gameObject.activeInHierarchy && prayUiManager.IsPrayPanelActive();
         }
 
         private void OnStreamSegmentUpdated(WhisperResult segment)
