@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Tabsil.Mineral
+namespace Tabsil.Mineral.Scripts.Data
 {
     public class MineralPrefs
     {

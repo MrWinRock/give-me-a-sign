@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using Pray;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Whisper.Utils;
@@ -13,13 +14,15 @@ namespace Whisper
         public int sampleRate = 16000;          // Whisper models are usually 16 kHz
         public float windowSec = 2.5f;          // target segment length
         public float hopSec = 0.8f;             // step size between updates
-        public string deviceName = null;        // null = default mic
-        public string modelPath;                // relative to StreamingAssets if isModelPathInStreamingAssets = true
+        public string deviceName;        // null = default mic
+        public string modelPath = "Models/ggml-medium.en.bin"; // Updated default model path
         public bool modelPathInStreamingAssets = true; // whisper manager flag
         public bool toggleWithSpacebar = true;  // press Space to start/stop listening
+        public bool holdToTalk = true;          // if true, hold spacebar to talk; if false, toggle mode
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
+        public PrayUiManager prayUiManager; // Reference to prayer system
 
         [Header("Optional (auto-created if null)")]
         public WhisperManager whisperManager;
@@ -229,7 +232,11 @@ namespace Whisper
             _isListening = true;
             _lastQueuedText = null;
             _nextDispatchTime = 0f;
-            Debug.Log("[Voice] Listening started (Spacebar to stop)");
+            
+            if (holdToTalk)
+                Debug.Log("[Voice] Listening started (Hold Spacebar to talk)");
+            else
+                Debug.Log("[Voice] Listening started (Spacebar to stop)");
         }
 
         private void StopListening()
@@ -248,24 +255,78 @@ namespace Whisper
             finally
             {
                 _isListening = false;
-                Debug.Log("[Voice] Listening stopped (Spacebar to start)");
+                
+                if (holdToTalk)
+                    Debug.Log("[Voice] Listening stopped (Hold Spacebar to talk again)");
+                else
+                    Debug.Log("[Voice] Listening stopped (Spacebar to start)");
             }
         }
 
         private void Update()
         {
-            // Toggle with Spacebar (New Input System or Legacy fallback)
+            // Only work when PrayPanel is active
+            if (!IsPrayPanelActive())
+            {
+                // Auto-stop listening if PrayPanel becomes inactive
+                if (_isListening)
+                {
+                    StopListening();
+                }
+                
+                // Drain recognized texts on main thread and route
+                while (_pendingRoutes.TryDequeue(out var text))
+                {
+                    var trimmed = (text ?? string.Empty).Trim();
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        try { router?.Route(trimmed); }
+                        catch (InvalidOperationException e) { Debug.LogException(e, this); }
+                        catch (ArgumentException e) { Debug.LogException(e, this); }
+                        catch (Exception e) { Debug.LogException(e, this); throw; }
+                    }
+                }
+                return;
+            }
+
+            // Check spacebar input
             bool spacePressed = false;
+            bool spaceReleased = false;
+            
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null)
+            {
                 spacePressed = Keyboard.current.spaceKey.wasPressedThisFrame;
+                spaceReleased = Keyboard.current.spaceKey.wasReleasedThisFrame;
+            }
 #else
             spacePressed = Input.GetKeyDown(KeyCode.Space);
+            spaceReleased = Input.GetKeyUp(KeyCode.Space);
 #endif
-            if (toggleWithSpacebar && spacePressed)
+
+            if (toggleWithSpacebar)
             {
-                if (_isListening) StopListening();
-                else StartListening();
+                if (holdToTalk)
+                {
+                    // Hold-to-talk mode: hold spacebar to listen, release to stop
+                    if (spacePressed && !_isListening)
+                    {
+                        StartListening();
+                    }
+                    else if (spaceReleased && _isListening)
+                    {
+                        StopListening();
+                    }
+                }
+                else
+                {
+                    // Toggle mode: press spacebar to toggle listening
+                    if (spacePressed)
+                    {
+                        if (_isListening) StopListening();
+                        else StartListening();
+                    }
+                }
             }
 
             // Drain recognized texts on main thread and route
@@ -278,6 +339,12 @@ namespace Whisper
                     catch (Exception e) { Debug.LogException(e, this); }
                 }
             }
+        }
+
+        private bool IsPrayPanelActive()
+        {
+            if (prayUiManager == null) return false;
+            return prayUiManager.gameObject.activeInHierarchy && prayUiManager.IsPrayPanelActive();
         }
 
         private void OnStreamSegmentUpdated(WhisperResult segment)

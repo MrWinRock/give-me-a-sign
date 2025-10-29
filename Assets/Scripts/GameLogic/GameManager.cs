@@ -1,71 +1,67 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace GameLogic
 {
-    [Header("Background Settings")]
-    public List<GameObject> backgrounds = new List<GameObject>();
-    private int currentBackgroundIndex = 0;
-    [Header("CameraOBJ")]
-    public GameObject cameraObjects;
+    public class GameManager : MonoBehaviour
+    {
+        [Header("Background Settings")]
+        public List<GameObject> backgrounds = new List<GameObject>();
+        private int _currentBackgroundIndex;
+        [Header("CameraOBJ")]
+        public GameObject cameraObjects;
 
-    [Header("GameObj")] public GameObject screen;
+        [Header("GameObj")] public GameObject screen;
     
-    [Header("Audio")] public AudioSource audioSource;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
+        [Header("Audio")] public AudioSource audioSource;
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        Debug.Log(backgrounds.Count);
-        Debug.Log(currentBackgroundIndex);
-        if (currentBackgroundIndex == 0)
+        // Update is called once per frame
+        void Update()
         {
-            Vector3 position = cameraObjects.transform.position;
-            position.x = 0;
-            cameraObjects.transform.position = position;
+            Debug.Log(backgrounds.Count);
+            Debug.Log(_currentBackgroundIndex);
+            if (_currentBackgroundIndex == 0)
+            {
+                Vector3 position = cameraObjects.transform.position;
+                position.x = 0;
+                cameraObjects.transform.position = position;
+            }
+            else if (_currentBackgroundIndex == 1)
+            {
+                Vector3 position = cameraObjects.transform.position;
+                position.x = 17.73f;
+                cameraObjects.transform.position = position;
+            }
+            else if (_currentBackgroundIndex == 2)
+            {
+                Vector3 position = cameraObjects.transform.position;
+                position.x = 36.12f;
+                cameraObjects.transform.position = position;
+            }
         }
-        else if (currentBackgroundIndex == 1)
-        {
-            Vector3 position = cameraObjects.transform.position;
-            position.x = 17.73f;
-            cameraObjects.transform.position = position;
-        }
-        else if (currentBackgroundIndex == 2)
-        {
-            Vector3 position = cameraObjects.transform.position;
-            position.x = 36.12f;
-            cameraObjects.transform.position = position;
-        }
-    }
     
-    public void OnNextClick()
-    {
-        screen.SetActive(true);
-        audioSource.Play();
-        if (currentBackgroundIndex == 2)
+        public void OnNextClick()
         {
-            currentBackgroundIndex = 0;
-            return;
+            screen.SetActive(true);
+            audioSource.Play();
+            if (_currentBackgroundIndex == 2)
+            {
+                _currentBackgroundIndex = 0;
+                return;
+            }
+            _currentBackgroundIndex = _currentBackgroundIndex + 1;
         }
-        currentBackgroundIndex = currentBackgroundIndex + 1;
-    }
     
-    public void OnPreviousClick()
-    {
-        screen.SetActive(true);
-        audioSource.Play();
-        if (currentBackgroundIndex == 0)
+        public void OnPreviousClick()
         {
-            currentBackgroundIndex = 2;
-            return;
+            screen.SetActive(true);
+            audioSource.Play();
+            if (_currentBackgroundIndex == 0)
+            {
+                _currentBackgroundIndex = 2;
+                return;
+            }
+            _currentBackgroundIndex = _currentBackgroundIndex - 1;
         }
-        currentBackgroundIndex = currentBackgroundIndex - 1;
     }
 }

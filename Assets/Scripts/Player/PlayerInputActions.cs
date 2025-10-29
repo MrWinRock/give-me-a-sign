@@ -1,44 +1,46 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
+﻿using UnityEngine.InputSystem;
 
-[System.Serializable]
-public class PlayerInputActions
+namespace Player
 {
-    public PlayerActions Player { get; private set; }
-    
-    public PlayerInputActions()
+    [System.Serializable]
+    public class PlayerInputActions
     {
-        Player = new PlayerActions();
-    }
+        public PlayerActions Player { get; private set; }
     
-    public void Enable()
-    {
-        Player.Enable();
-    }
+        public PlayerInputActions()
+        {
+            Player = new PlayerActions();
+        }
     
-    public void Disable()
-    {
-        Player.Disable();
+        public void Enable()
+        {
+            Player.Enable();
+        }
+    
+        public void Disable()
+        {
+            Player.Disable();
+        }
     }
-}
 
-[System.Serializable]
-public class PlayerActions
-{
-    public InputAction Click { get; private set; }
-    
-    public PlayerActions()
+    [System.Serializable]
+    public class PlayerActions
     {
-        Click = new InputAction(binding: "<Mouse>/leftButton");
-    }
+        public InputAction Click { get; private set; }
     
-    public void Enable()
-    {
-        Click.Enable();
-    }
+        public PlayerActions()
+        {
+            Click = new InputAction(binding: "<Mouse>/leftButton");
+        }
     
-    public void Disable()
-    {
-        Click.Disable();
+        public void Enable()
+        {
+            Click.Enable();
+        }
+    
+        public void Disable()
+        {
+            Click.Disable();
+        }
     }
 }

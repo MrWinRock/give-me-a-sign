@@ -1,22 +1,20 @@
 using UnityEngine;
 
-public class UnActiveTogether : MonoBehaviour
+namespace GameLogic
 {
-    [Header("UnActive Together Objects")]
-    public GameObject checkObjects;
-    public GameObject unActiveObjects;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public class UnActiveTogether : MonoBehaviour
     {
-        
-    }
+        [Header("UnActive Together Objects")]
+        public GameObject checkObjects;
+        public GameObject unActiveObjects;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (!checkObjects.activeSelf)
+        // Update is called once per frame
+        void Update()
         {
-            unActiveObjects.SetActive(false);
+            if (!checkObjects.activeSelf)
+            {
+                unActiveObjects.SetActive(false);
+            }
         }
     }
 }
