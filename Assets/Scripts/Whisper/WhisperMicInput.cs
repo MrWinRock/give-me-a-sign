@@ -290,14 +290,12 @@ namespace Whisper
 
             // Check spacebar input
             bool spacePressed = false;
-            bool spaceHeld = false;
             bool spaceReleased = false;
-
+            
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null)
             {
                 spacePressed = Keyboard.current.spaceKey.wasPressedThisFrame;
-                spaceHeld = Keyboard.current.spaceKey.isPressed;
                 spaceReleased = Keyboard.current.spaceKey.wasReleasedThisFrame;
             }
 #else
