@@ -41,7 +41,6 @@ namespace GameLogic
     [SerializeField] private Animator anomalyAnimator; // Animator component for anomaly animations
     [SerializeField] private string moveTriggerName = "StartMove"; // Animation trigger name when starting to move
     [SerializeField] private string idleTriggerName = "Idle"; // Animation trigger name when idle/banished
-    [SerializeField] private AnomalyAnimationHelper animationHelper; // Optional helper for additional effects
     
     private bool _isMoving;
         private Vector3 _originalScale;
@@ -60,10 +59,7 @@ namespace GameLogic
             // Get animator component if not assigned
             if (anomalyAnimator == null)
                 anomalyAnimator = GetComponent<Animator>();
-                
-            // Get animation helper if not assigned
-            if (animationHelper == null)
-                animationHelper = GetComponent<AnomalyAnimationHelper>();
+            
         }
 
         void OnEnable()
@@ -129,11 +125,6 @@ namespace GameLogic
                 Debug.Log($"Triggered animation: {moveTriggerName} for anomaly {name}");
             }
             
-            // Start additional animation effects
-            if (animationHelper != null)
-            {
-                animationHelper.StartAnimationEffects();
-            }
         
             // Enable prayer disappearing only for MoveToTargetThenDisappear type
             if (respondType == RespondType.MoveToTargetThenDisappear)
@@ -179,11 +170,19 @@ namespace GameLogic
                         yield return null;
                     }
                 
-                    // Double check: If canPrayDisappear is still true and object is still active, reload scene
+                    // Double check: If canPrayDisappear is still true and object is still active, load SampleScene (player loses)
                     if (_canPrayDisappear && gameObject.activeInHierarchy)
                     {
-                        Debug.Log($"Anomaly {name} timeout reached. Reloading scene...");
-                        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                        Debug.Log($"Anomaly {name} timeout reached. Player loses - loading SampleScene...");
+                        
+                        // Save loss data regardless of current score
+                        PlayerPrefs.SetInt("FinalScore", 0); // Set score to 0 for loss
+                        PlayerPrefs.SetInt("GameWon", 0); // Mark as loss
+                        PlayerPrefs.SetInt("WinThreshold", 1); // Doesn't matter for loss
+                        PlayerPrefs.SetInt("AnomalyTimeout", 1); // Flag to indicate anomaly timeout
+                        PlayerPrefs.Save();
+                        
+                        // Load SampleScene immediately
                     }
                 }
                 else
@@ -226,12 +225,6 @@ namespace GameLogic
                 Debug.Log($"Triggered animation: {idleTriggerName} for anomaly {name} - Banished");
             }
             
-            // Stop additional animation effects and fade out
-            if (animationHelper != null)
-            {
-                animationHelper.StopAnimationEffects();
-                animationHelper.FadeOut(0.5f); // Fade out over 0.5 seconds
-            }
             
             
             // Hide prayer UI

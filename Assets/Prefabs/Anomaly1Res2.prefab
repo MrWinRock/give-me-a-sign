@@ -107,11 +107,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Anomaly
   respondType: 1
   moveTarget: {fileID: 1890607078677024066}
-  moveSpeed: 20
+  moveSpeed: 30
   disappearDelay: 0.5
   destroyAfterDisappear: 0
-  scaleUpAmount: 0.8
-  scaleAnimationSpeed: 10
+  scaleUpAmount: 1
+  scaleAnimationSpeed: 30
+  cutsceneCheck: {fileID: 0}
   jumpScareAudioSource: {fileID: 6614034218440359249}
   fightAudioSource: {fileID: 1068237797386816738}
   anomalyAnimator: {fileID: 0}

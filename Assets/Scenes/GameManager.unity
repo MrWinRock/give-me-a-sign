@@ -1885,14 +1885,14 @@ MonoBehaviour:
     spawnPoint: {fileID: 5238547682038521767, guid: fc600ebed8dac46498a52df7bbb8107d, type: 3}
     targetPrefab: {fileID: 0}
     targetSpawnPoint: {fileID: 0}
-    spawnGameTime: 5
+    spawnGameTime: 3
     hasSpawned: 0
     entryName: 
   - anomalyPrefab: {fileID: 24751167580862740, guid: 703f9dbe0d2108047a980f6391cbb906, type: 3}
     spawnPoint: {fileID: 1688731477815913398, guid: 703f9dbe0d2108047a980f6391cbb906, type: 3}
     targetPrefab: {fileID: 0}
     targetSpawnPoint: {fileID: 0}
-    spawnGameTime: 2.3
+    spawnGameTime: 4.3
     hasSpawned: 0
     entryName: 
   - anomalyPrefab: {fileID: 5868571294791676303, guid: 9116439d33df5494eb1a9fe9ac2e3f16, type: 3}
@@ -2143,6 +2143,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 283135907}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &700072366
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 700072367}
+  m_Layer: 0
+  m_Name: TimeLineInGameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &700072367
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700072366}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 18.85161, y: 3.76597, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &761785850
 GameObject:
@@ -6066,7 +6097,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1634673020
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8275,6 +8306,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Anomaly7Res2
       objectReference: {fileID: 0}
+    - target: {fileID: 5868571294791676303, guid: 9116439d33df5494eb1a9fe9ac2e3f16, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8407,6 +8442,10 @@ PrefabInstance:
     - target: {fileID: 6530810648022567755, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
       propertyPath: m_Name
       value: Anomaly1Res2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6530810648022567755, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8670,3 +8709,4 @@ SceneRoots:
   - {fileID: 283135907}
   - {fileID: 779536595}
   - {fileID: 477437160}
+  - {fileID: 700072367}

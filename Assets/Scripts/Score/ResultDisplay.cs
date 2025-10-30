@@ -23,11 +23,15 @@ namespace Score
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Button quitButton;
     
-        [Header("Scene Names")]
-        [SerializeField] private string gameSceneName = "GameScene"; // Scene 1 (Night gameplay)
-    
-        [Header("Debug")]
-        [SerializeField] private bool showDebugInfo;
+    [Header("Scene Names")]
+    [SerializeField] private string gameSceneName = "GameScene"; // Scene 1 (Night gameplay)
+
+    [Header("Anomaly Defeat Objects")]
+    [SerializeField] private GameObject[] anomalyDefeatObjects; // Objects to activate when defeated by anomaly
+    [SerializeField] private GameObject[] normalResultObjects; // Objects to activate for normal results
+
+    [Header("Debug")]
+    [SerializeField] private bool showDebugInfo;
     
         void Start()
         {
@@ -37,7 +41,45 @@ namespace Score
     
         private void LoadAndDisplayResults()
         {
-            // Load saved score data from Scene 1
+            // Check if game ended due to anomaly timeout
+            bool anomalyTimeout = PlayerPrefs.GetInt("AnomalyTimeout", 0) == 1;
+            
+            if (anomalyTimeout)
+            {
+                // Special handling for anomaly timeout - show defeat message
+                if (statusText != null)
+                {
+                    statusText.text = "YOU LOSE!";
+                    statusText.color = loseColor;
+                }
+                
+                if (scoreText != null)
+                {
+                    scoreText.text = "You were consumed by the darkness...";
+                }
+                
+                if (thresholdText != null)
+                {
+                    thresholdText.text = "?????????????????????????";
+                }
+                
+                // Activate anomaly defeat objects
+                ActivateAnomalyDefeatObjects();
+                DeactivateNormalResultObjects();
+                
+                if (showDebugInfo)
+                {
+                    Debug.Log("Results: Anomaly timeout defeat displayed with special objects activated");
+                }
+                
+                return;
+            }
+            
+            // Normal game ending - activate normal result objects
+            ActivateNormalResultObjects();
+            DeactivateAnomalyDefeatObjects();
+            
+            // Normal game ending - load saved score data from Scene 1
             int finalScore = PlayerPrefs.GetInt("FinalScore", 0);
             bool gameWon = PlayerPrefs.GetInt("GameWon", 0) == 1;
             int winThreshold = PlayerPrefs.GetInt("WinThreshold", 3);
@@ -101,6 +143,7 @@ namespace Score
             PlayerPrefs.DeleteKey("FinalScore");
             PlayerPrefs.DeleteKey("GameWon");
             PlayerPrefs.DeleteKey("WinThreshold");
+            PlayerPrefs.DeleteKey("AnomalyTimeout"); // Clear anomaly timeout flag
         
             // Load Scene 1 (gameplay)
             SceneManager.LoadScene(gameSceneName);
@@ -120,6 +163,60 @@ namespace Score
             Application.Quit();
 #endif
         }
+        
+        private void ActivateAnomalyDefeatObjects()
+        {
+            foreach (GameObject obj in anomalyDefeatObjects)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(true);
+                    
+                    if (showDebugInfo)
+                    {
+                        Debug.Log($"Activated anomaly defeat object: {obj.name}");
+                    }
+                }
+            }
+        }
+        
+        private void DeactivateAnomalyDefeatObjects()
+        {
+            foreach (GameObject obj in anomalyDefeatObjects)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(false);
+                }
+            }
+        }
+        
+        private void ActivateNormalResultObjects()
+        {
+            foreach (GameObject obj in normalResultObjects)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(true);
+                    
+                    if (showDebugInfo)
+                    {
+                        Debug.Log($"Activated normal result object: {obj.name}");
+                    }
+                }
+            }
+        }
+        
+        private void DeactivateNormalResultObjects()
+        {
+            foreach (GameObject obj in normalResultObjects)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(false);
+                }
+            }
+        }
     
         // Context menu for testing without Scene 1
         [ContextMenu("Test Win Result")]
@@ -137,6 +234,16 @@ namespace Score
             PlayerPrefs.SetInt("FinalScore", 1);
             PlayerPrefs.SetInt("GameWon", 0);
             PlayerPrefs.SetInt("WinThreshold", 3);
+            PlayerPrefs.DeleteKey("AnomalyTimeout");
+            LoadAndDisplayResults();
+        }
+        
+        [ContextMenu("Test Anomaly Defeat")]
+        public void TestAnomalyDefeat()
+        {
+            PlayerPrefs.SetInt("AnomalyTimeout", 1);
+            PlayerPrefs.SetInt("FinalScore", 0);
+            PlayerPrefs.SetInt("GameWon", 0);
             LoadAndDisplayResults();
         }
     }
