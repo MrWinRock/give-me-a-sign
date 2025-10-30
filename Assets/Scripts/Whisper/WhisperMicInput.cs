@@ -15,8 +15,8 @@ namespace Whisper
         public float windowSec = 2.5f;          // target segment length
         public float hopSec = 0.8f;             // step size between updates
         public string deviceName;        // null = default mic
-        public string modelPath = "Models/ggml-medium.en.bin"; // Updated default model path
-        public bool modelPathInStreamingAssets = true; // whisper manager flag
+        public string modelPath = @"C:\Users\UsEr\Desktop\give-me-a-sign\Assets\StreamingAssets\Models\ggml-small.en.bin"; // absolute path requested by user
+        public bool modelPathInStreamingAssets; // treat modelPath as an absolute path, not relative to StreamingAssets
         public bool toggleWithSpacebar = true;  // press Space to start/stop listening
         public bool holdToTalk = true;          // if true, hold spacebar to talk; if false, toggle mode
 

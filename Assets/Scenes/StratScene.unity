@@ -629,7 +629,7 @@ MonoBehaviour:
   windowSec: 2.5
   hopSec: 0.8
   deviceName: 
-  modelPath: Models/ggml-medium.en.bin
+  modelPath: Models/ggml-small.en.bin
   modelPathInStreamingAssets: 1
   toggleWithSpacebar: 1
   holdToTalk: 1
@@ -676,7 +676,7 @@ MonoBehaviour:
   - {fileID: 1249636279}
   signThreshold: 0.7
   targetSignRequest: Give me a sign
-  minimumWordsRequired: 3
+  minimumWordsRequired: 2
   fuzzyThreshold: 0.5
 --- !u!1 &450030846
 GameObject:

@@ -183,6 +183,7 @@ namespace GameLogic
                         PlayerPrefs.Save();
                         
                         // Load SampleScene immediately
+                        SceneManager.LoadScene("SampleScene");
                     }
                 }
                 else
