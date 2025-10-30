@@ -7,7 +7,7 @@ namespace GameLogic
     {
         [Header("Active&Unactive Objects")]
         public List<GameObject> activeUnactiveObject = new List<GameObject>();
-        public GameObject activeObject;
+        public List<GameObject> activeObject = new List<GameObject>();
     
         [Header("Checker Object")]
         [SerializeField] private GameObject checkerObject1;
@@ -18,7 +18,10 @@ namespace GameLogic
         {
             if (checkerObject1.activeSelf || checkerObject2.activeSelf)
             {
-                activeObject.SetActive(true);
+                foreach (GameObject obj in activeObject)
+                {
+                    obj.SetActive(true);
+                }
                 foreach (GameObject obj in activeUnactiveObject)
                 {
                     obj.SetActive(false);
@@ -26,7 +29,10 @@ namespace GameLogic
             }
             else if (!checkerObject1.activeSelf || !checkerObject2.activeSelf)
             {
-                activeObject.SetActive(false);
+                foreach (GameObject obj in activeObject)
+                {
+                    obj.SetActive(false);
+                }
                 foreach (GameObject obj in activeUnactiveObject)
                 {
                     obj.SetActive(true);

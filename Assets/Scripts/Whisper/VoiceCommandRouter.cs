@@ -47,7 +47,7 @@ namespace Whisper
                     Debug.Log($"Prayer not recognized or incorrect. Got: '{text}'");
                     // Optional: You could show feedback to player here
                 }
-                
+
             }
         }
 

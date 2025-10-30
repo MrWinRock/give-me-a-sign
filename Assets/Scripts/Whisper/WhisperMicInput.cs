@@ -22,7 +22,18 @@ namespace Whisper
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
+        public SignRequestSystem signRequestSystem; // New: Reference to sign request system
         public PrayUiManager prayUiManager; // Reference to prayer system
+
+        [Header("Audio")]
+        public AudioSource keyDownAudioSource; // AudioSource that plays when spacebar is pressed down
+        public AudioSource keyHoldAudioSource; // AudioSource that plays continuously while spacebar is held
+        public AudioSource keyUpAudioSource; // AudioSource that plays when spacebar is released
+        
+        [Header("Audio Settings")]
+        [Range(0f, 1f)] public float audioVolume = 1f; // Master volume for all spacebar audio
+        public bool enableAudioFeedback = true; // Toggle to enable/disable audio feedback
+        public float holdAudioDelay = 0.1f; // Delay before hold audio starts playing
 
         [Header("Optional (auto-created if null)")]
         public WhisperManager whisperManager;
@@ -38,6 +49,10 @@ namespace Whisper
         [SerializeField] private float dispatchCooldownSec = 0.7f; // debounce routing for early updates
 
         private CancellationTokenSource _cts;
+        private bool _isSpaceHeld;
+        private bool _isHoldAudioPlaying;
+        private float _holdAudioStartTime;
+        private bool _lastSpaceState;
 
         private async void Start()
         {
@@ -45,6 +60,14 @@ namespace Whisper
             {
                 Debug.LogWarning("VoiceCommandRouter not assigned");
             }
+
+            if (signRequestSystem == null)
+            {
+                Debug.LogWarning("SignRequestSystem not assigned");
+            }
+
+            // Validate audio setup
+            ValidateAudioSetup();
 
             // Ensure WhisperManager exists; create on inactive GO so we can set ModelPath before Awake
             if (whisperManager == null)
@@ -265,44 +288,58 @@ namespace Whisper
 
         private void Update()
         {
-            // Only work when PrayPanel is active
-            if (!IsPrayPanelActive())
-            {
-                // Auto-stop listening if PrayPanel becomes inactive
-                if (_isListening)
-                {
-                    StopListening();
-                }
-                
-                // Drain recognized texts on main thread and route
-                while (_pendingRoutes.TryDequeue(out var text))
-                {
-                    var trimmed = (text ?? string.Empty).Trim();
-                    if (!string.IsNullOrEmpty(trimmed))
-                    {
-                        try { router?.Route(trimmed); }
-                        catch (InvalidOperationException e) { Debug.LogException(e, this); }
-                        catch (ArgumentException e) { Debug.LogException(e, this); }
-                        catch (Exception e) { Debug.LogException(e, this); throw; }
-                    }
-                }
-                return;
-            }
-
             // Check spacebar input
             bool spacePressed = false;
             bool spaceReleased = false;
+            bool spaceHeld = false;
             
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null)
             {
                 spacePressed = Keyboard.current.spaceKey.wasPressedThisFrame;
                 spaceReleased = Keyboard.current.spaceKey.wasReleasedThisFrame;
+                spaceHeld = Keyboard.current.spaceKey.isPressed;
             }
 #else
             spacePressed = Input.GetKeyDown(KeyCode.Space);
             spaceReleased = Input.GetKeyUp(KeyCode.Space);
+            spaceHeld = Input.GetKey(KeyCode.Space);
 #endif
+
+            // Handle spacebar audio with improved state management
+            if (enableAudioFeedback)
+            {
+                // Key down event
+                if (spacePressed && !_lastSpaceState)
+                {
+                    _isSpaceHeld = true;
+                    _holdAudioStartTime = Time.time;
+                    PlayKeyDownAudio();
+                    Debug.Log("[Audio] Spacebar pressed - playing key down audio");
+                }
+                
+                // Key hold event (with delay)
+                if (spaceHeld && _isSpaceHeld && !_isHoldAudioPlaying)
+                {
+                    if (Time.time >= _holdAudioStartTime + holdAudioDelay)
+                    {
+                        PlayKeyHoldAudio();
+                        Debug.Log("[Audio] Starting hold audio");
+                    }
+                }
+                
+                // Key release event
+                if (spaceReleased && _lastSpaceState)
+                {
+                    _isSpaceHeld = false;
+                    StopKeyHoldAudio();
+                    PlayKeyUpAudio();
+                    Debug.Log("[Audio] Spacebar released - playing key up audio");
+                }
+                
+                // Update last state
+                _lastSpaceState = spaceHeld;
+            }
 
             if (toggleWithSpacebar)
             {
@@ -329,14 +366,27 @@ namespace Whisper
                 }
             }
 
-            // Drain recognized texts on main thread and route
+            // Drain recognized texts on main thread and route to both systems
             while (_pendingRoutes.TryDequeue(out var text))
             {
                 var trimmed = (text ?? string.Empty).Trim();
                 if (!string.IsNullOrEmpty(trimmed))
                 {
-                    try { router?.Route(trimmed); }
-                    catch (Exception e) { Debug.LogException(e, this); }
+                    try 
+                    { 
+                        // Route to prayer system if PrayPanel is active
+                        if (IsPrayPanelActive())
+                        {
+                            router?.Route(trimmed);
+                        }
+                        
+                        // Always route to sign request system
+                        signRequestSystem?.Route(trimmed);
+                    }
+                    catch (Exception e) 
+                    { 
+                        Debug.LogException(e, this); 
+                    }
                 }
             }
         }
@@ -389,10 +439,153 @@ namespace Whisper
                 _pendingRoutes.Enqueue(finalResult.Trim());
         }
 
+        private void PlayKeyDownAudio()
+        {
+            if (keyDownAudioSource != null && keyDownAudioSource.clip != null)
+            {
+                keyDownAudioSource.volume = audioVolume;
+                keyDownAudioSource.Play();
+                Debug.Log("[Audio] Playing key down audio");
+            }
+            else
+            {
+                Debug.LogWarning("[Audio] Key down audio source or clip is null");
+            }
+        }
+
+        private void PlayKeyHoldAudio()
+        {
+            if (keyHoldAudioSource != null && keyHoldAudioSource.clip != null && !_isHoldAudioPlaying)
+            {
+                keyHoldAudioSource.volume = audioVolume;
+                keyHoldAudioSource.loop = true;
+                keyHoldAudioSource.Play();
+                _isHoldAudioPlaying = true;
+                Debug.Log("[Audio] Playing key hold audio (looped)");
+            }
+            else if (keyHoldAudioSource == null || keyHoldAudioSource.clip == null)
+            {
+                Debug.LogWarning("[Audio] Key hold audio source or clip is null");
+            }
+        }
+
+        private void PlayKeyUpAudio()
+        {
+            if (keyUpAudioSource != null && keyUpAudioSource.clip != null)
+            {
+                keyUpAudioSource.volume = audioVolume;
+                keyUpAudioSource.Play();
+                Debug.Log("[Audio] Playing key up audio");
+            }
+            else
+            {
+                Debug.LogWarning("[Audio] Key up audio source or clip is null");
+            }
+        }
+
+        private void StopKeyHoldAudio()
+        {
+            if (keyHoldAudioSource != null && _isHoldAudioPlaying)
+            {
+                keyHoldAudioSource.Stop();
+                keyHoldAudioSource.loop = false;
+                _isHoldAudioPlaying = false;
+                Debug.Log("[Audio] Stopped key hold audio");
+            }
+        }
+
+        private void ValidateAudioSetup()
+        {
+            Debug.Log("[Audio] Validating audio setup...");
+            
+            if (!enableAudioFeedback)
+            {
+                Debug.Log("[Audio] Audio feedback is disabled");
+                return;
+            }
+
+            bool hasIssues = false;
+
+            if (keyDownAudioSource == null)
+            {
+                Debug.LogWarning("[Audio] Key Down Audio Source is not assigned!");
+                hasIssues = true;
+            }
+            else if (keyDownAudioSource.clip == null)
+            {
+                Debug.LogWarning("[Audio] Key Down Audio Source has no audio clip assigned!");
+                hasIssues = true;
+            }
+
+            if (keyHoldAudioSource == null)
+            {
+                Debug.LogWarning("[Audio] Key Hold Audio Source is not assigned!");
+                hasIssues = true;
+            }
+            else if (keyHoldAudioSource.clip == null)
+            {
+                Debug.LogWarning("[Audio] Key Hold Audio Source has no audio clip assigned!");
+                hasIssues = true;
+            }
+
+            if (keyUpAudioSource == null)
+            {
+                Debug.LogWarning("[Audio] Key Up Audio Source is not assigned!");
+                hasIssues = true;
+            }
+            else if (keyUpAudioSource.clip == null)
+            {
+                Debug.LogWarning("[Audio] Key Up Audio Source has no audio clip assigned!");
+                hasIssues = true;
+            }
+
+            if (!hasIssues)
+            {
+                Debug.Log("[Audio] Audio setup validation passed! All AudioSources and clips are assigned.");
+            }
+            else
+            {
+                Debug.LogWarning("[Audio] Audio setup has issues. Please assign AudioSources with audio clips in the Inspector.");
+            }
+        }
+
+        // Public methods for testing audio (can be called from Inspector or other scripts)
+        [ContextMenu("Test Key Down Audio")]
+        public void TestKeyDownAudio()
+        {
+            Debug.Log("[Audio Test] Testing Key Down Audio");
+            PlayKeyDownAudio();
+        }
+
+        [ContextMenu("Test Key Hold Audio")]
+        public void TestKeyHoldAudio()
+        {
+            Debug.Log("[Audio Test] Testing Key Hold Audio");
+            StopKeyHoldAudio(); // Stop first in case it's already playing
+            PlayKeyHoldAudio();
+        }
+
+        [ContextMenu("Test Key Up Audio")]
+        public void TestKeyUpAudio()
+        {
+            Debug.Log("[Audio Test] Testing Key Up Audio");
+            PlayKeyUpAudio();
+        }
+
+        [ContextMenu("Stop All Audio")]
+        public void StopAllAudio()
+        {
+            Debug.Log("[Audio Test] Stopping all audio");
+            StopKeyHoldAudio();
+        }
+
         private void OnDestroy()
         {
             try
             {
+                // Stop all audio first
+                StopKeyHoldAudio();
+                
                 _cts?.Cancel();
 
                 if (_stream != null)
