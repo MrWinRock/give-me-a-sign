@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4981656092691350511
+--- !u!1 &593009758373546416
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,39 +8,39 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1540802041383752749}
-  - component: {fileID: 9169255179393860951}
-  - component: {fileID: 7704365657894509980}
+  - component: {fileID: 5238547682038521767}
+  - component: {fileID: 4640814643063063137}
+  - component: {fileID: 4336308198534594129}
   m_Layer: 10
-  m_Name: Anomaly1
+  m_Name: Anomaly2Res1
   m_TagString: Anomaly
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1540802041383752749
+--- !u!4 &5238547682038521767
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4981656092691350511}
+  m_GameObject: {fileID: 593009758373546416}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 36.19, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7405007826198458091}
+  - {fileID: 1216855057534988609}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9169255179393860951
+--- !u!114 &4640814643063063137
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4981656092691350511}
+  m_GameObject: {fileID: 593009758373546416}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b844fe9e006fca04f96ecd69cf516be8, type: 3}
@@ -53,13 +53,19 @@ MonoBehaviour:
   destroyAfterDisappear: 0
   scaleUpAmount: 1.5
   scaleAnimationSpeed: 2
---- !u!70 &7704365657894509980
+  jumpScareAudioSource: {fileID: 0}
+  anomalyAnimator: {fileID: 0}
+  moveTriggerName: StartMove
+  idleTriggerName: Idle
+  animationHelper: {fileID: 0}
+  timeToDisappear: 0
+--- !u!70 &4336308198534594129
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4981656092691350511}
+  m_GameObject: {fileID: 593009758373546416}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -87,10 +93,10 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -5.37, y: -1.44}
-  m_Size: {x: 2.01, y: 2.99}
+  m_Offset: {x: -0.55, y: 0.19}
+  m_Size: {x: 2.55, y: 2.73}
   m_Direction: 0
---- !u!1 &6898085499754169365
+--- !u!1 &701147094271214925
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,8 +104,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7405007826198458091}
-  - component: {fileID: 7482841217151216370}
+  - component: {fileID: 1216855057534988609}
+  - component: {fileID: 1849499856154849028}
   m_Layer: 10
   m_Name: VisualAndTrigger
   m_TagString: Anomaly
@@ -107,28 +113,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7405007826198458091
+--- !u!4 &1216855057534988609
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6898085499754169365}
+  m_GameObject: {fileID: 701147094271214925}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5.37197, y: -1.53, z: 0}
-  m_LocalScale: {x: 0.33709, y: 0.33709, z: 0.33709}
+  m_LocalPosition: {x: -0.53, y: 0.06, z: 0}
+  m_LocalScale: {x: 1.4233044, y: 1.4233044, z: 1.4233044}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1540802041383752749}
+  m_Father: {fileID: 5238547682038521767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &7482841217151216370
+--- !u!212 &1849499856154849028
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6898085499754169365}
+  m_GameObject: {fileID: 701147094271214925}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -169,12 +175,12 @@ SpriteRenderer:
   m_SortingLayerID: 142054089
   m_SortingLayer: 5
   m_SortingOrder: 0
-  m_Sprite: {fileID: 3039984558867858385, guid: 139fc2ef75f410a4aa894ab18049b1b5, type: 3}
+  m_Sprite: {fileID: -4580158403072897189, guid: e221f4843d40a5e46b5cd8464c82fb73, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 2}
+  m_Size: {x: 1.95, y: 1.15}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
