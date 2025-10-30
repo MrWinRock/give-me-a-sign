@@ -60,6 +60,9 @@ TagManager:
   - name: Anamoly
     uniqueID: 142054089
     locked: 0
+  - name: Anamoly2
+    uniqueID: 363268365
+    locked: 0
   - name: LoadUI
     uniqueID: 2838393913
     locked: 0

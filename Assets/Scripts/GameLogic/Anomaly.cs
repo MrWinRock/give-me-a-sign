@@ -31,10 +31,18 @@ namespace GameLogic
         [SerializeField] private float scaleUpAmount = 1.5f; // ขยายเป็น 1.5 เท่า
         [SerializeField] private float scaleAnimationSpeed = 2f; // ความเร็วการขยาย
 
-        [Header("Audio")]
-        [SerializeField] private AudioSource jumpScareAudioSource; // AudioSource สำหรับเสียง anomaly
+        public GameObject cutsceneCheck;
+        
+    [Header("Audio")]
+    [SerializeField] private AudioSource jumpScareAudioSource;
+    [SerializeField] private AudioSource fightAudioSource;// AudioSource สำหรับเสียง anomaly
     
-        private bool _isMoving;
+    [Header("Animation")]
+    [SerializeField] private Animator anomalyAnimator; // Animator component for anomaly animations
+    [SerializeField] private string moveTriggerName = "StartMove"; // Animation trigger name when starting to move
+    [SerializeField] private string idleTriggerName = "Idle"; // Animation trigger name when idle/banished
+    
+    private bool _isMoving;
         private Vector3 _originalScale;
         private bool _canPrayDisappear; // Can disappear with voice prayer
         private PrayUiManager _prayManager;
@@ -47,6 +55,11 @@ namespace GameLogic
         {
             _originalScale = transform.localScale;
             _prayManager = FindObjectOfType<PrayUiManager>();
+            
+            // Get animator component if not assigned
+            if (anomalyAnimator == null)
+                anomalyAnimator = GetComponent<Animator>();
+            
         }
 
         void OnEnable()
@@ -104,6 +117,14 @@ namespace GameLogic
         private IEnumerator MoveToTargetCoroutine(bool disappearAfter)
         {
             _isMoving = true;
+            
+            // Trigger movement animation
+            if (anomalyAnimator != null && !string.IsNullOrEmpty(moveTriggerName))
+            {
+                anomalyAnimator.SetTrigger(moveTriggerName);
+                Debug.Log($"Triggered animation: {moveTriggerName} for anomaly {name}");
+            }
+            
         
             // Enable prayer disappearing only for MoveToTargetThenDisappear type
             if (respondType == RespondType.MoveToTargetThenDisappear)
@@ -114,6 +135,8 @@ namespace GameLogic
                 {
                     _prayManager.ShowPrayPanel();
                     jumpScareAudioSource.Play();
+                    yield return new WaitForSeconds(0.2f);
+                    fightAudioSource.Play();
                 }
             }
         
@@ -147,11 +170,19 @@ namespace GameLogic
                         yield return null;
                     }
                 
-                    // Double check: If canPrayDisappear is still true and object is still active, reload scene
+                    // Double check: If canPrayDisappear is still true and object is still active, load SampleScene (player loses)
                     if (_canPrayDisappear && gameObject.activeInHierarchy)
                     {
-                        Debug.Log($"Anomaly {name} timeout reached. Reloading scene...");
-                        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                        Debug.Log($"Anomaly {name} timeout reached. Player loses - loading SampleScene...");
+                        
+                        // Save loss data regardless of current score
+                        PlayerPrefs.SetInt("FinalScore", 0); // Set score to 0 for loss
+                        PlayerPrefs.SetInt("GameWon", 0); // Mark as loss
+                        PlayerPrefs.SetInt("WinThreshold", 1); // Doesn't matter for loss
+                        PlayerPrefs.SetInt("AnomalyTimeout", 1); // Flag to indicate anomaly timeout
+                        PlayerPrefs.Save();
+                        
+                        // Load SampleScene immediately
                     }
                 }
                 else
@@ -187,6 +218,15 @@ namespace GameLogic
 
         private void HandleDisappear()
         {
+            // Trigger idle/banished animation
+            if (anomalyAnimator != null && !string.IsNullOrEmpty(idleTriggerName))
+            {
+                anomalyAnimator.SetTrigger(idleTriggerName);
+                Debug.Log($"Triggered animation: {idleTriggerName} for anomaly {name} - Banished");
+            }
+            
+            
+            
             // Hide prayer UI
             if (_prayManager != null)
                 _prayManager.HidePrayPanel();
@@ -195,9 +235,15 @@ namespace GameLogic
             OnAnomalyDisappeared?.Invoke(this);
         
             if (destroyAfterDisappear)
-                Destroy(gameObject);
+                Destroy(gameObject, 0.6f); // Delay destruction to allow fade out
             else
-                gameObject.SetActive(false);
+                StartCoroutine(DelayedDeactivate(0.6f));
+        }
+        
+        private System.Collections.IEnumerator DelayedDeactivate(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -214,7 +260,8 @@ namespace GameLogic
             
                 // Stop all coroutines to prevent timeout
                 StopAllCoroutines();
-            
+                
+                fightAudioSource.Stop();
                 // Handle disappearing
                 HandleDisappear();
             }

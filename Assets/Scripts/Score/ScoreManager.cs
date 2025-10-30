@@ -127,8 +127,11 @@ namespace Score
             // Initialize UI
             UpdateUI();
         
-            // Clear any previous score data
-            ClearSavedData();
+        // Clear any previous score data
+        ClearSavedData();
+        
+        // Explicitly clear anomaly timeout flag to ensure clean game start
+        PlayerPrefs.DeleteKey("AnomalyTimeout");
         
             if (showDebugInfo)
             {
@@ -258,7 +261,22 @@ namespace Score
         private void OnNightEnded()
         {
             if (_gameEnded) return;
-        
+            
+            // Check if an anomaly timeout occurred - if so, don't process normal game end
+            if (PlayerPrefs.GetInt("AnomalyTimeout", 0) == 1)
+            {
+                if (showDebugInfo)
+                {
+                    Debug.Log("ScoreManager: Anomaly timeout detected, skipping normal game end");
+                }
+                return;
+            }
+
+            if (showDebugInfo)
+            {
+                Debug.Log("ScoreManager: Normal night end detected, processing game end");
+            }
+            
             EndGame();
         }
     
@@ -290,6 +308,10 @@ namespace Score
             PlayerPrefs.SetInt("FinalScore", _currentScore);
             PlayerPrefs.SetInt("GameWon", gameWon ? 1 : 0);
             PlayerPrefs.SetInt("WinThreshold", winThreshold);
+            
+            // Ensure anomaly timeout flag is cleared for normal game endings
+            PlayerPrefs.DeleteKey("AnomalyTimeout");
+            
             PlayerPrefs.Save();
         
             if (showDebugInfo)
@@ -303,6 +325,7 @@ namespace Score
             PlayerPrefs.DeleteKey("FinalScore");
             PlayerPrefs.DeleteKey("GameWon");
             PlayerPrefs.DeleteKey("WinThreshold");
+            PlayerPrefs.DeleteKey("AnomalyTimeout"); // Clear anomaly timeout flag to prevent persistent state
         }
     
         private void LoadResultScene()
@@ -369,6 +392,15 @@ namespace Score
             _currentScore = winThreshold;
             UpdateUI();
             Debug.Log($"Score set to win threshold: {_currentScore}");
+        }
+        
+        [ContextMenu("Test Normal Lose Condition")]
+        public void TestNormalLoseCondition()
+        {
+            _currentScore = winThreshold - 1; // Set score below threshold
+            PlayerPrefs.DeleteKey("AnomalyTimeout"); // Ensure no anomaly timeout flag
+            ForceEndGame();
+            Debug.Log($"Testing normal lose: Score={_currentScore}, Threshold={winThreshold}");
         }
     
         [ContextMenu("Force End Game")]
