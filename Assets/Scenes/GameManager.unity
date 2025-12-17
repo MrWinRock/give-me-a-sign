@@ -7832,7 +7832,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
   pointsPerAnomaly: 1
-  winThreshold: 3
+  winThreshold: 9
   scoreText: {fileID: 1634673021}
   thresholdText: {fileID: 0}
   nightTimer: {fileID: 357971565}
