@@ -403,7 +403,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &115135440
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5149,7 +5149,7 @@ MonoBehaviour:
   windowSec: 2.5
   hopSec: 0.8
   deviceName: 
-  modelPath: Models/ggml-medium.en.bin
+  modelPath: Models/ggml-small.en.bin
   modelPathInStreamingAssets: 1
   toggleWithSpacebar: 1
   holdToTalk: 1
@@ -7832,7 +7832,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
   pointsPerAnomaly: 1
-  winThreshold: 3
+  winThreshold: 9
   scoreText: {fileID: 1634673021}
   thresholdText: {fileID: 0}
   nightTimer: {fileID: 357971565}
@@ -8439,13 +8439,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4500910773117000549, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
+      propertyPath: timeToDisappear
+      value: 30
+      objectReference: {fileID: 0}
     - target: {fileID: 6530810648022567755, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
       propertyPath: m_Name
       value: Anomaly1Res2
       objectReference: {fileID: 0}
     - target: {fileID: 6530810648022567755, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
