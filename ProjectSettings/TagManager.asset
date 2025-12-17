@@ -2,8 +2,12 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
-  tags: []
+  serializedVersion: 3
+  tags:
+  - Backgound
+  - Cancel
+  - Anomaly
+  - LocationBackgound
   layers:
   - Default
   - TransparentFX
@@ -11,18 +15,18 @@ TagManager:
   - 
   - Water
   - UI
+  - LocationBackgound
+  - TvBackgound
+  - DarknessOverlay
+  - Spotlight
+  - Anamoly
+  - LoadUI
+  - 
+  - RecBackgound
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Cancel
   - 
   - 
   - 
@@ -41,3 +45,32 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: TVBackgound
+    uniqueID: 4160272803
+    locked: 0
+  - name: LocationBackgound
+    uniqueID: 1038784771
+    locked: 0
+  - name: DarknessOverlay
+    uniqueID: 1245708193
+    locked: 0
+  - name: Spotlight
+    uniqueID: 1519287591
+    locked: 0
+  - name: Anamoly
+    uniqueID: 142054089
+    locked: 0
+  - name: Anamoly2
+    uniqueID: 363268365
+    locked: 0
+  - name: LoadUI
+    uniqueID: 2838393913
+    locked: 0
+  - name: Ui
+    uniqueID: 3619882145
+    locked: 0
+  - name: RecBackgound
+    uniqueID: 2257190473
+    locked: 0
+  m_RenderingLayers:
+  - Default
