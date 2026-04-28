@@ -15,8 +15,8 @@ namespace Whisper
         public float windowSec = 2.5f;          // target segment length
         public float hopSec = 0.8f;             // step size between updates
         public string deviceName;        // null = default mic
-        public string modelPath = @"C:\Users\UsEr\Desktop\give-me-a-sign\Assets\StreamingAssets\Models\ggml-small.en.bin"; // absolute path requested by user
-        public bool modelPathInStreamingAssets; // treat modelPath as an absolute path, not relative to StreamingAssets
+        public string modelPath = "Models/ggml-tiny.bin"; // path relative to StreamingAssets when enabled
+        public bool modelPathInStreamingAssets = true; // treat modelPath as relative to StreamingAssets
         public bool toggleWithSpacebar = true;  // press Space to start/stop listening
         public bool holdToTalk = true;          // if true, hold spacebar to talk; if false, toggle mode
 
@@ -78,7 +78,7 @@ namespace Whisper
                 _createdWhisperManager = true;
 
                 // Configure before Awake/InitModel
-                var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-small.bin" : modelPath;
+                var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-tiny.bin" : modelPath;
                 if (modelPathInStreamingAssets && !string.IsNullOrEmpty(desiredModel))
                 {
                     desiredModel = NormalizeModelPath(desiredModel);
@@ -89,7 +89,7 @@ namespace Whisper
                     whisperManager.ModelPath = desiredModel; // safe: not loaded yet
 
                     // Auto-detect language (Thai/English)
-                    whisperManager.language = "th";
+                    whisperManager.language = "en";
                     whisperManager.translateToEnglish = false;
 
                     // Lower latency streaming settings
@@ -124,7 +124,7 @@ namespace Whisper
                 {
                     if (!whisperManager.IsLoaded && !whisperManager.IsLoading)
                     {
-                        var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-base.bin" : modelPath;
+                        var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-tiny.bin" : modelPath;
                         if (modelPathInStreamingAssets && !string.IsNullOrEmpty(desiredModel))
                         {
                             desiredModel = NormalizeModelPath(desiredModel);
@@ -620,3 +620,4 @@ namespace Whisper
         }
     }
 }
+

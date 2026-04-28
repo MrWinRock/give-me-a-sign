@@ -190,6 +190,11 @@ namespace Whisper
 
                 var context = CreateContextParams();
                 _whisper = await WhisperWrapper.InitFromFileAsync(path, context);
+                if (_whisper == null)
+                {
+                    LogUtils.Error($"Whisper model failed to load from {path}");
+                    return;
+                }
                 _params = WhisperParams.GetDefaultParams(strategy);
                 UpdateParams();
                 
@@ -200,8 +205,10 @@ namespace Whisper
             {
                 LogUtils.Exception(e);
             }
-
-            IsLoading = false;
+            finally
+            {
+                IsLoading = false;
+            }
         }
         
         /// <summary>

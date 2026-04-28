@@ -103,3 +103,5 @@ InitTestScene*.unity*
 .idea/
 
 *.bin
+*.bin.meta
+CLAUDE.md
