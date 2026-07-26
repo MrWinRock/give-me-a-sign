@@ -12,8 +12,12 @@ namespace GameLogic
         public GameObject cameraObjects;
 
         [Header("GameObj")] public GameObject screen;
-    
+
         [Header("Audio")] public AudioSource audioSource;
+
+        [Header("Input Lock")]
+        [Tooltip("When true, camera switching is paused (e.g. while an Incident Report window is open).")]
+        public bool inputLocked;
 
         // Update is called once per frame
         void Update()
@@ -42,6 +46,8 @@ namespace GameLogic
     
         public void OnNextClick()
         {
+            if (inputLocked) return;
+
             screen.SetActive(true);
             audioSource.Play();
             if (_currentBackgroundIndex == 2)
@@ -54,6 +60,8 @@ namespace GameLogic
     
         public void OnPreviousClick()
         {
+            if (inputLocked) return;
+
             screen.SetActive(true);
             audioSource.Play();
             if (_currentBackgroundIndex == 0)

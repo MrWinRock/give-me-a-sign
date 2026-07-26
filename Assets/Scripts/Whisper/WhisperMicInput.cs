@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using Pray;
+using Report;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Whisper.Utils;
@@ -24,6 +25,7 @@ namespace Whisper
         public VoiceCommandRouter router;
         public SignRequestSystem signRequestSystem; // New: Reference to sign request system
         public PrayUiManager prayUiManager; // Reference to prayer system
+        public IncidentReportManager incidentReportManager; // Reference to Incident Report push-to-talk field
 
         [Header("Audio")]
         public AudioSource keyDownAudioSource; // AudioSource that plays when spacebar is pressed down
@@ -262,6 +264,15 @@ namespace Whisper
                 Debug.Log("[Voice] Listening started (Spacebar to stop)");
         }
 
+        /// <summary>
+        /// Explicit push-to-talk entry point for UI-driven mic capture (e.g. the Incident Report
+        /// window's "Hold to Speak" button), independent of the Spacebar hold-to-talk flow.
+        /// </summary>
+        public void BeginPushToTalk() => StartListening();
+
+        /// <summary>Counterpart to BeginPushToTalk(); call when the UI button is released.</summary>
+        public void EndPushToTalk() => StopListening();
+
         private void StopListening()
         {
             if (!_isListening)
@@ -379,7 +390,13 @@ namespace Whisper
                         {
                             router?.Route(trimmed);
                         }
-                        
+
+                        // Route to Incident Report system while its report window is open
+                        if (IsIncidentReportActive())
+                        {
+                            incidentReportManager?.Route(trimmed);
+                        }
+
                         // Always route to sign request system
                         signRequestSystem?.Route(trimmed);
                     }
@@ -395,6 +412,12 @@ namespace Whisper
         {
             if (prayUiManager == null) return false;
             return prayUiManager.gameObject.activeInHierarchy && prayUiManager.IsPrayPanelActive();
+        }
+
+        private bool IsIncidentReportActive()
+        {
+            if (incidentReportManager == null) return false;
+            return incidentReportManager.gameObject.activeInHierarchy && incidentReportManager.IsReportOpen;
         }
 
         private void OnStreamSegmentUpdated(WhisperResult segment)

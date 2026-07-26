@@ -1,4 +1,5 @@
 using GameLogic;
+using Report;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem; // New Input System
@@ -82,7 +83,9 @@ namespace Player.Click
         if (anomalyHit.HasValue)
         {
             infoText.text = "Anomaly Detect!";
-            anomalyHit.Value.collider.GetComponent<Anomaly>()?.Respond();
+            var anomaly = anomalyHit.Value.collider.GetComponent<Anomaly>();
+            if (anomaly != null)
+                IncidentReportManager.Instance?.OpenReport(anomaly);
         }
         else if (backgroundHit.HasValue)
         {

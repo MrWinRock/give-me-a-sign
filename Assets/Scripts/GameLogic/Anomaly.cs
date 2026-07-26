@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Pray;
+using Report;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -32,7 +33,13 @@ namespace GameLogic
         [SerializeField] private float scaleAnimationSpeed = 2f; // ความเร็วการขยาย
 
         public GameObject cutsceneCheck;
-        
+
+    [Header("Incident Report Data")]
+    [Tooltip("Room name that must be selected on the Incident Report form for this anomaly (e.g. \"Kitchen\").")]
+    public string correctLocationName;
+    [Tooltip("Anomaly type keyword the player must speak into the Push-to-Talk mic (e.g. \"Shadow Figure\").")]
+    public string correctAnomalyType;
+
     [Header("Audio")]
     [SerializeField] private AudioSource jumpScareAudioSource;
     [SerializeField] private AudioSource fightAudioSource;// AudioSource สำหรับเสียง anomaly
@@ -50,6 +57,12 @@ namespace GameLogic
     
         // Event fired when anomaly disappears (for scoring system)
         public System.Action<Anomaly> OnAnomalyDisappeared;
+
+        private bool _isReported;
+        /// <summary>True once an Incident Report has been opened for this anomaly (prevents duplicate reports).</summary>
+        public bool IsReported => _isReported;
+
+        private bool _alertRaised; // tracks whether THIS anomaly incremented IncidentReportManager's alert counter
 
         void Start()
         {
@@ -81,6 +94,14 @@ namespace GameLogic
         {
             // Remove this anomaly from the active list when destroyed
             _activeAnomalies.Remove(this);
+
+            // Safety net: if this anomaly is destroyed mid-jumpscare, don't leave the
+            // Incident Report window's ALERT badge stuck on.
+            if (_alertRaised)
+            {
+                _alertRaised = false;
+                IncidentReportManager.Instance?.SetAlert(false);
+            }
         }
 
         public void Respond()
@@ -135,6 +156,10 @@ namespace GameLogic
                 {
                     _prayManager.ShowPrayPanel();
                     jumpScareAudioSource.Play();
+
+                    _alertRaised = true;
+                    IncidentReportManager.Instance?.SetAlert(true);
+
                     yield return new WaitForSeconds(0.2f);
                     fightAudioSource.Play();
                 }
@@ -231,7 +256,13 @@ namespace GameLogic
             // Hide prayer UI
             if (_prayManager != null)
                 _prayManager.HidePrayPanel();
-            
+
+            if (_alertRaised)
+            {
+                _alertRaised = false;
+                IncidentReportManager.Instance?.SetAlert(false);
+            }
+
             // Fire event before disappearing (for scoring system)
             OnAnomalyDisappeared?.Invoke(this);
         
@@ -274,6 +305,34 @@ namespace GameLogic
         public bool CanBePrayerBanished()
         {
             return _canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear;
+        }
+
+        /// <summary>
+        /// Called by IncidentReportManager as soon as the report form is opened for this anomaly,
+        /// so a second click can't open another report while one is pending or resolved.
+        /// </summary>
+        public void MarkReported()
+        {
+            _isReported = true;
+        }
+
+        /// <summary>
+        /// Called by IncidentReportManager when a report is cancelled, so the anomaly can be
+        /// clicked and reported again later instead of being permanently un-clickable.
+        /// </summary>
+        public void ClearReportedFlag()
+        {
+            _isReported = false;
+        }
+
+        /// <summary>
+        /// Called by IncidentReportManager when the submitted report correctly matches this anomaly.
+        /// Resolves it immediately, the same way a successful prayer banishment does.
+        /// </summary>
+        public void ResolveByReport()
+        {
+            StopAllCoroutines();
+            HandleDisappear();
         }
     }
 }
