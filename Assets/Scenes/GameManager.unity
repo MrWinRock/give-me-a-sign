@@ -5950,18 +5950,10 @@ MonoBehaviour:
   deviceName: 
   modelPath: Models/ggml-tiny.bin
   modelPathInStreamingAssets: 1
-  toggleWithSpacebar: 1
-  holdToTalk: 1
   router: {fileID: 1349133151}
   signRequestSystem: {fileID: 0}
   prayUiManager: {fileID: 894996012}
-  incidentReportManager: {fileID: 0}
-  keyDownAudioSource: {fileID: 1901644731}
-  keyHoldAudioSource: {fileID: 843168413}
-  keyUpAudioSource: {fileID: 1901644731}
-  audioVolume: 0.4
-  enableAudioFeedback: 1
-  holdAudioDelay: 0.1
+  incidentReportManager: {fileID: 4205114680779514433}
   whisperManager: {fileID: 0}
   microphone: {fileID: 0}
   dispatchCooldownSec: 0.7
@@ -13100,8 +13092,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Report.IncidentReportManager
   reportUI: {fileID: 8961337721259775210}
-  gameManager: {fileID: 0}
-  autoFindReferences: 1
+  gameManager: {fileID: 992714567}
+  autoFindReferences: 0
   roomNames:
   - Hallway
   - Kitchen
@@ -15764,6 +15756,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4640814643063063137, guid: fc600ebed8dac46498a52df7bbb8107d, type: 3}
+      propertyPath: correctLocationName
+      value: Hallway
+      objectReference: {fileID: 0}
     - target: {fileID: 5238547682038521767, guid: fc600ebed8dac46498a52df7bbb8107d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 36.19
@@ -17751,6 +17747,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1958714910}
     m_Modifications:
+    - target: {fileID: 1980627741931243573, guid: 7797a06ca3a1c134eb1c3a5a5c102a3c, type: 3}
+      propertyPath: correctLocationName
+      value: Hallway
+      objectReference: {fileID: 0}
     - target: {fileID: 7278711306125879349, guid: 7797a06ca3a1c134eb1c3a5a5c102a3c, type: 3}
       propertyPath: m_Name
       value: Anomaly3Res1
@@ -17975,7 +17975,7 @@ MonoBehaviour:
   errorColor: {r: 0.8, g: 0.4, b: 0, a: 1}
   alertColor: {r: 0.8, g: 0, b: 0, a: 1}
   recordingDotPulseSpeed: 6
-  whisperMicInput: {fileID: 0}
+  whisperMicInput: {fileID: 1349133150}
 --- !u!114 &8990920112085877578
 MonoBehaviour:
   m_ObjectHideFlags: 0

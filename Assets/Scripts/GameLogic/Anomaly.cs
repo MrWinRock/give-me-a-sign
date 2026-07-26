@@ -36,8 +36,10 @@ namespace GameLogic
 
     [Header("Incident Report Data")]
     [Tooltip("Room name that must be selected on the Incident Report form for this anomaly (e.g. \"Kitchen\").")]
+    [AnomalyOption(AnomalyOptionAttribute.OptionKind.Location)]
     public string correctLocationName;
     [Tooltip("Anomaly type keyword the player must speak into the Push-to-Talk mic (e.g. \"Shadow Figure\").")]
+    [AnomalyOption(AnomalyOptionAttribute.OptionKind.AnomalyType)]
     public string correctAnomalyType;
 
     [Header("Audio")]

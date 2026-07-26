@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GameLogic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Report
 {
@@ -80,6 +81,43 @@ namespace Report
 
             reportUI.Initialize(this, roomNames);
             reportUI.Hide();
+        }
+
+        void Update()
+        {
+            if (IsReportOpen) return;
+
+            bool spacePressed;
+#if ENABLE_INPUT_SYSTEM
+            spacePressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+#else
+            spacePressed = Input.GetKeyDown(KeyCode.Space);
+#endif
+            if (spacePressed)
+                TryOpenReportViaSpacebar();
+        }
+
+        /// <summary>
+        /// Spacebar replaces click-to-resolve entirely: it opens the Incident Report window for
+        /// whichever spawned anomaly hasn't been reported yet. It intentionally does NOT require
+        /// the anomaly to already be mid-jumpscare (that was too narrow a gate - most anomalies
+        /// sit idle/detected long before they ever reach that state, so Spacebar would silently
+        /// do nothing). The anomaly only disappears afterwards if the submitted report is correct
+        /// (ResolveByReport) - Spacebar itself never resolves or removes anything.
+        /// </summary>
+        private void TryOpenReportViaSpacebar()
+        {
+            foreach (var anomaly in Anomaly.ActiveAnomalies)
+            {
+                if (anomaly != null && anomaly.gameObject.activeInHierarchy && !anomaly.IsReported)
+                {
+                    OpenReport(anomaly);
+                    return;
+                }
+            }
+
+            if (showDebugInfo)
+                Debug.Log("IncidentReportManager: Spacebar pressed but no un-reported anomaly is currently active.");
         }
 
         /// <summary>

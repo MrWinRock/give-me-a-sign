@@ -37,6 +37,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1152891411780253365
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -82,6 +83,7 @@ SpriteRenderer:
   m_SortingLayerID: 363268365
   m_SortingLayer: 6
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 4839220238076348481, guid: c68f9c868c30e0b45886823c47adca15, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -91,7 +93,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &4500910773117000549
 MonoBehaviour:
@@ -113,12 +114,13 @@ MonoBehaviour:
   scaleUpAmount: 1
   scaleAnimationSpeed: 30
   cutsceneCheck: {fileID: 0}
+  correctLocationName: 
+  correctAnomalyType: Shadow
   jumpScareAudioSource: {fileID: 6614034218440359249}
   fightAudioSource: {fileID: 1068237797386816738}
   anomalyAnimator: {fileID: 0}
   moveTriggerName: StartMove
   idleTriggerName: Idle
-  animationHelper: {fileID: 0}
   timeToDisappear: 30
 --- !u!70 &2698825523641014918
 CapsuleCollider2D:
