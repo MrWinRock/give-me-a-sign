@@ -110,13 +110,21 @@ namespace GiveMeASign.EditorTools
             menuBarOutline.effectColor = BorderColor;
             var menuBarLayout = menuBar.AddComponent<HorizontalLayoutGroup>();
             menuBarLayout.padding = new RectOffset(6, 6, 2, 2);
-            menuBarLayout.spacing = 14;
+            menuBarLayout.spacing = 12;
             menuBarLayout.childAlignment = TextAnchor.MiddleLeft;
             menuBarLayout.childForceExpandWidth = false;
             menuBarLayout.childForceExpandHeight = true;
+            menuBarLayout.childControlWidth = true;
+            menuBarLayout.childControlHeight = false;
 
+            // Fixed, small preferred widths - without this each item keeps AddText's 100px
+            // default box, so 4 items + spacing/padding (~454px) overflows past the window's
+            // right edge (this is what pushed "Help" outside the titlebar).
             foreach (var label in new[] { "File", "Edit", "View", "Help" })
-                AddText(menuBar.transform, label + "Item", label, 14, FontStyles.Normal, Color.black, TextAlignmentOptions.MidlineLeft);
+            {
+                var menuItem = AddText(menuBar.transform, label + "Item", label, 14, FontStyles.Normal, Color.black, TextAlignmentOptions.MidlineLeft);
+                AddLayoutElement(menuItem.gameObject, 0, 38);
+            }
 
             // ---------- Body ----------
             var body = NewUI("Body", content.transform, Vector2.zero);
