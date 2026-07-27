@@ -59,23 +59,35 @@ namespace GameLogic.SpawnAndTime
         private void UpdateTimeDisplay()
         {
             if (timeDisplayText == null) return;
-        
+
             // Map real time (0 to totalDuration) to game time (0:00 to 6:00)
             float gameTime = Mathf.Lerp(0f, 6f, _currentTime / _totalNightDuration);
-        
-            // Convert to hours and minutes
-            int hours = Mathf.FloorToInt(gameTime);
-            int minutes = Mathf.FloorToInt((gameTime - hours) * 60f);
-        
-            // Format as HH:MM
-            string timeString = string.Format("{0}:{1:00} AM", hours, minutes);
+            string timeString = FormatGameTime(gameTime, includeSeconds: false);
             timeDisplayText.text = timeString;
-        
+
             // Debug info
             if (showDebugInfo)
             {
                 Debug.Log($"Real Time: {_currentTime:F1}s / {_totalNightDuration:F1}s | Game Time: {timeString}");
             }
+        }
+
+        /// <summary>
+        /// Formats a game-time value (0-6 hours) the same way this timer's own on-screen clock
+        /// does, so any other UI reading from GetGameTimeHours() (e.g. the Incident Report
+        /// window) renders identically and can never drift out of sync with the main HUD clock.
+        /// </summary>
+        public static string FormatGameTime(float gameTimeHours, bool includeSeconds = true)
+        {
+            int hours = Mathf.FloorToInt(gameTimeHours);
+            float minutesFloat = (gameTimeHours - hours) * 60f;
+            int minutes = Mathf.FloorToInt(minutesFloat);
+
+            if (!includeSeconds)
+                return $"{hours}:{minutes:00} AM";
+
+            int seconds = Mathf.FloorToInt((minutesFloat - minutes) * 60f);
+            return $"{hours}:{minutes:00}:{seconds:00} AM";
         }
     
         private void EndNight()

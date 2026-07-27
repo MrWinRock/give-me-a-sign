@@ -41,8 +41,9 @@ namespace Report
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
-        // Randomized once per session so case numbers don't always start at the same value; increments by 1 per report after that.
-        private static int _nextCaseNumber = -1;
+        // Starts at #0001 and only advances once the player actually submits a report (see
+        // SubmitReport) - opening/cancelling a report never consumes a case number.
+        private static int _nextCaseNumber = 1;
 
         private Anomaly _currentAnomaly;
         private string _recognizedKeyword = "";
@@ -55,9 +56,6 @@ namespace Report
             if (Instance == null)
             {
                 Instance = this;
-
-                if (_nextCaseNumber < 0)
-                    _nextCaseNumber = UnityEngine.Random.Range(1000, 9000);
             }
             else
             {
@@ -85,20 +83,35 @@ namespace Report
 
         void Update()
         {
-            if (IsReportOpen) return;
-
             bool spacePressed;
 #if ENABLE_INPUT_SYSTEM
             spacePressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
 #else
             spacePressed = Input.GetKeyDown(KeyCode.Space);
 #endif
-            if (spacePressed)
+            if (!spacePressed) return;
+
+            if (showDebugInfo)
+                Debug.Log($"[IncidentReportManager] Spacebar detected. ActiveAnomalies={Anomaly.ActiveAnomalies.Count}, IsReportOpen={IsReportOpen}");
+
+            if (IsReportOpen)
             {
-                if (showDebugInfo)
-                    Debug.Log($"[IncidentReportManager] Spacebar detected. ActiveAnomalies={Anomaly.ActiveAnomalies.Count}, IsReportOpen={IsReportOpen}");
+                CloseReportViaSpacebar();
+            }
+            else
+            {
                 TryOpenReportViaSpacebar();
             }
+        }
+
+        /// <summary>
+        /// Pressing Spacebar again while the report window is open closes it (same as Cancel),
+        /// unless the SENT/ERROR result flash is currently showing - that shouldn't be interrupted.
+        /// </summary>
+        private void CloseReportViaSpacebar()
+        {
+            if (reportUI != null && reportUI.IsLocked) return;
+            CancelReport();
         }
 
         /// <summary>
@@ -158,7 +171,9 @@ namespace Report
             if (gameManager != null)
                 gameManager.inputLocked = true;
 
-            int caseNumber = _nextCaseNumber++;
+            // Not incremented here - the same case number is shown again if this report is
+            // cancelled and reopened. It only advances once the player actually submits.
+            int caseNumber = _nextCaseNumber;
             reportUI.Show(caseNumber, roomNames);
             reportUI.SetAlertVisual(_activeAlertCount > 0);
 
@@ -236,6 +251,10 @@ namespace Report
                 string target = _currentAnomaly != null ? $"'{_currentAnomaly.name}'" : "(no anomaly attached)";
                 Debug.Log($"IncidentReportManager: Report {outcome} for {target}. Spoken: '{_recognizedKeyword}', Expected: '{_currentAnomaly?.correctAnomalyType}'.");
             }
+
+            // The case number only advances once a report has actually been filed - cancelling
+            // never consumes one.
+            _nextCaseNumber++;
 
             reportUI.ShowResult(success);
             StartCoroutine(FinishReportAfterDelay(success));

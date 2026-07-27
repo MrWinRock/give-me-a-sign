@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GameLogic.SpawnAndTime;
 using TMPro;
 using UIHelpers;
 using UnityEngine;
@@ -37,6 +38,8 @@ namespace Report
         [Header("Info Row")]
         [SerializeField] private TextMeshProUGUI caseValueText;
         [SerializeField] private TextMeshProUGUI timeValueText;
+        [Tooltip("Drives the clock display so it always matches the main HUD's night timer instead of the real-world wall clock. Auto-found in Awake() if left empty.")]
+        [SerializeField] private NightTimer nightTimer;
         [SerializeField] private TextMeshProUGUI officerValueText;
         [SerializeField] private string officerId = "SEC-04";
 
@@ -88,8 +91,14 @@ namespace Report
         private bool _isMaximized;
         private Coroutine _pulseRoutine;
 
+        /// <summary>True while the SENT/ERROR result badge is showing (interactions ignored until Hide()).</summary>
+        public bool IsLocked => _locked;
+
         void Awake()
         {
+            if (nightTimer == null)
+                nightTimer = FindObjectOfType<NightTimer>();
+
             InvokeRepeating(nameof(UpdateClock), 0f, 1f);
         }
 
@@ -135,10 +144,11 @@ namespace Report
 
             if (pttHoldButton != null)
             {
-                pttHoldButton.onPress.RemoveListener(BeginPushToTalk);
-                pttHoldButton.onPress.AddListener(BeginPushToTalk);
-                pttHoldButton.onRelease.RemoveListener(EndPushToTalk);
-                pttHoldButton.onRelease.AddListener(EndPushToTalk);
+                // Press to Speak: each click toggles recording on/off, rather than requiring the
+                // button to be held down. Only the press event is used - release is ignored so a
+                // normal click doesn't immediately stop the recording it just started.
+                pttHoldButton.onPress.RemoveListener(OnPttButtonPressed);
+                pttHoldButton.onPress.AddListener(OnPttButtonPressed);
             }
 
             if (recognizedField != null)
@@ -223,6 +233,16 @@ namespace Report
         {
             _isAlertActive = active;
             RefreshStatusVisual();
+        }
+
+        private void OnPttButtonPressed()
+        {
+            if (_locked) return;
+
+            if (_isRecording)
+                EndPushToTalk();
+            else
+                BeginPushToTalk();
         }
 
         public void BeginPushToTalk()
@@ -310,7 +330,7 @@ namespace Report
                 pttButtonImage.color = recording ? pttPressedColor : pttIdleColor;
 
             if (pttButtonLabel != null)
-                pttButtonLabel.text = recording ? "● Recording..." : "Hold to Speak";
+                pttButtonLabel.text = recording ? "● Recording..." : "Press to Speak";
 
             if (recStatusRow != null)
                 recStatusRow.SetActive(recording);
@@ -339,8 +359,11 @@ namespace Report
 
         private void UpdateClock()
         {
-            if (timeValueText != null)
-                timeValueText.text = System.DateTime.Now.ToString("HH:mm:ss");
+            if (timeValueText == null) return;
+
+            timeValueText.text = nightTimer != null
+                ? NightTimer.FormatGameTime(nightTimer.GetGameTimeHours())
+                : "--:--:--";
         }
 
         private void RefreshStatusVisual()

@@ -1825,8 +1825,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClickManager
   mainCamera: {fileID: 2143901862}
   clickEffectPrefab: {fileID: 2548095194020679492, guid: 82f34ccbde8462942ae505d499c4bf88, type: 3}
-  infoText: {fileID: 1922257012}
-  infoPanel: {fileID: 852930492}
   anomalyTarget: {fileID: 0}
   gameManager: {fileID: 992714567}
   autoFindGameManager: 1
@@ -3360,6 +3358,9 @@ GameObject:
   m_Component:
   - component: {fileID: 990001002}
   - component: {fileID: 4205114680779514433}
+  - component: {fileID: 4205114680779514436}
+  - component: {fileID: 4205114680779514435}
+  - component: {fileID: 4205114680779514434}
   m_Layer: 0
   m_Name: IncidentReportSystem
   m_TagString: Untagged
@@ -11652,7 +11653,7 @@ MonoBehaviour:
     m_Top: 2
     m_Bottom: 2
   m_ChildAlignment: 0
-  m_Spacing: 50
+  m_Spacing: 208.69
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 0
@@ -11768,6 +11769,232 @@ MonoBehaviour:
   matchThreshold: 0.65
   resultDisplayDuration: 0.8
   showDebugInfo: 0
+--- !u!114 &4205114680779514434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990001001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0484bcfe05d2104e8660b8685f9f4d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.GlitchStateSource
+  nightTimer: {fileID: 357971565}
+  consecutiveFailures: 3
+--- !u!114 &4205114680779514435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990001001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2a6bbdfce9e5fe41b4fde67e8fe5b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.GlitchDirector
+  glitchController: {fileID: 4205114680779514436}
+  reportManager: {fileID: 4205114680779514433}
+  autoDetectFormLifecycle: 1
+  stateSourceBehaviour: {fileID: 4205114680779514434}
+  scriptedBeats:
+  - beatName: First doubt
+    glitchType: 3
+    condition: 0
+    conditionValue: 4
+    overrideText: PREVIOUS OFFICER DID NOT REPORT
+    fireOnce: 1
+    delayAfterFormOpen: 1.5
+  - beatName: Not on shift
+    glitchType: 3
+    condition: 0
+    conditionValue: 7
+    overrideText: SEC-04 IS NOT ON SHIFT
+    fireOnce: 1
+    delayAfterFormOpen: 2
+  - beatName: It knows
+    glitchType: 1
+    condition: 2
+    conditionValue: 0
+    overrideText: behind you
+    fireOnce: 1
+    delayAfterFormOpen: 0
+  - beatName: Time breaks
+    glitchType: 4
+    condition: 1
+    conditionValue: 3
+    overrideText: 
+    fireOnce: 1
+    delayAfterFormOpen: 1
+  - beatName: Your room
+    glitchType: 0
+    condition: 0
+    conditionValue: 12
+    overrideText: Your room
+    fireOnce: 1
+    delayAfterFormOpen: 0.5
+  blackouts:
+  - reason: No glitches before report #3
+    condition: 0
+    conditionValue: 3
+    flagName: 
+  - reason: No glitches during the first in-game hour
+    condition: 1
+    conditionValue: 1
+    flagName: 
+  - reason: No glitches while the anomaly is Passive
+    condition: 2
+    conditionValue: 0
+    flagName: 
+  baseChance: 0.35
+  minGlitchesPerSession: 1
+  maxGlitchesPerSession: 2
+  glitchCooldownSeconds: 3
+  ambientFirstDelayRange: {x: 1, y: 4}
+  avoidRepeatingGlitchTypeInSession: 1
+  glitchWeights:
+  - type: 0
+    enabled: 1
+    weight: 0.8
+  - type: 1
+    enabled: 1
+    weight: 1.2
+  - type: 2
+    enabled: 1
+    weight: 1
+  - type: 3
+    enabled: 1
+    weight: 1.3
+  - type: 4
+    enabled: 1
+    weight: 0.9
+  hourMultiplierCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.6
+      inSlope: 0
+      outSlope: 1.1999999
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1.8
+      inSlope: 1.1999999
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  passiveAnomalyMultiplier: 0.8
+  activeAnomalyMultiplier: 1.6
+  failureMultiplierPerFailure: 0.25
+  failureMultiplierCap: 2
+  dwellMultiplier: 1.5
+  dwellThresholdSeconds: 8
+  dwellRerollIntervalSeconds: 4
+  minEffectiveChance: 0.02
+  maxEffectiveChance: 0.85
+  intensityMultiplier: 1
+  forceCleanAfterConsecutiveGlitchedSessions: 3
+  forceMode: 0
+  forceGlitchEveryTime: 0
+  logDirectorDecisions: 0
+--- !u!114 &4205114680779514436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990001001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 524661de0b5a6e642a40c554877d1d40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.FormGlitchController
+  locationDropdown: {fileID: 7631989914261202290}
+  recognizedField: {fileID: 3331691768801609904}
+  caseValueText: {fileID: 5913024809028790717}
+  timeValueText: {fileID: 1009467318359632691}
+  statusText: {fileID: 8247723645833335177}
+  statusBadgeImage: {fileID: 7434125080636671793}
+  statusBadgeText: {fileID: 1551101249943061132}
+  phantomOptionLabels:
+  - Room 0
+  - "\u2014\u2014\u2014"
+  - Basement (2)
+  - Your room
+  - '[REDACTED]'
+  phantomInsertIndex: -1
+  phantomTimeoutSeconds: 14
+  phantomOptionColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  phantomAudio:
+    source: {fileID: 0}
+    clip: {fileID: 0}
+    volume: 1
+  falseRecognitionWords:
+  - behind you
+  - don't look
+  - it's here
+  - help me
+  - look up
+  falseRecognitionDurationRange: {x: 0.6, y: 1.2}
+  falseRecognitionColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
+  falseRecognitionSettleSeconds: 0.5
+  falseRecognitionArmTimeout: 25
+  falseRecognitionAudio:
+    source: {fileID: 0}
+    clip: {fileID: 0}
+    volume: 1
+  caseCorruptionDurationRange: {x: 0.5, y: 1}
+  caseCorruptionLiterals:
+  - '#0000'
+  - '#6666'
+  - '#8888'
+  - '#----'
+  caseRepeatChance: 0.5
+  caseHistoryLimit: 24
+  caseCorruptionColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
+  caseCorruptionAudio:
+    source: {fileID: 0}
+    clip: {fileID: 0}
+    volume: 1
+  statusIntrusionMessages:
+  - SEC-04 IS NOT ON SHIFT
+  - 'SIGNAL ORIGIN: INSIDE'
+  - PREVIOUS OFFICER DID NOT REPORT
+  - WHY ARE YOU STILL HERE
+  statusIntrusionDurationRange: {x: 0.3, y: 0.8}
+  statusIntrusionBadgeLabel: ??????
+  statusIntrusionBadgeColor: {r: 0.35, g: 0, b: 0, a: 1}
+  statusIntrusionTextColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
+  statusIntrusionAudio:
+    source: {fileID: 0}
+    clip: {fileID: 0}
+    volume: 1
+  clockDesyncDurationRange: {x: 1, y: 2}
+  impossibleTimeStrings:
+  - 25:61:99
+  - 00:00:--
+  - 88:88:88
+  - --:--:--
+  - 13:60:61
+  clockRewindSecondsRange: {x: 90, y: 3600}
+  clockFormat: HH:mm:ss
+  clockDesyncColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
+  clockDesyncAudio:
+    source: {fileID: 0}
+    clip: {fileID: 0}
+    volume: 1
+  verboseLogging: 0
 --- !u!114 &4210217477647947920
 MonoBehaviour:
   m_ObjectHideFlags: 0

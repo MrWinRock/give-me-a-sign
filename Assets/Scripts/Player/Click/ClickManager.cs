@@ -1,6 +1,5 @@
 using GameLogic;
 using Report;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem; // New Input System
@@ -11,8 +10,6 @@ namespace Player.Click
 {
     [SerializeField] private Camera mainCamera;
     [SerializeField] private GameObject clickEffectPrefab;
-    [SerializeField] private TextMeshProUGUI infoText;
-    [SerializeField] private GameObject infoPanel;
     [SerializeField] private Transform anomalyTarget; // จุดที่ anomaly จะเคลื่อนมาหา
     [SerializeField] private GameManager gameManager;
     [SerializeField] private bool autoFindGameManager = true;
@@ -84,46 +81,21 @@ namespace Player.Click
             }
         }
         
-        infoPanel.SetActive(true);
         // สร้างเอฟเฟกต์ตรงจุดคลิก
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(mousePos);
         worldPos.z = 0;
         Instantiate(clickEffectPrefab, worldPos, Quaternion.identity);
 
-        // Prioritize Anomaly over other colliders
-        RaycastHit2D? anomalyHit = null;
-        RaycastHit2D? backgroundHit = null;
-        
+        // Anomaly takes priority over any other collider (e.g. the room background) hit at the same point.
         foreach (var hit in hits)
         {
-            Debug.Log($"Hit object: {hit.collider.name} with tag: {hit.collider.tag}");
-            
             if (hit.collider.CompareTag("Anomaly"))
             {
-                anomalyHit = hit;
-                break; // Anomaly has highest priority, stop looking
+                var anomaly = hit.collider.GetComponent<Anomaly>();
+                if (anomaly != null)
+                    IncidentReportManager.Instance?.OpenReport(anomaly);
+                break;
             }
-            else if (hit.collider.CompareTag("LocationBackgound"))
-            {
-                backgroundHit = hit;
-            }
-        }
-
-        // Handle based on priority
-        if (anomalyHit.HasValue)
-        {
-            infoText.text = "Anomaly Detect!";
-            var anomaly = anomalyHit.Value.collider.GetComponent<Anomaly>();
-            if (anomaly != null)
-                IncidentReportManager.Instance?.OpenReport(anomaly);
-        }
-        else if (backgroundHit.HasValue)
-        {
-            infoText.text = "No Anomaly Detect!";
-        }
-        else
-        {
-            infoText.text = "คุณคลิกโดนอย่างอื่น!";
         }
     }
 }
