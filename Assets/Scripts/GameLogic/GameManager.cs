@@ -22,8 +22,6 @@ namespace GameLogic
         // Update is called once per frame
         void Update()
         {
-            Debug.Log(backgrounds.Count);
-            Debug.Log(_currentBackgroundIndex);
             if (_currentBackgroundIndex == 0)
             {
                 Vector3 position = cameraObjects.transform.position;

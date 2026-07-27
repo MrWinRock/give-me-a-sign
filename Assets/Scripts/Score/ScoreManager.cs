@@ -164,7 +164,11 @@ namespace Score
         private void OnAnomalySpawned(GameObject anomaly, AnomalySpawnEntry entry)
         {
             // Subscribe to when this specific anomaly disappears
-            Anomaly anomalyComponent = anomaly.GetComponent<Anomaly>();
+            // NOTE: uses GetComponentInChildren, not GetComponent - the Anomaly component
+            // lives on a child of the spawned prefab root for these prefabs, not the root
+            // itself, so a plain GetComponent<Anomaly>() always returned null here and this
+            // spawn path never got its score-on-disappear subscription wired up.
+            Anomaly anomalyComponent = anomaly.GetComponentInChildren<Anomaly>(true);
             if (anomalyComponent != null)
             {
                 // Subscribe to the anomaly's disappear event

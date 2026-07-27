@@ -94,21 +94,27 @@ namespace Report
             spacePressed = Input.GetKeyDown(KeyCode.Space);
 #endif
             if (spacePressed)
+            {
+                if (showDebugInfo)
+                    Debug.Log($"[IncidentReportManager] Spacebar detected. ActiveAnomalies={Anomaly.ActiveAnomalies.Count}, IsReportOpen={IsReportOpen}");
                 TryOpenReportViaSpacebar();
+            }
         }
 
         /// <summary>
-        /// Spacebar replaces click-to-resolve entirely: it opens the Incident Report window for
-        /// whichever spawned anomaly hasn't been reported yet. It intentionally does NOT require
-        /// the anomaly to already be mid-jumpscare (that was too narrow a gate - most anomalies
-        /// sit idle/detected long before they ever reach that state, so Spacebar would silently
-        /// do nothing). The anomaly only disappears afterwards if the submitted report is correct
-        /// (ResolveByReport) - Spacebar itself never resolves or removes anything.
+        /// Spacebar opens the Incident Report window at any time - it is not gated on an anomaly
+        /// being active. If an un-reported anomaly is currently spawned, the report is linked to it
+        /// (existing behavior: the anomaly only disappears afterwards if the submitted report is
+        /// correct, via ResolveByReport). If nothing is active, a blank report opens instead so the
+        /// player can still bring up the terminal; submitting a blank report always comes back
+        /// ERROR since there is nothing on record to confirm.
         /// </summary>
         private void TryOpenReportViaSpacebar()
         {
             foreach (var anomaly in Anomaly.ActiveAnomalies)
             {
+                if (showDebugInfo)
+                    Debug.Log($"[IncidentReportManager] Candidate anomaly '{anomaly?.name}': active={anomaly?.gameObject.activeInHierarchy}, isReported={anomaly?.IsReported}");
                 if (anomaly != null && anomaly.gameObject.activeInHierarchy && !anomaly.IsReported)
                 {
                     OpenReport(anomaly);
@@ -117,7 +123,8 @@ namespace Report
             }
 
             if (showDebugInfo)
-                Debug.Log("IncidentReportManager: Spacebar pressed but no un-reported anomaly is currently active.");
+                Debug.Log("[IncidentReportManager] Spacebar pressed with no active anomaly - opening blank report.");
+            OpenBlankReport();
         }
 
         /// <summary>
@@ -127,8 +134,24 @@ namespace Report
         {
             if (IsReportOpen || anomaly == null || anomaly.IsReported) return;
 
+            anomaly.MarkReported();
+            OpenReportInternal(anomaly);
+        }
+
+        /// <summary>
+        /// Opens the report window with no anomaly attached, so Spacebar can bring up the terminal
+        /// even when nothing has been detected yet.
+        /// </summary>
+        private void OpenBlankReport()
+        {
+            if (IsReportOpen) return;
+
+            OpenReportInternal(null);
+        }
+
+        private void OpenReportInternal(Anomaly anomaly)
+        {
             _currentAnomaly = anomaly;
-            _currentAnomaly.MarkReported();
             _recognizedKeyword = "";
             IsReportOpen = true;
 
@@ -140,7 +163,11 @@ namespace Report
             reportUI.SetAlertVisual(_activeAlertCount > 0);
 
             if (showDebugInfo)
-                Debug.Log($"IncidentReportManager: Opened report #{caseNumber:D4} for anomaly '{anomaly.name}'.");
+            {
+                Debug.Log(anomaly != null
+                    ? $"IncidentReportManager: Opened report #{caseNumber:D4} for anomaly '{anomaly.name}'."
+                    : $"IncidentReportManager: Opened blank report #{caseNumber:D4} (no anomaly attached).");
+            }
         }
 
         /// <summary>
@@ -190,17 +217,24 @@ namespace Report
         /// </summary>
         public void SubmitReport(string selectedRoom)
         {
-            if (!IsReportOpen || _currentAnomaly == null) return;
+            if (!IsReportOpen) return;
 
-            bool typeMatches = IsKeywordMatch(_recognizedKeyword, _currentAnomaly.correctAnomalyType);
-            bool locationMatches = !requireCorrectLocation ||
-                string.Equals(selectedRoom, _currentAnomaly.correctLocationName, StringComparison.OrdinalIgnoreCase);
-            bool success = typeMatches && locationMatches;
+            // A blank report (opened via Spacebar with no anomaly active) has nothing to confirm
+            // against, so it always comes back as an error rather than throwing on a null anomaly.
+            bool success = false;
+            if (_currentAnomaly != null)
+            {
+                bool typeMatches = IsKeywordMatch(_recognizedKeyword, _currentAnomaly.correctAnomalyType);
+                bool locationMatches = !requireCorrectLocation ||
+                    string.Equals(selectedRoom, _currentAnomaly.correctLocationName, StringComparison.OrdinalIgnoreCase);
+                success = typeMatches && locationMatches;
+            }
 
             if (showDebugInfo)
             {
                 string outcome = success ? "SUCCESS" : "FAILED";
-                Debug.Log($"IncidentReportManager: Report {outcome} for '{_currentAnomaly.name}'. Spoken: '{_recognizedKeyword}', Expected: '{_currentAnomaly.correctAnomalyType}'.");
+                string target = _currentAnomaly != null ? $"'{_currentAnomaly.name}'" : "(no anomaly attached)";
+                Debug.Log($"IncidentReportManager: Report {outcome} for {target}. Spoken: '{_recognizedKeyword}', Expected: '{_currentAnomaly?.correctAnomalyType}'.");
             }
 
             reportUI.ShowResult(success);
