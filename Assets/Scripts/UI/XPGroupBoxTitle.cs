@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace UIHelpers
+namespace UI
 {
     /// <summary>
     /// Classic WinForms GroupBox title "notch": sizes a background panel (colored to match

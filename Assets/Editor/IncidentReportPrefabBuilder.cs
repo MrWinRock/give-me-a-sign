@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Report;
 using TMPro;
-using UIHelpers;
+using UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
 
-namespace UIHelpers
+namespace UI
 {
     /// <summary>
     /// Fires UnityEvents on pointer down / up / exit-while-held. Used for press-and-hold

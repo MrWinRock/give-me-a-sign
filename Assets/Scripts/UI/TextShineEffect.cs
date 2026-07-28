@@ -2,6 +2,8 @@
 using UnityEngine;
 using TMPro;
 
+namespace UI
+{
 public class TextShineEffect : MonoBehaviour
 {
     [Header("Animation Settings")]
@@ -253,4 +255,5 @@ public class TextShineEffect : MonoBehaviour
     {
         StopAnimation();
     }
+}
 }

@@ -1,157 +1,78 @@
-﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Whisper
 {
+    /// <summary>
+    /// Listens for the "Give me a sign" phrase in recognized speech and activates the
+    /// assigned GameObjects when it is heard.
+    /// Word matching lives in <see cref="PhraseMatcher"/>, shared with VoiceCommandRouter.
+    /// </summary>
     public class SignRequestSystem : MonoBehaviour
     {
         [Header("Sign Request Settings")]
-        public GameObject[] signGameObjects; // GameObjects to activate when "Give me a sign" is detected
-        
-        // Sign detection settings
-        [Range(0.3f, 1f)] public float signThreshold = 0.7f; // Lower threshold for sign matching
+        [Tooltip("GameObjects activated when the sign request phrase is detected.")]
+        public GameObject[] signGameObjects;
+
+        [Header("Sign Detection")]
         public string targetSignRequest = "Give me a sign";
-        [Range(1, 5)] public int minimumWordsRequired = 3; // Minimum words that must match
-        
-        // Fuzzy match threshold (0..1). Higher = stricter.
-        [Range(0.5f, 1f)] public float fuzzyThreshold = 0.82f;
-        
-        // Events
-        public Action<bool> OnSignRequested; // true = success, false = failed
+        [Tooltip("How many words of the target phrase must be heard for the request to count.")]
+        [Range(1, 5)] public int minimumWordsRequired = 3;
+        [Tooltip("Per-word fuzzy similarity threshold (1 = exact match only).")]
+        [Range(0.5f, 1f)] public float wordSimilarity = 0.7f;
+
+        [Header("Debug")]
+        [SerializeField] private bool showDebugInfo;
+
+        /// <summary>Fired on every routed phrase: true = sign request detected.</summary>
+        public Action<bool> OnSignRequested;
 
         public void Route(string recognizedText)
         {
             if (string.IsNullOrWhiteSpace(recognizedText)) return;
-            var text = recognizedText.Trim();
 
-            // Check for sign request
+            string text = recognizedText.Trim();
             bool signSuccess = CheckSignMatch(text);
             OnSignRequested?.Invoke(signSuccess);
-            
+
             if (signSuccess)
-            {
-                Debug.Log($"Sign request successful! Recognized: '{text}'");
                 HandleSuccessfulSignRequest();
-            }
-            else
-            {
-                Debug.Log($"Sign request not recognized. Got: '{text}'");
-            }
         }
 
         private bool CheckSignMatch(string recognizedText)
         {
-            if (string.IsNullOrWhiteSpace(recognizedText) || string.IsNullOrWhiteSpace(targetSignRequest))
-                return false;
+            List<string> foundWords = showDebugInfo ? new List<string>() : null;
+            int matchingWords = PhraseMatcher.CountMatchingWords(recognizedText, targetSignRequest, wordSimilarity, foundWords);
+            bool isMatch = matchingWords >= minimumWordsRequired;
 
-            // Split target sign request into words
-            var targetWords = targetSignRequest.ToLowerInvariant()
-                .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-            
-            // Split recognized text into words
-            var recognizedWords = recognizedText.ToLowerInvariant()
-                .Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Count matching words
-            int matchingWords = 0;
-            foreach (var targetWord in targetWords)
+            if (showDebugInfo)
             {
-                // Check if any recognized word matches this target word
-                foreach (var recognizedWord in recognizedWords)
-                {
-                    // Check for exact match or similar match
-                    if (recognizedWord == targetWord || 
-                        recognizedWord.Contains(targetWord) || 
-                        targetWord.Contains(recognizedWord) ||
-                        Similarity(recognizedWord, targetWord) >= 0.7f) // High similarity for individual words
-                    {
-                        matchingWords++;
-                        break; // Found a match for this target word, move to next
-                    }
-                }
+                Debug.Log($"Sign request match: '{recognizedText}' vs '{targetSignRequest}' - " +
+                          $"{matchingWords} words matched (need {minimumWordsRequired}) -> {isMatch}. " +
+                          $"Found: [{string.Join(", ", foundWords)}]");
             }
-
-            bool isMatch = matchingWords >= minimumWordsRequired; // Use configurable minimum words
-
-            Debug.Log($"Sign request word match check: '{recognizedText}' vs target '{targetSignRequest}' - Matching words: {matchingWords}/{targetWords.Length}, Required: {minimumWordsRequired}, Match: {isMatch}");
-            
-            // Also log which words were found
-            var foundWords = new List<string>();
-            foreach (var targetWord in targetWords)
-            {
-                foreach (var recognizedWord in recognizedWords)
-                {
-                    if (recognizedWord == targetWord || 
-                        recognizedWord.Contains(targetWord) || 
-                        targetWord.Contains(recognizedWord) ||
-                        Similarity(recognizedWord, targetWord) >= 0.7f)
-                    {
-                        foundWords.Add(targetWord);
-                        break;
-                    }
-                }
-            }
-            Debug.Log($"Found words: [{string.Join(", ", foundWords)}]");
 
             return isMatch;
         }
 
         private void HandleSuccessfulSignRequest()
         {
-            // Activate all assigned GameObjects
-            if (signGameObjects != null && signGameObjects.Length > 0)
+            if (signGameObjects == null || signGameObjects.Length == 0)
             {
-                foreach (var gameObj in signGameObjects)
-                {
-                    if (gameObj != null)
-                    {
-                        gameObj.SetActive(true);
-                        Debug.Log($"Activated GameObject: {gameObj.name}");
-                    }
-                }
+                if (showDebugInfo)
+                    Debug.Log("SignRequestSystem: no GameObjects assigned to activate.");
+                return;
+            }
+
+            foreach (var gameObj in signGameObjects)
+            {
+                if (gameObj != null)
+                    gameObj.SetActive(true);
+            }
+
+            if (showDebugInfo)
                 Debug.Log($"Sign request handled! Activated {signGameObjects.Length} GameObjects.");
-            }
-            else
-            {
-                Debug.Log("No GameObjects assigned to activate for sign request.");
-            }
-        }
-
-        private static float Similarity(string a, string b)
-        {
-            if (a.Length == 0 && b.Length == 0) return 1f;
-            var dist = Levenshtein(a, b);
-            var maxLen = Mathf.Max(a.Length, b.Length);
-            return 1f - (float)dist / maxLen;
-        }
-
-        // Optimized Levenshtein distance (uses two 1D rows)
-        private static int Levenshtein(string s, string t)
-        {
-            int n = s.Length, m = t.Length;
-            if (n == 0) return m; if (m == 0) return n;
-
-            var prev = new int[m + 1];
-            var curr = new int[m + 1];
-            for (int j = 0; j <= m; j++) prev[j] = j;
-
-            for (int i = 1; i <= n; i++)
-            {
-                curr[0] = i;
-                var si = s[i - 1];
-                for (int j = 1; j <= m; j++)
-                {
-                    var cost = (si == t[j - 1]) ? 0 : 1;
-                    var del = prev[j] + 1;
-                    var ins = curr[j - 1] + 1;
-                    var sub = prev[j - 1] + cost;
-                    curr[j] = Mathf.Min(del, Mathf.Min(ins, sub));
-                }
-                // swap rows
-                var tmp = prev; prev = curr; curr = tmp;
-            }
-            return prev[m];
         }
     }
 }

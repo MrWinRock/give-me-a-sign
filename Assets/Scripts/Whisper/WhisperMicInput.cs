@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using Pray;
 using Report;
 using UnityEngine;
@@ -8,25 +7,46 @@ using Whisper.Utils;
 
 namespace Whisper
 {
+    /// <summary>
+    /// Owns the microphone + Whisper streaming pipeline behind a push-to-talk gate.
+    /// The mic only records (and Whisper only runs) between BeginPushToTalk() and
+    /// EndPushToTalk() - e.g. while the Incident Report window's "Hold to Speak"
+    /// button is held - so speech recognition costs nothing the rest of the time.
+    ///
+    /// Recognized text is queued from the Whisper worker thread and drained on the
+    /// main thread in Update(), then routed to the prayer, incident report, and
+    /// sign request systems.
+    /// </summary>
     public class WhisperMicInput : MonoBehaviour
     {
+        private const string DefaultModelPath = "Models/ggml-tiny.bin";
+
         [Header("Config")]
-        public int sampleRate = 16000;          // Whisper models are usually 16 kHz
-        public float windowSec = 2.5f;          // target segment length
-        public float hopSec = 0.8f;             // step size between updates
-        public string deviceName;        // null = default mic
-        public string modelPath = "Models/ggml-tiny.bin"; // path relative to StreamingAssets when enabled
-        public bool modelPathInStreamingAssets = true; // treat modelPath as relative to StreamingAssets
+        [Tooltip("Whisper models expect 16 kHz input.")]
+        public int sampleRate = 16000;
+        [Tooltip("Step size between streaming updates, in seconds. Smaller = lower latency but more CPU.")]
+        public float hopSec = 0.8f;
+        [Tooltip("Microphone device name. Leave empty for the system default mic.")]
+        public string deviceName;
+        [Tooltip("Model file path, relative to StreamingAssets when the checkbox below is on.")]
+        public string modelPath = DefaultModelPath;
+        public bool modelPathInStreamingAssets = true;
+        [Tooltip("Spoken language passed to Whisper ('en', 'th', or 'auto'). 'auto' detects per phrase but costs a little extra processing.")]
+        public string language = "en";
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
-        public SignRequestSystem signRequestSystem; // New: Reference to sign request system
-        public PrayUiManager prayUiManager; // Reference to prayer system
-        public IncidentReportManager incidentReportManager; // Reference to Incident Report push-to-talk field
+        public SignRequestSystem signRequestSystem;
+        public PrayUiManager prayUiManager;
+        public IncidentReportManager incidentReportManager;
 
         [Header("Optional (auto-created if null)")]
         public WhisperManager whisperManager;
         public MicrophoneRecord microphone;
+
+        [Header("Routing")]
+        [Tooltip("Debounce for early (partial) recognition updates, so the routers aren't spammed.")]
+        [SerializeField] private float dispatchCooldownSec = 0.7f;
 
         private WhisperStream _stream;
         private readonly ConcurrentQueue<string> _pendingRoutes = new ConcurrentQueue<string>();
@@ -35,130 +55,91 @@ namespace Whisper
         private bool _isListening;
         private string _lastQueuedText;
         private float _nextDispatchTime;
-        [SerializeField] private float dispatchCooldownSec = 0.7f; // debounce routing for early updates
-
-        private CancellationTokenSource _cts;
 
         private async void Start()
         {
             if (router == null)
-            {
                 Debug.LogWarning("VoiceCommandRouter not assigned");
-            }
 
             if (signRequestSystem == null)
-            {
                 Debug.LogWarning("SignRequestSystem not assigned");
-            }
 
-            // Ensure WhisperManager exists; create on inactive GO so we can set ModelPath before Awake
-            if (whisperManager == null)
+            try
             {
-                var go = new GameObject("WhisperManager");
-                go.SetActive(false);
-                whisperManager = go.AddComponent<WhisperManager>();
-                _createdWhisperManager = true;
-
-                // Configure before Awake/InitModel
-                var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-tiny.bin" : modelPath;
-                if (modelPathInStreamingAssets && !string.IsNullOrEmpty(desiredModel))
+                if (whisperManager == null)
                 {
-                    desiredModel = NormalizeModelPath(desiredModel);
+                    // Create on an inactive GO so ModelPath is set before its Awake loads the model.
+                    var go = new GameObject("WhisperManager");
+                    go.SetActive(false);
+                    whisperManager = go.AddComponent<WhisperManager>();
+                    _createdWhisperManager = true;
+
+                    ApplyModelPath();
+                    ApplyStreamingSettings();
+
+                    go.SetActive(true); // Awake runs now, loading the model with our settings
                 }
-                try
+                else
                 {
-                    whisperManager.IsModelPathInStreamingAssets = modelPathInStreamingAssets;
-                    whisperManager.ModelPath = desiredModel; // safe: not loaded yet
-
-                    // Auto-detect language (Thai/English)
-                    whisperManager.language = "en";
-                    whisperManager.translateToEnglish = false;
-
-                    // Lower latency streaming settings
-                    whisperManager.noContext = true;
-                    whisperManager.singleSegment = true;   // faster finalization per chunk
-                    whisperManager.enableTokens = false;
-                    whisperManager.tokensTimestamps = false;
-
-                    // Tune stream: shorter step, fewer recurrent iterations
-                    var step = Mathf.Max(0.2f, hopSec);
-                    whisperManager.stepSec = step;
-                    whisperManager.keepSec = 0.1f;
-                    whisperManager.lengthSec = Mathf.Max(step * 2f, 0.6f);
-                    whisperManager.updatePrompt = false;    // avoid growing prompt cost
-                    whisperManager.dropOldBuffer = true;    // original ggml sliding window
-                    whisperManager.useVad = true;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Failed to preconfigure WhisperManager: {e}");
-                    enabled = false;
-                    return;
-                }
-
-                // Now activate so Awake runs and loads with our settings
-                go.SetActive(true);
-            }
-            else
-            {
-                // Using existing manager in scene; avoid changing ModelPath if already loading/loaded
-                try
-                {
+                    // Existing manager in the scene: avoid changing ModelPath if already loading/loaded.
                     if (!whisperManager.IsLoaded && !whisperManager.IsLoading)
-                    {
-                        var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? "Models/ggml-tiny.bin" : modelPath;
-                        if (modelPathInStreamingAssets && !string.IsNullOrEmpty(desiredModel))
-                        {
-                            desiredModel = NormalizeModelPath(desiredModel);
-                        }
-                        whisperManager.IsModelPathInStreamingAssets = modelPathInStreamingAssets;
-                        whisperManager.ModelPath = desiredModel;
-                    }
+                        ApplyModelPath();
 
-                    whisperManager.language = "auto";
-                    whisperManager.translateToEnglish = false;
-
-                    // Lower latency streaming settings
-                    whisperManager.noContext = true;
-                    whisperManager.singleSegment = true;
-                    whisperManager.enableTokens = false;
-                    whisperManager.tokensTimestamps = false;
-
-                    var step = Mathf.Max(0.2f, hopSec);
-                    whisperManager.stepSec = step;
-                    whisperManager.keepSec = 0.1f;
-                    whisperManager.lengthSec = Mathf.Max(step * 2f, 0.6f);
-                    whisperManager.updatePrompt = false;
-                    whisperManager.dropOldBuffer = true;
-                    whisperManager.useVad = true;
+                    ApplyStreamingSettings();
 
                     if (!whisperManager.IsLoaded && !whisperManager.IsLoading)
-                    {
                         await whisperManager.InitModel();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Failed to setup existing WhisperManager: {e}");
-                    enabled = false;
-                    return;
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to configure WhisperManager: {e}");
+                enabled = false;
+                return;
+            }
 
-            // Do NOT auto-start microphone/stream; wait for an explicit BeginPushToTalk() call
-            // (e.g. from the Incident Report window's "Hold to Speak" button).
-            _cts = new CancellationTokenSource();
+            // Do NOT auto-start the microphone; wait for an explicit BeginPushToTalk() call.
             _isListening = false;
         }
 
-        private string NormalizeModelPath(string inputPath)
+        private void ApplyModelPath()
+        {
+            var desiredModel = string.IsNullOrWhiteSpace(modelPath) ? DefaultModelPath : modelPath;
+            if (modelPathInStreamingAssets)
+                desiredModel = NormalizeModelPath(desiredModel);
+
+            whisperManager.IsModelPathInStreamingAssets = modelPathInStreamingAssets;
+            whisperManager.ModelPath = desiredModel;
+        }
+
+        /// <summary>Low-latency streaming settings shared by both the created and scene-provided manager.</summary>
+        private void ApplyStreamingSettings()
+        {
+            whisperManager.language = string.IsNullOrWhiteSpace(language) ? "en" : language;
+            whisperManager.translateToEnglish = false;
+
+            whisperManager.noContext = true;
+            whisperManager.singleSegment = true;   // faster finalization per chunk
+            whisperManager.enableTokens = false;
+            whisperManager.tokensTimestamps = false;
+
+            // Shorter step keeps latency low; lengthSec bounds how much audio each pass chews on.
+            float step = Mathf.Max(0.2f, hopSec);
+            whisperManager.stepSec = step;
+            whisperManager.keepSec = 0.1f;
+            whisperManager.lengthSec = Mathf.Max(step * 2f, 0.6f);
+            whisperManager.updatePrompt = false;    // avoid ever-growing prompt cost
+            whisperManager.dropOldBuffer = true;    // original ggml sliding window
+            whisperManager.useVad = true;           // skip inference while the player is silent
+        }
+
+        private static string NormalizeModelPath(string inputPath)
         {
             if (string.IsNullOrEmpty(inputPath))
                 return inputPath;
 
             var normalized = inputPath.TrimStart('\\', '/');
 
-            // Handle both Windows and Unix style paths
             const string assetsPrefixWin = "Assets\\StreamingAssets\\";
             const string assetsPrefixUnix = "Assets/StreamingAssets/";
 
@@ -169,7 +150,6 @@ namespace Whisper
 
             return normalized;
         }
-
 
         private void ConfigureMicrophoneIfNeeded()
         {
@@ -193,12 +173,18 @@ namespace Whisper
             microphone.echo = false;
         }
 
+        /// <summary>
+        /// Explicit push-to-talk entry point for UI-driven mic capture (e.g. the Incident Report
+        /// window's "Hold to Speak" button). This is the only way the microphone is triggered.
+        /// </summary>
+        public void BeginPushToTalk() => StartListening();
+
+        /// <summary>Counterpart to BeginPushToTalk(); call when the UI button is released.</summary>
+        public void EndPushToTalk() => StopListening();
+
         private async void StartListening()
         {
-            if (_isListening)
-                return;
-
-            if (whisperManager == null)
+            if (_isListening || whisperManager == null)
                 return;
 
             if (whisperManager.IsLoading)
@@ -206,6 +192,7 @@ namespace Whisper
                 Debug.Log("Whisper model is still loading. Please wait...");
                 return;
             }
+
             if (!whisperManager.IsLoaded)
             {
                 // As a fallback try to init now
@@ -229,8 +216,8 @@ namespace Whisper
                     return;
                 }
                 _stream.OnSegmentFinished += OnStreamSegmentFinished;
-                _stream.OnSegmentUpdated += OnStreamSegmentUpdated;   // new: earlier updates
-                _stream.OnResultUpdated += OnStreamResultUpdated;     // new: full transcript updates
+                _stream.OnSegmentUpdated += OnStreamSegmentUpdated;
+                _stream.OnResultUpdated += OnStreamResultUpdated;
                 _stream.OnStreamFinished += OnStreamFinished;
             }
 
@@ -238,18 +225,7 @@ namespace Whisper
             _isListening = true;
             _lastQueuedText = null;
             _nextDispatchTime = 0f;
-
-            Debug.Log("[Voice] Listening started");
         }
-
-        /// <summary>
-        /// Explicit push-to-talk entry point for UI-driven mic capture (e.g. the Incident Report
-        /// window's "Hold to Speak" button). This is now the only way the microphone is triggered.
-        /// </summary>
-        public void BeginPushToTalk() => StartListening();
-
-        /// <summary>Counterpart to BeginPushToTalk(); call when the UI button is released.</summary>
-        public void EndPushToTalk() => StopListening();
 
         private void StopListening()
         {
@@ -260,61 +236,55 @@ namespace Whisper
             {
                 _stream?.StopStream();
                 if (microphone != null && microphone.IsRecording)
-                {
                     microphone.StopRecord();
-                }
             }
             finally
             {
                 _isListening = false;
-                Debug.Log("[Voice] Listening stopped");
             }
         }
 
         private void Update()
         {
-            // Drain recognized texts on main thread and route to both systems
+            // Drain recognized texts on the main thread and route them to each system.
             while (_pendingRoutes.TryDequeue(out var text))
             {
                 var trimmed = (text ?? string.Empty).Trim();
-                if (!string.IsNullOrEmpty(trimmed))
+                if (string.IsNullOrEmpty(trimmed))
+                    continue;
+
+                try
                 {
-                    try
-                    {
-                        // Route to prayer system if PrayPanel is active
-                        if (IsPrayPanelActive())
-                        {
-                            router?.Route(trimmed);
-                        }
+                    if (IsPrayPanelActive())
+                        router?.Route(trimmed);
 
-                        // Route to Incident Report system while its report window is open
-                        if (IsIncidentReportActive())
-                        {
-                            incidentReportManager?.Route(trimmed);
-                        }
+                    if (IsIncidentReportActive())
+                        incidentReportManager?.Route(trimmed);
 
-                        // Always route to sign request system
-                        signRequestSystem?.Route(trimmed);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e, this);
-                    }
+                    signRequestSystem?.Route(trimmed);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e, this);
                 }
             }
         }
 
         private bool IsPrayPanelActive()
         {
-            if (prayUiManager == null) return false;
-            return prayUiManager.gameObject.activeInHierarchy && prayUiManager.IsPrayPanelActive();
+            return prayUiManager != null &&
+                   prayUiManager.gameObject.activeInHierarchy &&
+                   prayUiManager.IsPrayPanelActive();
         }
 
         private bool IsIncidentReportActive()
         {
-            if (incidentReportManager == null) return false;
-            return incidentReportManager.gameObject.activeInHierarchy && incidentReportManager.IsReportOpen;
+            return incidentReportManager != null &&
+                   incidentReportManager.gameObject.activeInHierarchy &&
+                   incidentReportManager.IsReportOpen;
         }
+
+        // ---- Whisper stream callbacks (may run off the main thread; only enqueue here) ----
 
         private void OnStreamSegmentUpdated(WhisperResult segment)
         {
@@ -333,9 +303,9 @@ namespace Whisper
             var cleaned = text.Trim();
             if (cleaned.Length < 2) return;
 
-            // Debounce & de-dup to avoid spamming router
+            // Debounce & de-dup to avoid spamming the routers with partial updates.
             if (Time.unscaledTime < _nextDispatchTime) return;
-            if (_lastQueuedText != null && string.Equals(_lastQueuedText, cleaned, StringComparison.Ordinal)) return;
+            if (string.Equals(_lastQueuedText, cleaned, StringComparison.Ordinal)) return;
 
             _pendingRoutes.Enqueue(cleaned);
             _lastQueuedText = cleaned;
@@ -345,11 +315,8 @@ namespace Whisper
         private void OnStreamSegmentFinished(WhisperResult segment)
         {
             if (segment == null) return;
-            var text = segment.Result;
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                _pendingRoutes.Enqueue(text.Trim());
-            }
+            if (!string.IsNullOrWhiteSpace(segment.Result))
+                _pendingRoutes.Enqueue(segment.Result.Trim());
         }
 
         private void OnStreamFinished(string finalResult)
@@ -362,8 +329,6 @@ namespace Whisper
         {
             try
             {
-                _cts?.Cancel();
-
                 if (_stream != null)
                 {
                     _stream.OnSegmentFinished -= OnStreamSegmentFinished;
@@ -375,19 +340,13 @@ namespace Whisper
                 }
 
                 if (microphone != null && microphone.IsRecording)
-                {
                     microphone.StopRecord();
-                }
 
                 if (_createdMicrophone && microphone != null)
-                {
                     Destroy(microphone.gameObject);
-                }
 
                 if (_createdWhisperManager && whisperManager != null)
-                {
                     Destroy(whisperManager.gameObject);
-                }
             }
             catch (Exception e)
             {

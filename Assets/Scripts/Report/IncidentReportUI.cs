@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GameLogic.SpawnAndTime;
 using TMPro;
-using UIHelpers;
+using UI;
 using UnityEngine;
 using UnityEngine.UI;
 using Whisper;
