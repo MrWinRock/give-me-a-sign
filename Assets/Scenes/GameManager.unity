@@ -1720,7 +1720,7 @@ MonoBehaviour:
     anomalyPrefab: {fileID: 6497321372195617453, guid: cad8235f9d8e9414d8273f746bc15a9a, type: 3}
     spawnPoint: {fileID: 0}
   nightTimer: {fileID: 357971565}
-  anomalyParent: {fileID: 0}
+  anomalyParent: {fileID: 1047751747}
   showDebugInfo: 0
   showGizmos: 1
   gizmoColor: {r: 1, g: 0, b: 0, a: 1}
@@ -3461,6 +3461,37 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!1 &1047751746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1047751747}
+  m_Layer: 0
+  m_Name: AnomalyOnPlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1047751747
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047751746}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1051937493
 GameObject:
   m_ObjectHideFlags: 0
@@ -5032,11 +5063,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.WhisperMicInput
   sampleRate: 16000
-  windowSec: 2.5
   hopSec: 0.8
   deviceName: 
   modelPath: Models/ggml-tiny.bin
   modelPathInStreamingAssets: 1
+  language: en
   router: {fileID: 1349133151}
   signRequestSystem: {fileID: 0}
   prayUiManager: {fileID: 894996012}
@@ -5058,11 +5089,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.VoiceCommandRouter
   prayUiManager: {fileID: 894996012}
   scoreManager: {fileID: 2091993505}
-  prayerThreshold: 0.3
   targetPrayer: In the name of the father son and holy spirit
   minimumWordsRequired: 5
+  wordSimilarity: 0.7
   pointsForSuccessfulPrayer: 1
-  fuzzyThreshold: 0.5
+  showDebugInfo: 0
 --- !u!4 &1349133152
 Transform:
   m_ObjectHideFlags: 0
@@ -16711,3 +16742,4 @@ SceneRoots:
   - {fileID: 283135907}
   - {fileID: 779536595}
   - {fileID: 477437160}
+  - {fileID: 1047751747}
