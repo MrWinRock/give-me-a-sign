@@ -19,25 +19,19 @@ namespace GameLogic
         [Tooltip("When true, camera switching is paused (e.g. while an Incident Report window is open).")]
         public bool inputLocked;
 
-        // Update is called once per frame
+        // X positions of the three camera areas, indexed by _currentBackgroundIndex.
+        private static readonly float[] CameraPositionsX = { 0f, 17.73f, 36.12f };
+
+        // Runs every frame so the camera can never drift off its area, but only
+        // writes the transform when the X actually differs.
         void Update()
         {
-            if (_currentBackgroundIndex == 0)
+            Vector3 position = cameraObjects.transform.position;
+            float targetX = CameraPositionsX[_currentBackgroundIndex];
+
+            if (!Mathf.Approximately(position.x, targetX))
             {
-                Vector3 position = cameraObjects.transform.position;
-                position.x = 0;
-                cameraObjects.transform.position = position;
-            }
-            else if (_currentBackgroundIndex == 1)
-            {
-                Vector3 position = cameraObjects.transform.position;
-                position.x = 17.73f;
-                cameraObjects.transform.position = position;
-            }
-            else if (_currentBackgroundIndex == 2)
-            {
-                Vector3 position = cameraObjects.transform.position;
-                position.x = 36.12f;
+                position.x = targetX;
                 cameraObjects.transform.position = position;
             }
         }
@@ -48,12 +42,7 @@ namespace GameLogic
 
             screen.SetActive(true);
             audioSource.Play();
-            if (_currentBackgroundIndex == 2)
-            {
-                _currentBackgroundIndex = 0;
-                return;
-            }
-            _currentBackgroundIndex = _currentBackgroundIndex + 1;
+            _currentBackgroundIndex = (_currentBackgroundIndex + 1) % CameraPositionsX.Length;
         }
     
         public void OnPreviousClick()
@@ -62,12 +51,7 @@ namespace GameLogic
 
             screen.SetActive(true);
             audioSource.Play();
-            if (_currentBackgroundIndex == 0)
-            {
-                _currentBackgroundIndex = 2;
-                return;
-            }
-            _currentBackgroundIndex = _currentBackgroundIndex - 1;
+            _currentBackgroundIndex = (_currentBackgroundIndex + CameraPositionsX.Length - 1) % CameraPositionsX.Length;
         }
     }
 }

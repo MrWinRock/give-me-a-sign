@@ -13,6 +13,13 @@ namespace GameLogic
         private static readonly List<Anomaly> _activeAnomalies = new List<Anomaly>();
         public static IReadOnlyList<Anomaly> ActiveAnomalies => _activeAnomalies;
 
+        /// <summary>
+        /// Fired once per anomaly activation when it disappears/is banished, no matter how it
+        /// was spawned. ScoreManager listens here instead of hunting for instances with
+        /// FindObjectsOfType, so scoring works for scene-placed and runtime-spawned anomalies alike.
+        /// </summary>
+        public static event System.Action<Anomaly> OnAnyAnomalyDisappeared;
+
         public enum RespondType
         {
             DisappearInstantly,  // หายทันที
@@ -65,6 +72,7 @@ namespace GameLogic
         public bool IsReported => _isReported;
 
         private bool _alertRaised; // tracks whether THIS anomaly incremented IncidentReportManager's alert counter
+        private bool _disappearNotified; // guards the disappear events so one activation can only ever score once
 
         void Start()
         {
@@ -84,6 +92,19 @@ namespace GameLogic
             {
                 _activeAnomalies.Add(this);
             }
+
+            // A re-activated anomaly counts as a fresh appearance and may score again.
+            _disappearNotified = false;
+        }
+
+        /// <summary>Fires both disappear events, but only once per activation.</summary>
+        private void RaiseDisappeared()
+        {
+            if (_disappearNotified) return;
+            _disappearNotified = true;
+
+            OnAnomalyDisappeared?.Invoke(this);
+            OnAnyAnomalyDisappeared?.Invoke(this);
         }
 
         void OnDisable()
@@ -226,7 +247,7 @@ namespace GameLogic
                 // For MoveOnly type, fire the disappear event for scoring even though it doesn't actually disappear
                 if (respondType == RespondType.MoveOnly)
                 {
-                    OnAnomalyDisappeared?.Invoke(this);
+                    RaiseDisappeared();
                 }
             }
         }
@@ -266,7 +287,7 @@ namespace GameLogic
             }
 
             // Fire event before disappearing (for scoring system)
-            OnAnomalyDisappeared?.Invoke(this);
+            RaiseDisappeared();
         
             if (destroyAfterDisappear)
                 Destroy(gameObject, 0.6f); // Delay destruction to allow fade out

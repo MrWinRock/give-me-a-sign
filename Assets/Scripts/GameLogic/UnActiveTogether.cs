@@ -2,16 +2,18 @@ using UnityEngine;
 
 namespace GameLogic
 {
+    /// <summary>
+    /// When checkObjects turns inactive, unActiveObjects is turned off with it.
+    /// </summary>
     public class UnActiveTogether : MonoBehaviour
     {
         [Header("UnActive Together Objects")]
         public GameObject checkObjects;
         public GameObject unActiveObjects;
 
-        // Update is called once per frame
         void Update()
         {
-            if (!checkObjects.activeSelf)
+            if (!checkObjects.activeSelf && unActiveObjects.activeSelf)
             {
                 unActiveObjects.SetActive(false);
             }
