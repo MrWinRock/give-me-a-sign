@@ -588,6 +588,17 @@ namespace Report
                 Debug.Log($"[GlitchDirector] Burst fired {fired}/{count} glitches.", this);
         }
 
+        /// <summary>
+        /// Fires exactly one glitch immediately, bypassing the cooldown, session budget, and any
+        /// blackout window - used by GlitchScheduler for glitches pinned to a specific real-time
+        /// minute. Does nothing if that glitch type is already running (FormGlitchController's own
+        /// safety guard) or if the form is closed (nothing to glitch).
+        /// </summary>
+        public void FireGlitchNow(GlitchType type, string overrideText = null)
+        {
+            FireGlitch(type, overrideText, "scheduled");
+        }
+
         private GlitchType? PickWeightedGlitch()
         {
             float total = 0f;

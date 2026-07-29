@@ -161,6 +161,11 @@ namespace GameLogic.SpawnAndTime
             if (anomalyParent != null)
                 instance.transform.SetParent(anomalyParent, worldPositionStays: true);
 
+            // Runtime-spawned objects are invisible to AudioManager's scene-load sweep,
+            // so hand their AudioSources (jumpscare/fight sounds) over explicitly - this
+            // keeps the player's volume sliders in control of them too.
+            Audio.AudioManager.RegisterHierarchy(instance);
+
             _spawned.Add(instance);
             OnAnomalySpawned?.Invoke(instance, entry);
 

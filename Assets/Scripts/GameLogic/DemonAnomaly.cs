@@ -1,6 +1,7 @@
 using Report;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 namespace GameLogic
 {
@@ -28,6 +29,13 @@ namespace GameLogic
         [SerializeField] private GameObject overlayRoot;
         [Tooltip("How close (world X) the camera must be to this demon's room before the jumpscare triggers.")]
         [SerializeField] private float revealDistance = 5f;
+
+        [Header("Visual - pick ONE")]
+        [Tooltip("If assigned, plays this video fullscreen INSTEAD of the static image on Overlay Root. Built at runtime as a textured quad - no manual VideoPlayer setup needed.")]
+        [SerializeField] private VideoClip jumpscareVideo;
+        [SerializeField] private bool loopVideo = true;
+        [Tooltip("Material used for the video quad (must use an Unlit shader with a _BaseMap texture, e.g. Universal Render Pipeline/Unlit). Leave empty to auto-create one at runtime - fine for testing, but for BUILDS assign a real Material asset here so its shader isn't stripped.")]
+        [SerializeField] private Material videoOverlayMaterial;
 
         [Header("Pressure")]
         [Tooltip("Seconds the player has to file a correct report after the reveal before losing. 0 = no time limit.")]
@@ -57,6 +65,10 @@ namespace GameLogic
         private GlitchDirector _glitchDirector;
         private Camera _camera;
         private float _roomCameraX;
+
+        private VideoPlayer _videoPlayer;
+        private GameObject _videoOverlayObject;
+
         private float _revealedAt;
         private bool _revealed;
         private bool _resolved;
@@ -94,6 +106,9 @@ namespace GameLogic
         {
             if (_anomaly != null)
                 _anomaly.OnAnomalyDisappeared -= OnResolved;
+
+            if (_videoOverlayObject != null)
+                Destroy(_videoOverlayObject);
 
             // Scene teardown safety: never leave the global state stuck on.
             if (_revealed && !_resolved)
@@ -171,7 +186,7 @@ namespace GameLogic
                 Debug.Log($"DemonAnomaly: REVEALED in room x={_roomCameraX}. Speak '{_anomaly.correctAnomalyType}' to banish it!", this);
         }
 
-        /// <summary>Activates the overlay and scales it so it covers the camera view of this room.</summary>
+        /// <summary>Activates the overlay (video takes priority over the static image if assigned) and scales it to cover the camera view of this room.</summary>
         private void ShowOverlay()
         {
             if (overlayRoot == null)
@@ -182,22 +197,93 @@ namespace GameLogic
 
             overlayRoot.SetActive(true);
 
-            var sr = overlayRoot.GetComponentInChildren<SpriteRenderer>();
-            if (sr == null || sr.sprite == null || _camera == null || !_camera.orthographic)
-                return;
+            if (jumpscareVideo != null)
+                ShowVideoOverlay();
+            else
+                ShowImageOverlay();
+        }
+
+        private void ShowImageOverlay()
+        {
+            var sr = overlayRoot.GetComponentInChildren<SpriteRenderer>(true);
+            if (sr == null) return;
+
+            sr.gameObject.SetActive(true);
+            if (_videoOverlayObject != null)
+                _videoOverlayObject.SetActive(false);
+
+            if (sr.sprite == null) return;
+            CoverCameraView(sr.transform, sr.sprite.bounds.size);
+        }
+
+        private void ShowVideoOverlay()
+        {
+            if (_videoOverlayObject == null)
+                BuildVideoOverlay();
+
+            var sr = overlayRoot.GetComponentInChildren<SpriteRenderer>(true);
+            if (sr != null)
+                sr.gameObject.SetActive(false);
+
+            _videoOverlayObject.SetActive(true);
+            CoverCameraView(_videoOverlayObject.transform, Vector2.one); // default Quad is 1x1 in local units
+
+            _videoPlayer.clip = jumpscareVideo;
+            _videoPlayer.isLooping = loopVideo;
+
+            // The video's embedded audio bypasses AudioSource volume, so apply the player's
+            // SFX/master sliders to its direct output by hand.
+            if (Audio.AudioManager.Instance != null)
+                _videoPlayer.SetDirectAudioVolume(0, Audio.AudioManager.Instance.GetEffectiveVolume(Audio.AudioChannel.Sfx));
+
+            _videoPlayer.Play();
+        }
+
+        /// <summary>Builds a textured quad + VideoPlayer once, parented under overlayRoot. No manual scene setup required.</summary>
+        private void BuildVideoOverlay()
+        {
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "JumpscareVideoOverlay";
+
+            // CreatePrimitive adds a 3D MeshCollider by default; this project's clicks use
+            // Physics2D raycasts, so a stray 3D collider is dead weight - remove it.
+            var collider3D = quad.GetComponent<Collider>();
+            if (collider3D != null)
+                Destroy(collider3D);
+
+            quad.transform.SetParent(overlayRoot.transform, worldPositionStays: false);
+            quad.transform.localPosition = Vector3.zero;
+            quad.transform.localRotation = Quaternion.identity;
+
+            var renderer = quad.GetComponent<MeshRenderer>();
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.material = videoOverlayMaterial != null
+                ? new Material(videoOverlayMaterial)
+                : new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+
+            _videoPlayer = quad.AddComponent<VideoPlayer>();
+            _videoPlayer.playOnAwake = false;
+            _videoPlayer.renderMode = VideoRenderMode.MaterialOverride;
+            _videoPlayer.targetMaterialRenderer = renderer;
+            _videoPlayer.targetMaterialProperty = "_BaseMap";
+            _videoPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
+
+            _videoOverlayObject = quad;
+        }
+
+        /// <summary>Scales+positions an overlay transform (in world units of the given base size) to fill this room's camera view.</summary>
+        private void CoverCameraView(Transform overlay, Vector2 baseSize)
+        {
+            if (_camera == null || !_camera.orthographic || baseSize.x <= 0f || baseSize.y <= 0f) return;
 
             float camHeight = _camera.orthographicSize * 2f;
             float camWidth = camHeight * _camera.aspect;
 
-            // Park the overlay dead-center of this room's camera view...
-            overlayRoot.transform.position = new Vector3(_roomCameraX, _camera.transform.position.y, 0f);
+            overlay.position = new Vector3(_roomCameraX, _camera.transform.position.y, overlay.position.z);
 
-            // ...and scale it up until the sprite covers the whole view.
-            Vector2 spriteSize = sr.sprite.bounds.size;
-            if (spriteSize.x <= 0f || spriteSize.y <= 0f) return;
-
-            float cover = Mathf.Max(camWidth / spriteSize.x, camHeight / spriteSize.y);
-            overlayRoot.transform.localScale = new Vector3(cover, cover, 1f);
+            float cover = Mathf.Max(camWidth / baseSize.x, camHeight / baseSize.y);
+            overlay.localScale = new Vector3(cover, cover, 1f);
         }
 
         private void OnResolved(Anomaly _)
@@ -209,6 +295,8 @@ namespace GameLogic
 
             if (overlayRoot != null)
                 overlayRoot.SetActive(false);
+            if (_videoPlayer != null)
+                _videoPlayer.Stop();
 
             if (jumpscareAudio != null && jumpscareAudio.isPlaying)
                 jumpscareAudio.Stop();
