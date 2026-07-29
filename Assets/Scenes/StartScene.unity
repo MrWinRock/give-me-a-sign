@@ -846,36 +846,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1 &486390328
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 486390329}
-  m_Layer: 0
-  m_Name: ' '
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &486390329
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 486390328}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
@@ -1026,7 +996,7 @@ GameObject:
   - component: {fileID: 530671037}
   - component: {fileID: 530671039}
   m_Layer: 17
-  m_Name: VideoPlayerShutter
+  m_Name: ShutterOpenPlayer
   m_TagString: Cancel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1395,36 +1365,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1276269934}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &794944182
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 794944183}
-  m_Layer: 0
-  m_Name: ' '
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &794944183
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 794944182}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1044531562
 GameObject:
@@ -1692,36 +1632,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1 &1117396484
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1117396485}
-  m_Layer: 0
-  m_Name: === GAMEPLAY ===
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1117396485
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1117396484}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1149785125
 GameObject:
@@ -1767,7 +1677,7 @@ GameObject:
   - component: {fileID: 1182554650}
   - component: {fileID: 1182554649}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: InstructionsPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2109,7 +2019,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1239662567}
   m_Layer: 0
-  m_Name: VoiceManager
+  m_Name: DemoVoiceClips
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2154,7 +2064,7 @@ GameObject:
   - component: {fileID: 1249636281}
   - component: {fileID: 1249636282}
   m_Layer: 0
-  m_Name: TimeLine2
+  m_Name: AmbientLoopTimeline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2340,7 +2250,7 @@ GameObject:
   - component: {fileID: 1396034680}
   - component: {fileID: 1396034682}
   m_Layer: 5
-  m_Name: RawImageShutter
+  m_Name: ShutterOpenImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2605,7 +2515,7 @@ GameObject:
   - component: {fileID: 1566935596}
   - component: {fileID: 1566935595}
   m_Layer: 0
-  m_Name: Square
+  m_Name: DarknessOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3047,36 +2957,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1 &1657676985
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1657676986}
-  m_Layer: 0
-  m_Name: ' '
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1657676986
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1657676985}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1683818649
 GameObject:
@@ -3595,7 +3475,7 @@ GameObject:
   - component: {fileID: 1793168926}
   - component: {fileID: 1793168927}
   m_Layer: 0
-  m_Name: TimeLineCheck
+  m_Name: PostIntroStateLock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3785,7 +3665,7 @@ GameObject:
   - component: {fileID: 1943797843}
   - component: {fileID: 1943797842}
   m_Layer: 0
-  m_Name: TimeLine1
+  m_Name: IntroCutsceneTimeline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4114,11 +3994,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 450030847}
-  - {fileID: 486390329}
-  - {fileID: 1117396485}
-  - {fileID: 1657676986}
   - {fileID: 1149785126}
-  - {fileID: 794944183}
   - {fileID: 124006550}
 --- !u!114 &1910000001
 MonoBehaviour:
