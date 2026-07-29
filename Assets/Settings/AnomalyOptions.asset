@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyOptionsCatalog
   anomalyTypes:
   - Shadow
+  - Demon
   locations:
   - Hallway
   - Kitchen

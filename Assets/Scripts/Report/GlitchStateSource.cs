@@ -25,7 +25,11 @@ namespace Report
         {
             get
             {
-                // Active = กำลังพุ่งเข้าหาผู้เล่น (ต้องสวดไล่), Passive = อยู่เฉยๆ ให้ตรวจเจอ
+                // Active = กำลังคุกคามผู้เล่นอยู่ (จั๊มสแกร์ Demon หรือ anomaly ที่ต้องสวดไล่),
+                // Passive = อยู่เฉยๆ ให้ตรวจเจอ
+                if (DemonAnomaly.AnyRevealed)
+                    return GlitchAnomalyState.Active;
+
                 foreach (var a in Anomaly.ActiveAnomalies)
                 {
                     if (a != null && a.CanBePrayerBanished())

@@ -560,6 +560,34 @@ namespace Report
             FireGlitch(type.Value, null, "ambient");
         }
 
+        /// <summary>
+        /// Immediately fires up to <paramref name="count"/> DIFFERENT glitch types in the same
+        /// moment, bypassing the cooldown, the session budget, and any blackout window.
+        /// Intended for big scripted scares (e.g. the Demon jumpscare) where the form should
+        /// visibly break in several ways at once. Does nothing while the form is closed.
+        /// </summary>
+        public void TriggerBurst(int count)
+        {
+            if (!_sessionActive || glitchController == null || count <= 0) return;
+
+            int fired = 0;
+            // A pick can be rejected (type already running / weight exhausted), so allow a few
+            // retries before giving up rather than looping forever.
+            for (int attempts = 0; attempts < count * 3 && fired < count; attempts++)
+            {
+                var type = PickWeightedGlitch();
+                if (type == null) break;
+
+                int before = _firedThisSession.Count;
+                FireGlitch(type.Value, null, "burst");
+                if (_firedThisSession.Count > before)
+                    fired++;
+            }
+
+            if (logDirectorDecisions)
+                Debug.Log($"[GlitchDirector] Burst fired {fired}/{count} glitches.", this);
+        }
+
         private GlitchType? PickWeightedGlitch()
         {
             float total = 0f;

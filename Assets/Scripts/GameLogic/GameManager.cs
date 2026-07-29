@@ -20,7 +20,8 @@ namespace GameLogic
         public bool inputLocked;
 
         // X positions of the three camera areas, indexed by _currentBackgroundIndex.
-        private static readonly float[] CameraPositionsX = { 0f, 17.73f, 36.12f };
+        // Public so other systems (e.g. DemonAnomaly) can tell which room the camera is showing.
+        public static readonly float[] CameraPositionsX = { 0f, 17.73f, 36.12f };
 
         // Runs every frame so the camera can never drift off its area, but only
         // writes the transform when the X actually differs.
