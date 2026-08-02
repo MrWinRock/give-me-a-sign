@@ -310,6 +310,15 @@ namespace GameLogic
             _resolved = true;
             EndThreat();
 
+            // Force the report window closed BEFORE the scene unloads, instead of yanking the
+            // scene out from under an active WhisperMicInput recording session - that left the
+            // mic/whisper stream mid-flight and caused a hang with stale UI behind it.
+            // IncidentReportUI.Hide() (called from here) stops any in-progress recording
+            // synchronously before the window closes, so this always finishes cleanly first.
+            var reportManager = IncidentReportManager.Instance;
+            if (reportManager != null && reportManager.IsReportOpen)
+                reportManager.CancelReport();
+
             if (showDebugInfo)
                 Debug.Log("DemonAnomaly: time limit reached - player loses.", this);
 

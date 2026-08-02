@@ -39,16 +39,16 @@ namespace GameLogic
     
         public void OnNextClick()
         {
-            if (inputLocked) return;
+            if (inputLocked || DemonAnomaly.AnyRevealed) return;
 
             screen.SetActive(true);
             audioSource.Play();
             _currentBackgroundIndex = (_currentBackgroundIndex + 1) % CameraPositionsX.Length;
         }
-    
+
         public void OnPreviousClick()
         {
-            if (inputLocked) return;
+            if (inputLocked || DemonAnomaly.AnyRevealed) return;
 
             screen.SetActive(true);
             audioSource.Play();

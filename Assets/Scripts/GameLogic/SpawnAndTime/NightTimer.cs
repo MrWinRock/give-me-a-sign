@@ -1,3 +1,4 @@
+using Report;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -58,10 +59,20 @@ namespace GameLogic.SpawnAndTime
         {
             if (!_isNightActive) return;
 
-            _currentTime += Time.deltaTime;
+            // Clamp instead of letting it run past the cap, so the clock can sit at exactly
+            // 6:00 AM for as long as we end up waiting below.
+            _currentTime = Mathf.Min(_currentTime + Time.deltaTime, _totalNightDuration);
 
             if (_currentTime >= _totalNightDuration)
             {
+                // Don't yank the scene out from under the player mid-report (e.g. still holding
+                // the mic button) - finish that first, then end the night the moment it closes.
+                if (IncidentReportManager.Instance != null && IncidentReportManager.Instance.IsReportOpen)
+                {
+                    UpdateTimeDisplay();
+                    return;
+                }
+
                 EndNight();
                 return;
             }
