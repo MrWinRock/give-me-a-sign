@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aef4ca42b78553449611938ec48f4cf, type: 3}
+  m_Name: NightContentLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Night.NightContentLibrary
+  anomalies:
+  - {fileID: 11400000, guid: 03e1dacaae2a78847bcbb96be585a1fb, type: 2}
+  - {fileID: 11400000, guid: 0303da8354038cc4caeeec63578262a4, type: 2}
+  - {fileID: 11400000, guid: d798795aa9bf9a1498911413eea61860, type: 2}
+  - {fileID: 11400000, guid: 783096f6c2e9ce84b8f62a138101c891, type: 2}
+  - {fileID: 11400000, guid: 55486c967c150394486eff73dbd3600a, type: 2}
+  - {fileID: 11400000, guid: fc64216772d959742b4165541d77ffbb, type: 2}
+  - {fileID: 11400000, guid: 1519542e461f78f4fb7c334c775b23ce, type: 2}
+  - {fileID: 11400000, guid: 138c32c8ffacbc242a0104aa0a476362, type: 2}
+  rooms:
+  - {fileID: 11400000, guid: 0fe1ee0bf716e4845a09692e34ab3a83, type: 2}
+  - {fileID: 11400000, guid: 9658ad65d85cfa74089500eb784e5769, type: 2}
+  - {fileID: 11400000, guid: 5f5d9c0c1c880184eb6756a4eaa16ddb, type: 2}
+  difficulty: {fileID: 11400000, guid: dcab2ac1afebe484ebba6e694f41c3ed, type: 2}
+  glitch: {fileID: 11400000, guid: 312cbec31c590dc4e9d8699c60e81e43, type: 2}

@@ -1,4 +1,5 @@
 using System.Collections;
+using GameLogic.Night;
 using GameLogic.SpawnAndTime;
 using Report;
 using Score;
@@ -130,19 +131,19 @@ namespace GameLogic.Flow
             var nightTimer = FindFirstObjectByType<NightTimer>();
             var scheduler = FindFirstObjectByType<AnomalyScheduler>();
             var reportManager = IncidentReportManager.Instance;
+            var plan = NightPlanProvider.HasPlan ? NightPlanProvider.Current : null;
 
             return new NightResult
             {
                 outcome = outcome,
-                nightIndex = CurrentNightIndex,
-                seed = CurrentSeed,
+                nightIndex = plan != null ? plan.nightIndex : CurrentNightIndex,
+                seed = plan != null ? plan.seed : CurrentSeed,
 
                 score = scoreManager != null ? scoreManager.GetCurrentScore() : 0,
 
-                // Sprint 2 replaces this with NightPlan.requiredScore, computed from the plan
-                // itself - that is what finally makes the threshold impossible to desync from
-                // the number of anomalies actually scheduled.
-                requiredScore = scoreManager != null ? scoreManager.GetWinThreshold() : 0,
+                // Straight from the plan that placed the anomalies, so the bar and the content
+                // behind it are two views of one object and cannot disagree.
+                requiredScore = plan != null ? plan.requiredScore : 0,
 
                 anomaliesTotal = scheduler != null ? scheduler.TotalSpawned : 0,
                 reportsFiled = reportManager != null ? reportManager.ReportsFiled : 0,
@@ -197,6 +198,10 @@ namespace GameLogic.Flow
         public static void StartNewNight(string gameplaySceneName)
         {
             ClearLastResult();
+
+            // Drop the finished plan so NightPlanRunner rolls a fresh night rather than the
+            // schedulers picking up the one that just ended.
+            NightPlanProvider.Clear();
 
             if (string.IsNullOrWhiteSpace(gameplaySceneName))
             {

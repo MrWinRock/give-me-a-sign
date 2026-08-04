@@ -19,6 +19,22 @@ public class AnomalySchedulerEditor : Editor
         var schedule = serializedObject.FindProperty("schedule");
         if (schedule == null) return;
 
+        // In NightPlan mode the list below is ignored entirely, so say so rather than letting
+        // someone edit a timeline that will never run.
+        var sourceProp = serializedObject.FindProperty("source");
+        bool usingPlan = sourceProp != null && sourceProp.enumValueIndex == (int)ScheduleSource.NightPlan;
+
+        if (usingPlan)
+        {
+            EditorGUILayout.Space(8);
+            EditorGUILayout.HelpBox(
+                "Source is NightPlan: anomalies come from the generated night, and the Schedule list " +
+                "below is ignored. Use 'Tools/Give Me A Sign/Night Plan Debugger' to see what a seed " +
+                "produces, or switch Source to ManualList to run the list below.",
+                MessageType.Info);
+            return;
+        }
+
         var timerProp = serializedObject.FindProperty("nightTimer");
         var nightTimer = timerProp != null ? timerProp.objectReferenceValue as NightTimer : null;
         if (nightTimer == null)

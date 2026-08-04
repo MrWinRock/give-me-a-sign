@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using GameLogic;
 using GameLogic.Data;
+using GameLogic.Night;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ namespace GiveMeASign.EditorTools
         private const string RoomFolder = SettingsFolder + "/Rooms";
         private const string AnomalyFolder = SettingsFolder + "/Anomalies";
         private const string PrefabFolder = "Assets/Prefabs";
+        private const string ResourcesFolder = "Assets/Resources";
 
         /// <summary>
         /// The rooms as they were hardcoded in GameManager.CameraPositionsX, which is the only
@@ -212,8 +214,14 @@ namespace GiveMeASign.EditorTools
             float timeToDisappear = legacy.FindProperty("timeToDisappear").floatValue;
             float moveSpeed = legacy.FindProperty("moveSpeed").floatValue;
 
+            // The demon enforces its own deadline (DemonAnomaly.timeLimitSeconds) rather than going
+            // through Anomaly's threat timer, so its legacy timeToDisappear is 0. Carrying that
+            // straight over would tell the night planner the demon can be left indefinitely and
+            // the solvability check would overestimate what a night allows.
+            float threatTimeout = DemonTimeLimitOr(anomaly, timeToDisappear);
+
             var definition = CreateOrUpdateDefinition(
-                prefabName, prefabPath, legacyType, respondType, moveSpeed, timeToDisappear);
+                prefabName, prefabPath, legacyType, respondType, moveSpeed, threatTimeout);
 
             CopyLegacyIntoSiblings(anomaly, legacy);
 
@@ -305,6 +313,19 @@ namespace GiveMeASign.EditorTools
             target.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        /// <summary>DemonAnomaly's own time limit, if this is a demon; otherwise the value passed in.</summary>
+        private static float DemonTimeLimitOr(Anomaly anomaly, float fallback)
+        {
+            var demon = anomaly.GetComponent<DemonAnomaly>();
+            if (demon == null) return fallback;
+
+            var limit = new SerializedObject(demon).FindProperty("timeLimitSeconds");
+            if (limit == null || limit.floatValue <= 0f) return fallback;
+
+            Debug.Log($"DataSetupTools: using DemonAnomaly's own {limit.floatValue:0}s time limit as its threat window.");
+            return limit.floatValue;
+        }
+
         /// <summary>The demon's room used to be inferred from its X position; now it is a reference.</summary>
         private static void AssignDemonRoomIfNeeded(Anomaly anomaly)
         {
@@ -345,6 +366,70 @@ namespace GiveMeASign.EditorTools
                 Debug.LogWarning("DataSetupTools: no RoomDefinition assets found - run '1. Create Rooms And Anchors' first.");
 
             return best;
+        }
+
+        // ── Step 3: night content library ────────────────────────────────────────────────
+
+        [MenuItem("Tools/Give Me A Sign/Setup/3. Create Night Content Library")]
+        public static void CreateNightContentLibrary()
+        {
+            EnsureFolder(ResourcesFolder);
+
+            string libraryPath = $"{ResourcesFolder}/{NightContentLibrary.ResourceName}.asset";
+            var library = AssetDatabase.LoadAssetAtPath<NightContentLibrary>(libraryPath);
+            if (library == null)
+            {
+                library = ScriptableObject.CreateInstance<NightContentLibrary>();
+                AssetDatabase.CreateAsset(library, libraryPath);
+            }
+
+            // Always re-sweep the content lists: adding a new anomaly or room should be picked up
+            // by re-running this, not by remembering to also drag it in here.
+            library.anomalies = LoadAllSorted<AnomalyDefinition>((a, b) => string.Compare(a.anomalyId, b.anomalyId, System.StringComparison.Ordinal));
+            library.rooms = LoadAllSorted<RoomDefinition>((a, b) => a.cameraOrder.CompareTo(b.cameraOrder));
+
+            library.difficulty = FindOrCreate<DifficultyProfile>($"{SettingsFolder}/DifficultyProfile.asset");
+            library.glitch = FindOrCreate<GlitchProfile>($"{SettingsFolder}/GlitchProfile.asset");
+
+            EditorUtility.SetDirty(library);
+            AssetDatabase.SaveAssets();
+            NightContentLibrary.ClearCache();
+
+            Debug.Log(
+                $"DataSetupTools: night content library at {libraryPath} - " +
+                $"{library.anomalies.Count} anomaly kind(s), {library.rooms.Count} room(s). " +
+                "Add a NightPlanRunner to GameManager.unity if it isn't there yet, then check " +
+                "'Tools/Give Me A Sign/Night Plan Debugger'.");
+
+            Selection.activeObject = library;
+            EditorGUIUtility.PingObject(library);
+        }
+
+        private static List<T> LoadAllSorted<T>(System.Comparison<T> comparison) where T : ScriptableObject
+        {
+            var results = new List<T>();
+            foreach (var guid in AssetDatabase.FindAssets($"t:{typeof(T).Name}"))
+            {
+                var asset = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid));
+                if (asset != null) results.Add(asset);
+            }
+            results.Sort(comparison);
+            return results;
+        }
+
+        /// <summary>Existing asset of this type anywhere in the project, or a fresh one at the given path.</summary>
+        private static T FindOrCreate<T>(string path) where T : ScriptableObject
+        {
+            foreach (var guid in AssetDatabase.FindAssets($"t:{typeof(T).Name}"))
+            {
+                var existing = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid));
+                if (existing != null) return existing;
+            }
+
+            var created = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(created, path);
+            Debug.Log($"DataSetupTools: created {typeof(T).Name} at {path} (default values - tune to taste).");
+            return created;
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────────────────

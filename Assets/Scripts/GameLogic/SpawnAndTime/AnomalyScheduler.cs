@@ -1,11 +1,22 @@
 using System.Collections.Generic;
+using GameLogic.Data;
+using GameLogic.Night;
 using UnityEngine;
 
 namespace GameLogic.SpawnAndTime
 {
+    /// <summary>Where an AnomalyScheduler gets its timeline from.</summary>
+    public enum ScheduleSource
+    {
+        /// <summary>The procedurally generated NightPlan. The normal mode.</summary>
+        NightPlan,
+        /// <summary>The hand-authored Schedule list below. Kept for testing a specific sequence.</summary>
+        ManualList,
+    }
+
     /// <summary>
-    /// One timeline entry: which anomaly appears, at which REAL minute of the night,
-    /// and where. Leave Spawn Point empty to use the position saved inside the prefab.
+    /// One hand-authored timeline entry: which anomaly appears, at which REAL minute of the night,
+    /// and where. Only used when Source is ManualList.
     /// </summary>
     [System.Serializable]
     public class AnomalyScheduleEntry
@@ -23,10 +34,7 @@ namespace GameLogic.SpawnAndTime
         [Tooltip("OPTIONAL. Drag any scene Transform here to spawn at that position instead of the position saved inside the prefab.")]
         public Transform spawnPoint;
 
-        public bool IsValid()
-        {
-            return anomalyPrefab != null;
-        }
+        public bool IsValid() => anomalyPrefab != null;
 
         /// <summary>Where this entry will actually spawn (spawn point override, else the prefab's own position).</summary>
         public Vector3 ResolvePosition()
@@ -37,20 +45,23 @@ namespace GameLogic.SpawnAndTime
     }
 
     /// <summary>
-    /// Spawns anomalies on a simple minute-based timeline.
+    /// Spawns anomalies on a minute-based timeline, normally the one in the night's
+    /// <see cref="NightPlan"/>.
     ///
-    /// How to use:
-    ///   1. Add entries to the Schedule list: pick a prefab and type the minute it should appear.
-    ///   2. (Optional) Drag a scene Transform into Spawn Point to override the position.
-    ///   3. Press Play - entries fire in time order. Gizmos in the Scene view show
-    ///      each spawn position labelled with its scheduled time.
+    /// The timeline is built on the night timer's FIRST TICK rather than in Start, because that is
+    /// guaranteed to happen after every Start in the scene - so NightPlanRunner is certain to have
+    /// published its plan by then, with no script execution order to get right.
     ///
-    /// Entries are pre-sorted once at startup and consumed with a single index cursor,
-    /// so the per-frame cost is one float comparison - no list scans or allocations.
+    /// Entries are pre-sorted once and consumed with a single index cursor, so the per-frame cost
+    /// is one float comparison - no list scans or allocations.
     /// </summary>
     public class AnomalyScheduler : MonoBehaviour
     {
-        [Header("Schedule (real minutes into the night)")]
+        [Header("Source")]
+        [Tooltip("NightPlan = procedurally generated (normal). ManualList = the hand-authored Schedule below, for testing a fixed sequence.")]
+        [SerializeField] private ScheduleSource source = ScheduleSource.NightPlan;
+
+        [Header("Schedule (ManualList mode only, real minutes into the night)")]
         [SerializeField] private List<AnomalyScheduleEntry> schedule = new List<AnomalyScheduleEntry>();
 
         [Header("References")]
@@ -65,14 +76,28 @@ namespace GameLogic.SpawnAndTime
         [SerializeField] private Color gizmoColor = Color.red;
         [SerializeField] private float gizmoSize = 0.5f;
 
-        // Sorted copy of the valid schedule entries; _nextIndex walks it forward as time passes.
-        private readonly List<AnomalyScheduleEntry> _sorted = new List<AnomalyScheduleEntry>();
+        /// <summary>One resolved spawn, whichever source it came from.</summary>
+        private struct ScheduledSpawn
+        {
+            public float atMinute;
+            public GameObject prefab;
+            public Transform point;      // may be null - then the prefab's own position is used
+            public RoomDefinition room;  // null for manual entries, which have no room concept
+            public string label;
+        }
+
+        private readonly List<ScheduledSpawn> _sorted = new List<ScheduledSpawn>();
         private int _nextIndex;
         private readonly List<GameObject> _spawned = new List<GameObject>();
+        private bool _built;
         private bool _allSpawnedNotified;
 
+        // Seeded from the plan so which spawn point a room picks is part of the night's seed too -
+        // otherwise replaying a seed would put anomalies in subtly different places.
+        private System.Random _rng = new System.Random(0);
+
         /// <summary>Fired right after an anomaly is instantiated.</summary>
-        public System.Action<GameObject, AnomalyScheduleEntry> OnAnomalySpawned;
+        public System.Action<GameObject> OnAnomalySpawned;
         /// <summary>Fired once when the last scheduled entry has spawned. Payload = total spawned.</summary>
         public System.Action<int> OnAllAnomaliesSpawned;
 
@@ -93,11 +118,7 @@ namespace GameLogic.SpawnAndTime
                 return;
             }
 
-            BuildSortedSchedule();
             nightTimer.OnTimeChanged += OnTimeChanged;
-
-            if (showDebugInfo)
-                LogSchedule();
         }
 
         void OnDestroy()
@@ -106,12 +127,61 @@ namespace GameLogic.SpawnAndTime
                 nightTimer.OnTimeChanged -= OnTimeChanged;
         }
 
-        private void BuildSortedSchedule()
+        // ── Building the timeline ────────────────────────────────────────────────────────
+
+        private void BuildTimeline()
         {
             _sorted.Clear();
             _nextIndex = 0;
             _allSpawnedNotified = false;
 
+            if (source == ScheduleSource.NightPlan)
+                BuildFromPlan();
+            else
+                BuildFromManualList();
+
+            _sorted.Sort((a, b) => a.atMinute.CompareTo(b.atMinute));
+
+            if (showDebugInfo)
+                LogSchedule();
+        }
+
+        private void BuildFromPlan()
+        {
+            var plan = NightPlanProvider.Current;
+            _rng = new System.Random(plan.seed);
+
+            foreach (var placement in plan.anomalies)
+            {
+                if (placement.definition == null || placement.definition.prefab == null)
+                {
+                    Debug.LogWarning($"AnomalyScheduler: plan placement at {placement.atMinute:0.##}m has no prefab - skipped.", this);
+                    continue;
+                }
+
+                // A room the loaded scene has no anchor for can't provide a position; the prefab's
+                // own position is used instead so the anomaly still appears somewhere.
+                var anchor = RoomRegistry.Get(placement.room);
+                if (anchor == null && placement.room != null)
+                {
+                    Debug.LogWarning(
+                        $"AnomalyScheduler: room '{placement.room.Label}' has no RoomAnchor in this scene - " +
+                        $"'{placement.definition.Label}' will spawn at its prefab position.", this);
+                }
+
+                _sorted.Add(new ScheduledSpawn
+                {
+                    atMinute = placement.atMinute,
+                    prefab = placement.definition.prefab,
+                    point = anchor != null ? anchor.GetSpawnPoint(_rng) : null,
+                    room = placement.room,
+                    label = $"{placement.definition.Label} in {placement.room?.Label ?? "(no room)"}",
+                });
+            }
+        }
+
+        private void BuildFromManualList()
+        {
             foreach (var entry in schedule)
             {
                 if (entry == null) continue;
@@ -129,17 +199,31 @@ namespace GameLogic.SpawnAndTime
                         $"but the night only lasts {nightTimer.NightDurationMinutes:F2} minutes - it will never spawn.", this);
                 }
 
-                _sorted.Add(entry);
+                _sorted.Add(new ScheduledSpawn
+                {
+                    atMinute = entry.spawnAtMinute,
+                    prefab = entry.anomalyPrefab,
+                    point = entry.spawnPoint,
+                    room = null,
+                    label = Label(entry),
+                });
             }
-
-            _sorted.Sort((a, b) => a.spawnAtMinute.CompareTo(b.spawnAtMinute));
         }
+
+        // ── Running the timeline ─────────────────────────────────────────────────────────
 
         private void OnTimeChanged(float normalizedTime)
         {
+            // Deferred to the first tick on purpose - see the class comment.
+            if (!_built)
+            {
+                _built = true;
+                BuildTimeline();
+            }
+
             float elapsedMinutes = normalizedTime * nightTimer.NightDurationMinutes;
 
-            while (_nextIndex < _sorted.Count && _sorted[_nextIndex].spawnAtMinute <= elapsedMinutes)
+            while (_nextIndex < _sorted.Count && _sorted[_nextIndex].atMinute <= elapsedMinutes)
             {
                 Spawn(_sorted[_nextIndex]);
                 _nextIndex++;
@@ -155,14 +239,23 @@ namespace GameLogic.SpawnAndTime
             }
         }
 
-        private void Spawn(AnomalyScheduleEntry entry)
+        private void Spawn(ScheduledSpawn item)
         {
-            GameObject instance = entry.spawnPoint != null
-                ? Instantiate(entry.anomalyPrefab, entry.spawnPoint.position, entry.spawnPoint.rotation)
-                : Instantiate(entry.anomalyPrefab); // keeps the position saved inside the prefab
+            GameObject instance = item.point != null
+                ? Instantiate(item.prefab, item.point.position, item.point.rotation)
+                : Instantiate(item.prefab); // keeps the position saved inside the prefab
 
             if (anomalyParent != null)
                 instance.transform.SetParent(anomalyParent, worldPositionStays: true);
+
+            // The room is handed over HERE, at spawn time - it is not baked into the prefab. That
+            // is what lets the same anomaly kind turn up in a different room every night.
+            if (item.room != null)
+            {
+                var anomaly = instance.GetComponentInChildren<Anomaly>(true);
+                if (anomaly != null)
+                    anomaly.AssignRoom(item.room);
+            }
 
             // Runtime-spawned objects are invisible to AudioManager's scene-load sweep,
             // so hand their AudioSources (jumpscare/fight sounds) over explicitly - this
@@ -170,10 +263,10 @@ namespace GameLogic.SpawnAndTime
             Audio.AudioManager.RegisterHierarchy(instance);
 
             _spawned.Add(instance);
-            OnAnomalySpawned?.Invoke(instance, entry);
+            OnAnomalySpawned?.Invoke(instance);
 
             if (showDebugInfo)
-                Debug.Log($"AnomalyScheduler: spawned '{Label(entry)}' at {instance.transform.position}.", this);
+                Debug.Log($"AnomalyScheduler: spawned '{item.label}' at {instance.transform.position}.", this);
         }
 
         /// <summary>Spawned anomalies that still exist (nulls from destroyed ones are pruned).</summary>
@@ -201,9 +294,9 @@ namespace GameLogic.SpawnAndTime
 
         private void LogSchedule()
         {
-            var sb = new System.Text.StringBuilder("=== Anomaly Schedule ===\n");
-            foreach (var entry in _sorted)
-                sb.AppendLine($"  minute {entry.spawnAtMinute,5:0.##} ({GameClockLabelFor(entry.spawnAtMinute)})  {Label(entry)}");
+            var sb = new System.Text.StringBuilder($"=== Anomaly Schedule ({source}) ===\n");
+            foreach (var item in _sorted)
+                sb.AppendLine($"  minute {item.atMinute,5:0.##} ({GameClockLabelFor(item.atMinute)})  {item.label}");
             Debug.Log(sb.ToString(), this);
         }
 
@@ -249,7 +342,9 @@ namespace GameLogic.SpawnAndTime
 
         void OnDrawGizmos()
         {
-            if (!showGizmos || schedule == null) return;
+            // Only the manual list has positions known before Play - a generated plan picks its
+            // rooms at runtime, so there is nothing to draw for it here.
+            if (!showGizmos || schedule == null || source != ScheduleSource.ManualList) return;
 
             Gizmos.color = gizmoColor;
 

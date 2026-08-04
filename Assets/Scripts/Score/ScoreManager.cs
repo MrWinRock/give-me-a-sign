@@ -1,5 +1,6 @@
 using GameLogic;
 using GameLogic.Flow;
+using GameLogic.Night;
 using GameLogic.SpawnAndTime;
 using TMPro;
 using UnityEngine;
@@ -23,9 +24,6 @@ namespace Score
         [Header("Score Settings")]
         [SerializeField] private int pointsPerAnomaly = 1; // Points awarded when an anomaly disappears
 
-        [Tooltip("Minimum score needed to win. Sprint 2 replaces this with NightPlan.requiredScore, computed from the number of anomalies actually scheduled.")]
-        [SerializeField] private int winThreshold = 3;
-
         [Header("UI References")]
         [SerializeField] private TextMeshProUGUI scoreText; // Optional: Display current score during gameplay
         [SerializeField] private TextMeshProUGUI thresholdText; // Optional: Display win threshold
@@ -43,6 +41,14 @@ namespace Score
         public System.Action<bool> OnGameEnded; // Sends win status (true = win, false = lose)
 
         public static ScoreManager Instance { get; private set; }
+
+        /// <summary>
+        /// Score needed to survive, taken straight from the night's plan. There is deliberately no
+        /// Inspector field for this: the plan computes it from the anomalies it actually placed, so
+        /// the bar and the content behind it cannot drift apart. That desync is what shipped a
+        /// build needing 9 points from 8 anomalies.
+        /// </summary>
+        public int RequiredScore => NightPlanProvider.HasPlan ? NightPlanProvider.Current.requiredScore : 0;
 
         void Awake()
         {
@@ -77,10 +83,18 @@ namespace Score
             else
                 Debug.LogWarning("ScoreManager: No NightTimer reference found!");
 
+            // The plan is published on the night timer's first tick, after every Start, so the goal
+            // text is refreshed when it lands rather than read too early here.
+            NightPlanProvider.OnPlanPublished += OnPlanPublished;
+            UpdateUI();
+        }
+
+        private void OnPlanPublished(NightPlan plan)
+        {
             UpdateUI();
 
-            if (winThreshold > 0 && showDebugInfo)
-                Debug.Log($"ScoreManager initialized. Win threshold: {winThreshold}");
+            if (showDebugInfo)
+                Debug.Log($"ScoreManager: night plan published - {plan.anomalies.Count} anomalies, need {plan.requiredScore}.");
         }
 
         private void HandleAnomalyDisappeared(Anomaly anomaly)
@@ -102,7 +116,7 @@ namespace Score
             UpdateUI();
 
             if (showDebugInfo)
-                Debug.Log($"Score added: +{points}. Total: {_currentScore}/{winThreshold}");
+                Debug.Log($"Score added: +{points}. Total: {_currentScore}/{RequiredScore}");
         }
 
         public void SubtractScore(int points)
@@ -114,7 +128,7 @@ namespace Score
             UpdateUI();
 
             if (showDebugInfo)
-                Debug.Log($"Score subtracted: -{points}. Total: {_currentScore}/{winThreshold}");
+                Debug.Log($"Score subtracted: -{points}. Total: {_currentScore}/{RequiredScore}");
         }
 
         private void UpdateUI()
@@ -123,7 +137,7 @@ namespace Score
                 scoreText.text = $"Score: {_currentScore}";
 
             if (thresholdText != null)
-                thresholdText.text = $"Goal: {winThreshold}";
+                thresholdText.text = $"Goal: {RequiredScore}";
         }
 
         /// <summary>
@@ -135,27 +149,17 @@ namespace Score
             if (_scoringClosed) return;
             _scoringClosed = true;
 
-            bool gameWon = _currentScore >= winThreshold;
+            bool gameWon = _currentScore >= RequiredScore;
             OnGameEnded?.Invoke(gameWon);
 
             if (showDebugInfo)
-                Debug.Log($"ScoreManager: scoring closed. Final Score: {_currentScore}/{winThreshold} ({(gameWon ? "WON" : "LOST")})");
+                Debug.Log($"ScoreManager: scoring closed. Final Score: {_currentScore}/{RequiredScore} ({(gameWon ? "WON" : "LOST")})");
         }
 
         // Public getter methods
         public int GetCurrentScore() => _currentScore;
-        public int GetWinThreshold() => winThreshold;
-        public bool IsGameWon() => _currentScore >= winThreshold;
+        public bool IsGameWon() => _currentScore >= RequiredScore;
         public bool IsGameEnded() => _scoringClosed;
-
-        public void SetWinThreshold(int newThreshold)
-        {
-            winThreshold = Mathf.Max(0, newThreshold);
-            UpdateUI();
-
-            if (showDebugInfo)
-                Debug.Log($"Win threshold changed to: {winThreshold}");
-        }
 
         // Context menu methods for testing
         [ContextMenu("Add Test Score")]
@@ -164,9 +168,9 @@ namespace Score
         [ContextMenu("Test Win Condition")]
         public void TestWinCondition()
         {
-            _currentScore = winThreshold;
+            _currentScore = RequiredScore;
             UpdateUI();
-            Debug.Log($"Score set to win threshold: {_currentScore}");
+            Debug.Log($"Score set to the night's requirement: {_currentScore}");
         }
 
         [ContextMenu("End Night Now (survived)")]
@@ -180,6 +184,8 @@ namespace Score
         {
             if (nightTimer != null)
                 nightTimer.OnNightEnded -= OnNightEnded;
+
+            NightPlanProvider.OnPlanPublished -= OnPlanPublished;
 
             if (Instance == this)
                 Instance = null;

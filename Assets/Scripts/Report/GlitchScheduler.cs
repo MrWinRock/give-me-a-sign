@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GameLogic.Night;
 using GameLogic.SpawnAndTime;
 using UnityEngine;
 
@@ -45,7 +46,11 @@ namespace Report
     /// </summary>
     public class GlitchScheduler : MonoBehaviour
     {
-        [Header("Schedule (real minutes into the night)")]
+        [Header("Source")]
+        [Tooltip("NightPlan = glitch beats from the generated night (normal). ManualList = the hand-authored Schedule below, for testing a fixed sequence.")]
+        [SerializeField] private ScheduleSource source = ScheduleSource.NightPlan;
+
+        [Header("Schedule (ManualList mode only, real minutes into the night)")]
         [SerializeField] private List<GlitchScheduleEntry> schedule = new List<GlitchScheduleEntry>();
 
         [Header("References")]
@@ -62,6 +67,7 @@ namespace Report
         // Sorted copy of the schedule; _nextIndex walks it forward as time passes.
         private readonly List<GlitchScheduleEntry> _sorted = new List<GlitchScheduleEntry>();
         private int _nextIndex;
+        private bool _built;
 
         // Entries whose minute has passed but the form was closed at the time - fired as soon
         // as the form opens, so nothing scheduled is ever silently dropped.
@@ -83,11 +89,10 @@ namespace Report
                 return;
             }
 
-            BuildSortedSchedule();
+            // The timeline is built on the first tick, not here: that is guaranteed to be after
+            // every Start in the scene, so NightPlanRunner has certainly published its plan by
+            // then and there is no script execution order to get right.
             nightTimer.OnTimeChanged += OnTimeChanged;
-
-            if (showDebugInfo)
-                LogSchedule();
         }
 
         void OnDestroy()
@@ -102,6 +107,38 @@ namespace Report
             _nextIndex = 0;
             _pending.Clear();
 
+            if (source == ScheduleSource.NightPlan)
+                BuildFromPlan();
+            else
+                BuildFromManualList();
+
+            _sorted.Sort((a, b) => a.atMinute.CompareTo(b.atMinute));
+
+            if (showDebugInfo)
+                LogSchedule();
+        }
+
+        /// <summary>
+        /// Converts the night plan's glitch beats into the same entry type the manual list uses, so
+        /// the queueing and firing logic below is shared by both sources.
+        /// </summary>
+        private void BuildFromPlan()
+        {
+            foreach (var beat in NightPlanProvider.Current.glitches)
+            {
+                _sorted.Add(new GlitchScheduleEntry
+                {
+                    entryName = $"{beat.atMinute:0.##}m - {beat.type} (plan)",
+                    atMinute = beat.atMinute,
+                    glitchType = beat.type,
+                    overrideText = beat.overrideText,
+                    fireDelay = beat.fireDelay,
+                });
+            }
+        }
+
+        private void BuildFromManualList()
+        {
             foreach (var entry in schedule)
             {
                 if (entry == null) continue;
@@ -115,12 +152,16 @@ namespace Report
 
                 _sorted.Add(entry);
             }
-
-            _sorted.Sort((a, b) => a.atMinute.CompareTo(b.atMinute));
         }
 
         private void OnTimeChanged(float normalizedTime)
         {
+            if (!_built)
+            {
+                _built = true;
+                BuildSortedSchedule();
+            }
+
             float elapsedMinutes = normalizedTime * nightTimer.NightDurationMinutes;
 
             while (_nextIndex < _sorted.Count && _sorted[_nextIndex].atMinute <= elapsedMinutes)
@@ -182,7 +223,7 @@ namespace Report
 
         private void LogSchedule()
         {
-            var sb = new System.Text.StringBuilder("=== Glitch Schedule ===\n");
+            var sb = new System.Text.StringBuilder($"=== Glitch Schedule ({source}) ===\n");
             foreach (var entry in _sorted)
                 sb.AppendLine($"  minute {entry.atMinute,5:0.##} ({GameClockLabelFor(entry.atMinute)})  {Label(entry)}");
             Debug.Log(sb.ToString(), this);

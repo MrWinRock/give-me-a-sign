@@ -1835,6 +1835,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75a01b60cf47b3e4285c7c5060b4859a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyScheduler
+  source: 0
   schedule:
   - entryName: 0.25m - Anomaly7Res2
     spawnAtMinute: 0.25
@@ -3736,6 +3737,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1958714910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1068152284
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1068152285}
+  - component: {fileID: 1068152286}
+  m_Layer: 0
+  m_Name: 'NightPlanRunner '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1068152285
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1068152284}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1068152286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1068152284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0ac78011cfd2ba4ea4454c438867d63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Night.NightPlanRunner
+  library: {fileID: 11400000, guid: 4425eaa2cfa15674c82fa578d0f2970d, type: 2}
+  nightIndexOverride: 0
+  seedOverride: 0
+  useSceneRooms: 1
+  logPlanOnStart: 1
 --- !u!1 &1127674138
 GameObject:
   m_ObjectHideFlags: 0
@@ -7010,6 +7060,7 @@ Transform:
   - {fileID: 357971566}
   - {fileID: 479646212}
   - {fileID: 2091993506}
+  - {fileID: 1068152285}
   m_Father: {fileID: 477437160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1900000003
@@ -7975,7 +8026,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
   pointsPerAnomaly: 1
-  winThreshold: 9
   scoreText: {fileID: 1634673021}
   thresholdText: {fileID: 0}
   nightTimer: {fileID: 357971565}
@@ -11966,6 +12016,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c4e2a1f8d3b4c5e6f7a8b9c0d1e2f3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Report.GlitchScheduler
+  source: 0
   schedule:
   - entryName: 2.5m - ClockDesync
     atMinute: 0.25
