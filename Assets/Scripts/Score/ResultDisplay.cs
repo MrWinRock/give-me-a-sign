@@ -1,12 +1,14 @@
-﻿using TMPro;
+using GameLogic.Flow;
+using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Score
 {
     /// <summary>
-    /// Simple result display for Scene 2. Shows final score and win/lose status.
+    /// Shows how the night went. Reads the single <see cref="NightResult"/> that
+    /// <see cref="GameFlowManager"/> built, instead of reassembling it from four PlayerPrefs
+    /// keys written by three different scripts.
     /// </summary>
     public class ResultDisplay : MonoBehaviour
     {
@@ -14,237 +16,161 @@ namespace Score
         [SerializeField] private TextMeshProUGUI scoreText;
         [SerializeField] private TextMeshProUGUI statusText;
         [SerializeField] private TextMeshProUGUI thresholdText; // Shows what score was needed to win
-    
+
         [Header("Status Colors")]
         [SerializeField] private Color winColor = Color.green;
         [SerializeField] private Color loseColor = Color.red;
-    
+
         [Header("Buttons")]
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Button quitButton;
-    
-    [Header("Scene Names")]
-    [SerializeField] private string gameSceneName = "GameScene"; // Scene 1 (Night gameplay)
 
-    [Header("Anomaly Defeat Objects")]
-    [SerializeField] private GameObject[] anomalyDefeatObjects; // Objects to activate when defeated by anomaly
-    [SerializeField] private GameObject[] normalResultObjects; // Objects to activate for normal results
+        [Header("Scene Names")]
+        [SerializeField] private string gameSceneName = "GameScene"; // Scene 1 (Night gameplay)
 
-    [Header("Debug")]
-    [SerializeField] private bool showDebugInfo;
-    
+        [Header("Anomaly Defeat Objects")]
+        [SerializeField] private GameObject[] anomalyDefeatObjects; // Objects to activate when defeated by anomaly
+        [SerializeField] private GameObject[] normalResultObjects; // Objects to activate for normal results
+
+        [Header("Debug")]
+        [SerializeField] private bool showDebugInfo;
+
         void Start()
         {
-            LoadAndDisplayResults();
+            Display(ResolveResult());
             SetupButtons();
         }
-    
-        private void LoadAndDisplayResults()
+
+        /// <summary>
+        /// Falls back to a placeholder when there is no recorded night - that happens when the
+        /// Result scene is opened directly in the editor, and a null-ref there is just noise.
+        /// </summary>
+        private NightResult ResolveResult()
         {
-            // Check if game ended due to anomaly timeout
-            bool anomalyTimeout = PlayerPrefs.GetInt("AnomalyTimeout", 0) == 1;
-            
-            if (anomalyTimeout)
+            var result = GameFlowManager.LastResult;
+            if (result != null) return result;
+
+            Debug.LogWarning("ResultDisplay: no NightResult recorded (Result scene opened directly?). Showing placeholder values.", this);
+            return NightResult.Dummy();
+        }
+
+        private void Display(NightResult result)
+        {
+            // Being caught reads as a different kind of ending from simply not scoring enough,
+            // so it gets its own objects and copy.
+            if (result.KilledByThreat)
             {
-                // Special handling for anomaly timeout - show defeat message
-                if (statusText != null)
-                {
-                    statusText.text = "YOU LOSE!";
-                    statusText.color = loseColor;
-                }
-                
-                if (scoreText != null)
-                {
-                    scoreText.text = "You were consumed by the darkness...";
-                }
-                
-                if (thresholdText != null)
-                {
-                    thresholdText.text = "?????????????????????????";
-                }
-                
-                // Activate anomaly defeat objects
-                ActivateAnomalyDefeatObjects();
-                DeactivateNormalResultObjects();
-                
-                if (showDebugInfo)
-                {
-                    Debug.Log("Results: Anomaly timeout defeat displayed with special objects activated");
-                }
-                
-                return;
+                SetTexts(
+                    status: "YOU LOSE!",
+                    statusColor: loseColor,
+                    score: "You were consumed by the darkness...",
+                    threshold: "?????????????????????????");
+
+                SetActiveAll(anomalyDefeatObjects, true);
+                SetActiveAll(normalResultObjects, false);
             }
-            
-            // Normal game ending - activate normal result objects
-            ActivateNormalResultObjects();
-            DeactivateAnomalyDefeatObjects();
-            
-            // Normal game ending - load saved score data from Scene 1
-            int finalScore = PlayerPrefs.GetInt("FinalScore", 0);
-            bool gameWon = PlayerPrefs.GetInt("GameWon", 0) == 1;
-            int winThreshold = PlayerPrefs.GetInt("WinThreshold", 3);
-        
-            // Display final score
-            if (scoreText != null)
+            else
             {
-                scoreText.text = $"Final Score: {finalScore}";
+                SetTexts(
+                    status: result.Won ? "YOU WIN!" : "YOU LOSE!",
+                    statusColor: result.Won ? winColor : loseColor,
+                    score: $"Final Score: {result.score}",
+                    threshold: $"(Need {result.requiredScore} points to win)");
+
+                SetActiveAll(normalResultObjects, true);
+                SetActiveAll(anomalyDefeatObjects, false);
             }
-        
-            // Display game status
-            if (statusText != null)
-            {
-                if (gameWon)
-                {
-                    statusText.text = "YOU WIN!";
-                    statusText.color = winColor;
-                }
-                else
-                {
-                    statusText.text = "YOU LOSE!";
-                    statusText.color = loseColor;
-                }
-            }
-        
-            // Display threshold info
-            if (thresholdText != null)
-            {
-                thresholdText.text = $"(Need {winThreshold} points to win)";
-            }
-        
+
             if (showDebugInfo)
             {
-                Debug.Log($"Results loaded - Score: {finalScore}, Won: {gameWon}, Threshold: {winThreshold}");
+                Debug.Log(
+                    $"Results: outcome={result.outcome}, score={result.score}/{result.requiredScore}, " +
+                    $"won={result.Won}, reports={result.reportsFiled} ({result.reportsFailed} failed), " +
+                    $"survivedUntil={result.survivedUntilHour:0.00}h, killedBy='{result.killedByAnomalyId ?? "-"}'.", this);
             }
         }
-    
+
+        private void SetTexts(string status, Color statusColor, string score, string threshold)
+        {
+            if (statusText != null)
+            {
+                statusText.text = status;
+                statusText.color = statusColor;
+            }
+
+            if (scoreText != null) scoreText.text = score;
+            if (thresholdText != null) thresholdText.text = threshold;
+        }
+
+        private void SetActiveAll(GameObject[] objects, bool active)
+        {
+            if (objects == null) return;
+
+            foreach (var obj in objects)
+            {
+                if (obj == null) continue;
+
+                obj.SetActive(active);
+
+                if (active && showDebugInfo)
+                    Debug.Log($"Activated result object: {obj.name}");
+            }
+        }
+
         private void SetupButtons()
         {
-            // Setup play again button
             if (playAgainButton != null)
-            {
                 playAgainButton.onClick.AddListener(PlayAgain);
-            }
-        
-            // Setup quit button
+
             if (quitButton != null)
-            {
                 quitButton.onClick.AddListener(QuitGame);
-            }
         }
-    
+
         public void PlayAgain()
         {
             if (showDebugInfo)
-            {
                 Debug.Log("Loading game scene...");
-            }
-        
-            // Clear saved score data for fresh start
-            PlayerPrefs.DeleteKey("FinalScore");
-            PlayerPrefs.DeleteKey("GameWon");
-            PlayerPrefs.DeleteKey("WinThreshold");
-            PlayerPrefs.DeleteKey("AnomalyTimeout"); // Clear anomaly timeout flag
-        
-            // Load Scene 1 (gameplay)
-            SceneManager.LoadScene(gameSceneName);
+
+            GameFlowManager.StartNewNight(gameSceneName);
         }
-    
+
         public void QuitGame()
         {
             if (showDebugInfo)
-            {
                 Debug.Log("Quitting game...");
-            }
-        
-            // Quit application
+
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif
         }
-        
-        private void ActivateAnomalyDefeatObjects()
-        {
-            foreach (GameObject obj in anomalyDefeatObjects)
-            {
-                if (obj != null)
-                {
-                    obj.SetActive(true);
-                    
-                    if (showDebugInfo)
-                    {
-                        Debug.Log($"Activated anomaly defeat object: {obj.name}");
-                    }
-                }
-            }
-        }
-        
-        private void DeactivateAnomalyDefeatObjects()
-        {
-            foreach (GameObject obj in anomalyDefeatObjects)
-            {
-                if (obj != null)
-                {
-                    obj.SetActive(false);
-                }
-            }
-        }
-        
-        private void ActivateNormalResultObjects()
-        {
-            foreach (GameObject obj in normalResultObjects)
-            {
-                if (obj != null)
-                {
-                    obj.SetActive(true);
-                    
-                    if (showDebugInfo)
-                    {
-                        Debug.Log($"Activated normal result object: {obj.name}");
-                    }
-                }
-            }
-        }
-        
-        private void DeactivateNormalResultObjects()
-        {
-            foreach (GameObject obj in normalResultObjects)
-            {
-                if (obj != null)
-                {
-                    obj.SetActive(false);
-                }
-            }
-        }
-    
-        // Context menu for testing without Scene 1
+
+        // Context menus for checking the layout without playing a whole night.
         [ContextMenu("Test Win Result")]
-        public void TestWinResult()
+        public void TestWinResult() => Display(new NightResult
         {
-            PlayerPrefs.SetInt("FinalScore", 5);
-            PlayerPrefs.SetInt("GameWon", 1);
-            PlayerPrefs.SetInt("WinThreshold", 3);
-            LoadAndDisplayResults();
-        }
-    
+            outcome = NightOutcome.Survived, score = 5, requiredScore = 3, survivedUntilHour = 6f,
+        });
+
         [ContextMenu("Test Lose Result")]
-        public void TestLoseResult()
+        public void TestLoseResult() => Display(new NightResult
         {
-            PlayerPrefs.SetInt("FinalScore", 1);
-            PlayerPrefs.SetInt("GameWon", 0);
-            PlayerPrefs.SetInt("WinThreshold", 3);
-            PlayerPrefs.DeleteKey("AnomalyTimeout");
-            LoadAndDisplayResults();
-        }
-        
+            outcome = NightOutcome.Survived, score = 1, requiredScore = 3, survivedUntilHour = 6f,
+        });
+
         [ContextMenu("Test Anomaly Defeat")]
-        public void TestAnomalyDefeat()
+        public void TestAnomalyDefeat() => Display(new NightResult
         {
-            PlayerPrefs.SetInt("AnomalyTimeout", 1);
-            PlayerPrefs.SetInt("FinalScore", 0);
-            PlayerPrefs.SetInt("GameWon", 0);
-            LoadAndDisplayResults();
-        }
+            outcome = NightOutcome.KilledByAnomaly, score = 2, requiredScore = 3,
+            survivedUntilHour = 3.4f, killedByAnomalyId = "shadow",
+        });
+
+        [ContextMenu("Test Demon Defeat")]
+        public void TestDemonDefeat() => Display(new NightResult
+        {
+            outcome = NightOutcome.KilledByDemon, score = 2, requiredScore = 3,
+            survivedUntilHour = 4.1f, killedByAnomalyId = "demon",
+        });
     }
 }

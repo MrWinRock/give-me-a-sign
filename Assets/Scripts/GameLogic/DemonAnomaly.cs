@@ -1,6 +1,7 @@
+using GameLogic.Data;
+using GameLogic.Flow;
 using Report;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
 namespace GameLogic
@@ -24,6 +25,10 @@ namespace GameLogic
     [RequireComponent(typeof(Anomaly))]
     public class DemonAnomaly : MonoBehaviour
     {
+        [Header("Room")]
+        [Tooltip("Which room this demon hides in. Leave empty to use the room assigned at spawn time; if neither is set, it falls back to its own X position.")]
+        [SerializeField] private RoomDefinition room;
+
         [Header("Reveal")]
         [Tooltip("Fullscreen scare visual (child object with a SpriteRenderer). Kept inactive until the camera enters the room; auto-scaled to cover the whole camera view.")]
         [SerializeField] private GameObject overlayRoot;
@@ -64,6 +69,7 @@ namespace GameLogic
         private Anomaly _anomaly;
         private GlitchDirector _glitchDirector;
         private Camera _camera;
+        private RoomDefinition _room;
         private float _roomCameraX;
 
         private VideoPlayer _videoPlayer;
@@ -93,13 +99,33 @@ namespace GameLogic
             _camera = Camera.main;
             _glitchDirector = FindFirstObjectByType<GlitchDirector>();
 
-            // This demon's room = the camera area closest to where it was placed.
-            _roomCameraX = GameManager.CameraPositionsX[0];
-            foreach (float x in GameManager.CameraPositionsX)
+            // The demon's room is data now, not something inferred from its position by
+            // scanning a hardcoded list of camera X values.
+            _room = ResolveRoom();
+
+            if (_room != null)
             {
-                if (Mathf.Abs(transform.position.x - x) < Mathf.Abs(transform.position.x - _roomCameraX))
-                    _roomCameraX = x;
+                _roomCameraX = _room.cameraX;
             }
+            else
+            {
+                // No room assigned anywhere: reveal where it stands. Keeps a half-configured
+                // prefab playable instead of making it silently never trigger.
+                _roomCameraX = transform.position.x;
+                Debug.LogWarning(
+                    $"DemonAnomaly '{name}' has no RoomDefinition (neither the Room field nor a room " +
+                    $"assigned at spawn). Falling back to its own X position ({_roomCameraX:0.##}).", this);
+            }
+        }
+
+        /// <summary>
+        /// A room handed over at spawn time wins over the serialized one - that is how a
+        /// procedurally generated night places the demon in a room it picked.
+        /// </summary>
+        private RoomDefinition ResolveRoom()
+        {
+            if (_anomaly != null && _anomaly.AssignedRoom != null) return _anomaly.AssignedRoom;
+            return room;
         }
 
         void OnDestroy()
@@ -183,7 +209,12 @@ namespace GameLogic
             _glitchDirector?.SetIntensity(glitchIntensityWhileActive);
 
             if (showDebugInfo)
-                Debug.Log($"DemonAnomaly: REVEALED in room x={_roomCameraX}. Speak '{_anomaly.correctAnomalyType}' to banish it!", this);
+            {
+                string expected = _anomaly.Definition != null
+                    ? string.Join("' or '", _anomaly.Definition.correctKeywords)
+                    : _anomaly.LegacyAnomalyType;
+                Debug.Log($"DemonAnomaly: REVEALED in room '{(_room != null ? _room.Label : _roomCameraX.ToString("0.##"))}'. Speak '{expected}' to banish it!", this);
+            }
         }
 
         /// <summary>Activates the overlay (video takes priority over the static image if assigned) and scales it to cover the camera view of this room.</summary>
@@ -310,27 +341,16 @@ namespace GameLogic
             _resolved = true;
             EndThreat();
 
-            // Force the report window closed BEFORE the scene unloads, instead of yanking the
-            // scene out from under an active WhisperMicInput recording session - that left the
-            // mic/whisper stream mid-flight and caused a hang with stale UI behind it.
-            // IncidentReportUI.Hide() (called from here) stops any in-progress recording
-            // synchronously before the window closes, so this always finishes cleanly first.
-            var reportManager = IncidentReportManager.Instance;
-            if (reportManager != null && reportManager.IsReportOpen)
-                reportManager.CancelReport();
-
             if (showDebugInfo)
                 Debug.Log("DemonAnomaly: time limit reached - player loses.", this);
 
-            // Same lose path as a regular anomaly timeout, so the Result scene shows the
-            // "consumed by the darkness" defeat.
-            PlayerPrefs.SetInt("FinalScore", 0);
-            PlayerPrefs.SetInt("GameWon", 0);
-            PlayerPrefs.SetInt("WinThreshold", 1);
-            PlayerPrefs.SetInt("AnomalyTimeout", 1);
-            PlayerPrefs.Save();
-
-            SceneManager.LoadScene("Result");
+            // Just report what happened. GameFlowManager decides what it means, closes the
+            // report window (which stops any live mic recording first - loading the scene out
+            // from under one used to hang the game) and moves to the Result scene.
+            GameFlowManager.Instance?.EndNight(
+                NightOutcome.KilledByDemon,
+                _anomaly.Definition != null ? _anomaly.Definition.anomalyId : null,
+                _room != null ? _room.roomId : null);
         }
 
         /// <summary>Reverts everything the reveal turned on (alert badge, glitch intensity, global flag).</summary>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using GameLogic;
+using GameLogic.Data;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,11 +26,15 @@ namespace GiveMeASign.EditorTools
                 return;
             }
 
-            var catalog = LoadCatalog();
             var attr = (AnomalyOptionAttribute)attribute;
-            List<string> options = catalog == null
-                ? null
-                : (attr.Kind == AnomalyOptionAttribute.OptionKind.AnomalyType ? catalog.anomalyTypes : catalog.locations);
+            var catalog = attr.Kind == AnomalyOptionAttribute.OptionKind.AnomalyType ? LoadCatalog() : null;
+
+            // Rooms no longer live in the catalog - they are RoomDefinition assets, so the
+            // Location dropdown reads those directly and can never drift out of sync with the
+            // rooms the game actually has.
+            List<string> options = attr.Kind == AnomalyOptionAttribute.OptionKind.AnomalyType
+                ? catalog?.anomalyTypes
+                : LoadRoomDisplayNames();
 
             if (options == null || options.Count == 0)
             {
@@ -70,13 +75,43 @@ namespace GiveMeASign.EditorTools
                 }
             }
 
-            if (GUI.Button(editRect, "…", EditorStyles.miniButton))
+            // Jump-to-source button: the catalog for anomaly types, the room assets folder for
+            // locations. Hidden when there is nothing to jump to.
+            Object source = catalog != null ? (Object)catalog : FirstRoomAsset();
+            if (source != null && GUI.Button(editRect, "…", EditorStyles.miniButton))
             {
-                Selection.activeObject = catalog;
-                EditorGUIUtility.PingObject(catalog);
+                Selection.activeObject = source;
+                EditorGUIUtility.PingObject(source);
             }
 
             EditorGUI.EndProperty();
+        }
+
+        private static List<string> LoadRoomDisplayNames()
+        {
+            var names = new List<string>();
+            foreach (var room in LoadRoomAssets())
+                names.Add(room.Label);
+            return names;
+        }
+
+        private static Object FirstRoomAsset()
+        {
+            var rooms = LoadRoomAssets();
+            return rooms.Count > 0 ? rooms[0] : null;
+        }
+
+        /// <summary>All RoomDefinition assets in the project, in camera order.</summary>
+        private static List<RoomDefinition> LoadRoomAssets()
+        {
+            var rooms = new List<RoomDefinition>();
+            foreach (var guid in AssetDatabase.FindAssets("t:RoomDefinition"))
+            {
+                var room = AssetDatabase.LoadAssetAtPath<RoomDefinition>(AssetDatabase.GUIDToAssetPath(guid));
+                if (room != null) rooms.Add(room);
+            }
+            rooms.Sort((a, b) => a.cameraOrder.CompareTo(b.cameraOrder));
+            return rooms;
         }
 
         private static AnomalyOptionsCatalog LoadCatalog()

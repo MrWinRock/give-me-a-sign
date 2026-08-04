@@ -1,23 +1,30 @@
 using GameLogic;
+using GameLogic.Flow;
 using GameLogic.SpawnAndTime;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Score
 {
     /// <summary>
-    /// Manages the scoring system for the night gameplay.
+    /// Keeps the running score for the night and the bar it has to clear.
+    ///
     /// Listens to the global Anomaly.OnAnyAnomalyDisappeared event, so every anomaly -
     /// scene-placed or spawned at runtime by AnomalyScheduler - scores automatically with
     /// no polling and no FindObjectsOfType scans.
-    /// Determines win/lose at 6:00 AM and hands the result to the Result scene via PlayerPrefs.
+    ///
+    /// It deliberately does NOT decide whether the night was won, save anything, or load the
+    /// Result scene: <see cref="GameFlowManager"/> owns all of that. It used to do all three,
+    /// which is why it had to check an "AnomalyTimeout" PlayerPrefs flag to avoid overwriting a
+    /// result some other script had already written.
     /// </summary>
     public class ScoreManager : MonoBehaviour
     {
         [Header("Score Settings")]
         [SerializeField] private int pointsPerAnomaly = 1; // Points awarded when an anomaly disappears
-        [SerializeField] private int winThreshold = 3; // Minimum score needed to win
+
+        [Tooltip("Minimum score needed to win. Sprint 2 replaces this with NightPlan.requiredScore, computed from the number of anomalies actually scheduled.")]
+        [SerializeField] private int winThreshold = 3;
 
         [Header("UI References")]
         [SerializeField] private TextMeshProUGUI scoreText; // Optional: Display current score during gameplay
@@ -26,16 +33,11 @@ namespace Score
         [Header("System References")]
         [SerializeField] private NightTimer nightTimer; // Auto-found if left empty
 
-        [Header("Scene Management")]
-        [SerializeField] private string resultSceneName = "ResultScene"; // Name of the result scene
-        [SerializeField] private bool useSceneIndex; // Use scene index instead of name
-        [SerializeField] private int resultSceneIndex = 1; // Index of result scene
-
         [Header("Debug Settings")]
         [SerializeField] private bool showDebugInfo;
 
         private int _currentScore;
-        private bool _gameEnded;
+        private bool _scoringClosed;
 
         public System.Action<int> OnScoreChanged; // Sends current score
         public System.Action<bool> OnGameEnded; // Sends win status (true = win, false = lose)
@@ -77,16 +79,13 @@ namespace Score
 
             UpdateUI();
 
-            // Clear any previous run's result data so the Result scene never reads stale values.
-            ClearSavedData();
-
-            if (showDebugInfo)
+            if (winThreshold > 0 && showDebugInfo)
                 Debug.Log($"ScoreManager initialized. Win threshold: {winThreshold}");
         }
 
         private void HandleAnomalyDisappeared(Anomaly anomaly)
         {
-            if (_gameEnded) return;
+            if (_scoringClosed) return;
 
             AddScore(pointsPerAnomaly);
 
@@ -96,7 +95,7 @@ namespace Score
 
         public void AddScore(int points)
         {
-            if (_gameEnded) return;
+            if (_scoringClosed) return;
 
             _currentScore += points;
             OnScoreChanged?.Invoke(_currentScore);
@@ -108,7 +107,7 @@ namespace Score
 
         public void SubtractScore(int points)
         {
-            if (_gameEnded) return;
+            if (_scoringClosed) return;
 
             _currentScore = Mathf.Max(0, _currentScore - points);
             OnScoreChanged?.Invoke(_currentScore);
@@ -127,87 +126,27 @@ namespace Score
                 thresholdText.text = $"Goal: {winThreshold}";
         }
 
+        /// <summary>
+        /// The clock reached 6:00 AM. Freeze the score so nothing lands after the fact, then let
+        /// GameFlowManager (called by NightTimer straight after this) read the final numbers.
+        /// </summary>
         private void OnNightEnded()
         {
-            if (_gameEnded) return;
-
-            // An anomaly timeout loss already saved its own result and is loading the Result
-            // scene itself - don't overwrite that with a normal night-end result.
-            if (PlayerPrefs.GetInt("AnomalyTimeout", 0) == 1)
-            {
-                if (showDebugInfo)
-                    Debug.Log("ScoreManager: Anomaly timeout detected, skipping normal game end");
-                return;
-            }
-
-            if (showDebugInfo)
-                Debug.Log("ScoreManager: Normal night end detected, processing game end");
-
-            EndGame();
-        }
-
-        private void EndGame()
-        {
-            _gameEnded = true;
+            if (_scoringClosed) return;
+            _scoringClosed = true;
 
             bool gameWon = _currentScore >= winThreshold;
-
-            SaveScoreData(gameWon);
             OnGameEnded?.Invoke(gameWon);
 
             if (showDebugInfo)
-            {
-                string status = gameWon ? "WON" : "LOST";
-                Debug.Log($"Game ended! Status: {status} | Final Score: {_currentScore}/{winThreshold}");
-            }
-
-            // Load result scene after a short delay
-            Invoke(nameof(LoadResultScene), 1f);
-        }
-
-        private void SaveScoreData(bool gameWon)
-        {
-            PlayerPrefs.SetInt("FinalScore", _currentScore);
-            PlayerPrefs.SetInt("GameWon", gameWon ? 1 : 0);
-            PlayerPrefs.SetInt("WinThreshold", winThreshold);
-
-            // Ensure anomaly timeout flag is cleared for normal game endings
-            PlayerPrefs.DeleteKey("AnomalyTimeout");
-
-            PlayerPrefs.Save();
-
-            if (showDebugInfo)
-                Debug.Log($"Score data saved: Score={_currentScore}, Won={gameWon}, Threshold={winThreshold}");
-        }
-
-        private void ClearSavedData()
-        {
-            PlayerPrefs.DeleteKey("FinalScore");
-            PlayerPrefs.DeleteKey("GameWon");
-            PlayerPrefs.DeleteKey("WinThreshold");
-            PlayerPrefs.DeleteKey("AnomalyTimeout"); // Clear anomaly timeout flag to prevent persistent state
-        }
-
-        private void LoadResultScene()
-        {
-            if (useSceneIndex)
-            {
-                if (resultSceneIndex < SceneManager.sceneCountInBuildSettings)
-                    SceneManager.LoadScene(resultSceneIndex);
-                else
-                    Debug.LogError($"Result scene index {resultSceneIndex} is out of range!");
-            }
-            else
-            {
-                SceneManager.LoadScene(resultSceneName);
-            }
+                Debug.Log($"ScoreManager: scoring closed. Final Score: {_currentScore}/{winThreshold} ({(gameWon ? "WON" : "LOST")})");
         }
 
         // Public getter methods
         public int GetCurrentScore() => _currentScore;
         public int GetWinThreshold() => winThreshold;
         public bool IsGameWon() => _currentScore >= winThreshold;
-        public bool IsGameEnded() => _gameEnded;
+        public bool IsGameEnded() => _scoringClosed;
 
         public void SetWinThreshold(int newThreshold)
         {
@@ -218,23 +157,9 @@ namespace Score
                 Debug.Log($"Win threshold changed to: {winThreshold}");
         }
 
-        public void ForceEndGame()
-        {
-            if (!_gameEnded)
-            {
-                if (showDebugInfo)
-                    Debug.Log("Game manually ended!");
-
-                EndGame();
-            }
-        }
-
         // Context menu methods for testing
         [ContextMenu("Add Test Score")]
-        public void AddTestScore()
-        {
-            AddScore(1);
-        }
+        public void AddTestScore() => AddScore(1);
 
         [ContextMenu("Test Win Condition")]
         public void TestWinCondition()
@@ -244,19 +169,11 @@ namespace Score
             Debug.Log($"Score set to win threshold: {_currentScore}");
         }
 
-        [ContextMenu("Test Normal Lose Condition")]
-        public void TestNormalLoseCondition()
+        [ContextMenu("End Night Now (survived)")]
+        public void ForceEndNight()
         {
-            _currentScore = winThreshold - 1; // Set score below threshold
-            PlayerPrefs.DeleteKey("AnomalyTimeout"); // Ensure no anomaly timeout flag
-            ForceEndGame();
-            Debug.Log($"Testing normal lose: Score={_currentScore}, Threshold={winThreshold}");
-        }
-
-        [ContextMenu("Force End Game")]
-        public void ForceEndGameContextMenu()
-        {
-            ForceEndGame();
+            OnNightEnded();
+            GameFlowManager.Instance?.EndNight(NightOutcome.Survived);
         }
 
         void OnDestroy()

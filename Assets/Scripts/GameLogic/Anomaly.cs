@@ -1,15 +1,58 @@
 using System.Collections;
 using System.Collections.Generic;
+using GameLogic.Data;
+using GameLogic.Flow;
 using Pray;
 using Report;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace GameLogic
 {
-    public class Anomaly : MonoBehaviour
+    /// <summary>Where an anomaly is in its life. Only ever moves forward.</summary>
+    public enum AnomalyState
     {
-        // Static collection to track all active anomalies
+        /// <summary>Spawned but not in play yet - the demon sits here until the camera finds it.</summary>
+        Hidden,
+        /// <summary>On screen and reportable, not yet coming for the player.</summary>
+        Visible,
+        /// <summary>Escalated: moving in, prayer window open, threat timer running.</summary>
+        Threatening,
+        /// <summary>Banished. Terminal.</summary>
+        Resolved,
+    }
+
+    /// <summary>
+    /// One supernatural entity. This is the only anomaly type the rest of the game talks to; it
+    /// owns identity, the state machine and the global registry, and delegates the actual doing
+    /// to three siblings: <see cref="AnomalyMovement"/>, <see cref="AnomalyPresenter"/> and
+    /// <see cref="AnomalyThreatTimer"/>.
+    ///
+    /// The rule that keeps it small: an anomaly reports WHAT HAPPENED, it never decides HOW THE
+    /// NIGHT ENDS. When its threat timer runs out it says so and hands the outcome to
+    /// <see cref="GameFlowManager"/>; it does not write save data or load scenes. That is what
+    /// lets new lose conditions be added without touching this file.
+    /// </summary>
+    [RequireComponent(typeof(AnomalyMovement))]
+    [RequireComponent(typeof(AnomalyPresenter))]
+    [RequireComponent(typeof(AnomalyThreatTimer))]
+    public partial class Anomaly : MonoBehaviour
+    {
+        public enum RespondType
+        {
+            DisappearInstantly,        // หายทันที
+            MoveToTargetThenDisappear, // เคลื่อนไปหา target แล้วค่อยหาย
+            MoveOnly                   // แค่เคลื่อนไปหา target ไม่หาย
+        }
+
+        /// <summary>Delay between a failed report and the anomaly reacting to it.</summary>
+        private const float RespondDelay = 4f;
+        /// <summary>Pause after the banish animation starts before the object goes away.</summary>
+        private const float DespawnDelay = 0.6f;
+        /// <summary>Gap between the jumpscare stinger and the fight loop.</summary>
+        private const float FightAudioDelay = 0.2f;
+
+        // ── Static registry ──────────────────────────────────────────────────────────────
+
         private static readonly List<Anomaly> _activeAnomalies = new List<Anomaly>();
         public static IReadOnlyList<Anomaly> ActiveAnomalies => _activeAnomalies;
 
@@ -20,81 +63,296 @@ namespace GameLogic
         /// </summary>
         public static event System.Action<Anomaly> OnAnyAnomalyDisappeared;
 
-        public enum RespondType
-        {
-            DisappearInstantly,  // หายทันที
-            MoveToTargetThenDisappear, // เคลื่อนไปหา target แล้วค่อยหาย
-            MoveOnly             // แค่เคลื่อนไปหา target ไม่หาย
-        }
+        /// <summary>
+        /// Fired when any anomaly's threat window closes without it being banished. Subscribe here
+        /// to react to the player being caught (Sprint 4's negligence strikes) without editing
+        /// this class.
+        /// </summary>
+        public static event System.Action<Anomaly> OnAnyThreatExpired;
 
-        [Header("Respond Settings")]
-        public RespondType respondType = RespondType.MoveToTargetThenDisappear;
+        // ── Identity ─────────────────────────────────────────────────────────────────────
 
-        [SerializeField] private Transform moveTarget; // Empty GameObject ที่กำหนดจาก Hierarchy
-        [SerializeField] private float moveSpeed = 3f; // ความเร็วในการเคลื่อน
-        [SerializeField] private float disappearDelay = 0.5f; // เวลาหลังถึงเป้าหมายก่อนหาย (ถ้ามี)
-        [SerializeField] private bool destroyAfterDisappear ; // จะลบ object ทิ้งไหม
-    
-        [Header("Scale Animation")]
-        [SerializeField] private float scaleUpAmount = 1.5f; // ขยายเป็น 1.5 เท่า
-        [SerializeField] private float scaleAnimationSpeed = 2f; // ความเร็วการขยาย
+        [Header("Identity")]
+        [Tooltip("What KIND of anomaly this is. Supplies its keywords, respond type, speed and threat window.")]
+        [SerializeField] private AnomalyDefinition definition;
 
-        public GameObject cutsceneCheck;
+        [Header("Despawn")]
+        [Tooltip("Destroy the GameObject after banishing instead of just deactivating it.")]
+        [SerializeField] private bool destroyAfterDisappear;
 
-    [Header("Incident Report Data")]
-    [Tooltip("Room name that must be selected on the Incident Report form for this anomaly (e.g. \"Kitchen\").")]
-    [AnomalyOption(AnomalyOptionAttribute.OptionKind.Location)]
-    public string correctLocationName;
-    [Tooltip("Anomaly type keyword the player must speak into the Push-to-Talk mic (e.g. \"Shadow Figure\").")]
-    [AnomalyOption(AnomalyOptionAttribute.OptionKind.AnomalyType)]
-    public string correctAnomalyType;
+        /// <summary>The kind of anomaly this is, or null on a prefab that hasn't been migrated yet.</summary>
+        public AnomalyDefinition Definition => definition;
 
-    [Header("Audio")]
-    [SerializeField] private AudioSource jumpScareAudioSource;
-    [SerializeField] private AudioSource fightAudioSource;// AudioSource สำหรับเสียง anomaly
-    
-    [Header("Animation")]
-    [SerializeField] private Animator anomalyAnimator; // Animator component for anomaly animations
-    [SerializeField] private string moveTriggerName = "StartMove"; // Animation trigger name when starting to move
-    [SerializeField] private string idleTriggerName = "Idle"; // Animation trigger name when idle/banished
-    
-    private bool _isMoving;
-        private Vector3 _originalScale;
-        private bool _canPrayDisappear; // Can disappear with voice prayer
-        private PrayUiManager _prayManager;
-        public float timeToDisappear;
-    
-        // Event fired when anomaly disappears (for scoring system)
+        /// <summary>
+        /// Which room it turned up in. Set when it spawns, NOT baked into the prefab - that is
+        /// what allows a night to place the same kind of anomaly in a different room each run.
+        /// </summary>
+        public RoomDefinition AssignedRoom { get; private set; }
+
+        /// <summary>Called by whatever spawned this anomaly.</summary>
+        public void AssignRoom(RoomDefinition room) => AssignedRoom = room;
+
+        // ── State ────────────────────────────────────────────────────────────────────────
+
+        // Starts Hidden and is promoted by OnEnable, which makes the demon's "spawned but not
+        // revealed yet" case correct without depending on component Awake ordering: it disables
+        // the Anomaly component, so OnEnable simply never runs until the camera finds it.
+        public AnomalyState State { get; private set; } = AnomalyState.Hidden;
+
+        /// <summary>Fired when this anomaly's threat window closes without it being banished.</summary>
+        public System.Action<Anomaly> OnThreatExpired;
+
+        /// <summary>Fired when this anomaly is banished (for scoring).</summary>
         public System.Action<Anomaly> OnAnomalyDisappeared;
 
         private bool _isReported;
         /// <summary>True once an Incident Report has been opened for this anomaly (prevents duplicate reports).</summary>
         public bool IsReported => _isReported;
 
-        private bool _alertRaised; // tracks whether THIS anomaly incremented IncidentReportManager's alert counter
+        private bool _canPrayDisappear;  // the prayer window is open
+        private bool _alertRaised;       // this anomaly incremented IncidentReportManager's alert counter
         private bool _disappearNotified; // guards the disappear events so one activation can only ever score once
+
+        private AnomalyMovement _movement;
+        private AnomalyPresenter _presenter;
+        private AnomalyThreatTimer _threatTimer;
+        private PrayUiManager _prayManager;
+
+        // The transitional pre-split configuration lives in Anomaly.Legacy.cs - see that file.
+
+        /// <summary>Respond behaviour from the Definition when there is one, else the legacy field.</summary>
+        public RespondType EffectiveRespondType => definition != null ? definition.respondType : respondType;
+
+        // ── Lifecycle ────────────────────────────────────────────────────────────────────
+
+        void Awake()
+        {
+            _movement = Attach<AnomalyMovement>();
+            _presenter = Attach<AnomalyPresenter>();
+            _threatTimer = Attach<AnomalyThreatTimer>();
+
+            // Until the migration tool has run, the legacy fields are still the real
+            // configuration, so push them into the siblings that now own them.
+            if (!migrated)
+                SeedSiblingsFromLegacy(_movement, _presenter, _threatTimer);
+
+            // A Definition, when present, is authoritative - editing the asset has to change the
+            // anomaly without anyone re-touching prefabs.
+            if (definition != null)
+            {
+                _movement.SetMoveSpeed(definition.moveSpeed);
+                _threatTimer.SetTimeout(definition.threatTimeoutSeconds);
+            }
+
+            _threatTimer.OnExpired += HandleThreatExpired;
+        }
+
+        private T Attach<T>() where T : Component
+        {
+            var existing = GetComponent<T>();
+            return existing != null ? existing : gameObject.AddComponent<T>();
+        }
 
         void Start()
         {
-            _originalScale = transform.localScale;
-            _prayManager = FindObjectOfType<PrayUiManager>();
-            
-            // Get animator component if not assigned
-            if (anomalyAnimator == null)
-                anomalyAnimator = GetComponent<Animator>();
-            
+            _prayManager = FindFirstObjectByType<PrayUiManager>();
         }
 
         void OnEnable()
         {
-            // Add this anomaly to the active list when enabled
             if (!_activeAnomalies.Contains(this))
-            {
                 _activeAnomalies.Add(this);
-            }
 
             // A re-activated anomaly counts as a fresh appearance and may score again.
             _disappearNotified = false;
+
+            if (State == AnomalyState.Hidden)
+                State = AnomalyState.Visible;
+        }
+
+        void OnDisable()
+        {
+            _activeAnomalies.Remove(this);
+
+            // Being switched off is only "hidden again" if it wasn't banished - HandleDisappear
+            // deactivates the object on its way out and that must stay Resolved.
+            if (State != AnomalyState.Resolved)
+                State = AnomalyState.Hidden;
+        }
+
+        void OnDestroy()
+        {
+            _activeAnomalies.Remove(this);
+
+            if (_threatTimer != null)
+                _threatTimer.OnExpired -= HandleThreatExpired;
+
+            // Safety net: if this anomaly is destroyed mid-jumpscare, don't leave the
+            // Incident Report window's ALERT badge stuck on.
+            ClearAlert();
+        }
+
+        // ── Escalation ───────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Called when a report comes back wrong (or the player clicked without reporting).
+        /// The anomaly reacts according to its respond type after a short beat.
+        /// </summary>
+        public void Respond()
+        {
+            StartCoroutine(RespondAfterDelay());
+        }
+
+        private IEnumerator RespondAfterDelay()
+        {
+            yield return new WaitForSeconds(RespondDelay);
+
+            switch (EffectiveRespondType)
+            {
+                case RespondType.DisappearInstantly:
+                    HandleDisappear();
+                    break;
+
+                case RespondType.MoveToTargetThenDisappear:
+                    if (RequireTarget())
+                        yield return StartCoroutine(Threaten());
+                    break;
+
+                case RespondType.MoveOnly:
+                    if (RequireTarget())
+                        yield return StartCoroutine(Approach());
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// An anomaly with nothing to walk toward stays put and does nothing - which is exactly
+        /// how the demon survives a wrong report so the player can try again.
+        /// </summary>
+        private bool RequireTarget()
+        {
+            if (_movement.HasTarget) return true;
+
+            Debug.LogWarning($"{name} has no target assigned!", this);
+            return false;
+        }
+
+        /// <summary>Comes for the player, opens the prayer window, then starts the countdown.</summary>
+        private IEnumerator Threaten()
+        {
+            State = AnomalyState.Threatening;
+            _canPrayDisappear = true;
+            _presenter.PlayThreatening();
+
+            if (_prayManager != null)
+            {
+                _prayManager.ShowPrayPanel();
+                _presenter.PlayJumpScare();
+
+                RaiseAlert();
+
+                yield return new WaitForSeconds(FightAudioDelay);
+                _presenter.PlayFightLoop();
+            }
+
+            yield return _movement.MoveToTarget();
+
+            // Arrived and still not banished - the clock starts.
+            if (_canPrayDisappear)
+                _threatTimer.Begin();
+        }
+
+        /// <summary>Walks in and stays. Counts as dealt with on arrival - no prayer needed.</summary>
+        private IEnumerator Approach()
+        {
+            State = AnomalyState.Threatening;
+            _presenter.PlayThreatening();
+
+            yield return _movement.MoveToTarget();
+
+            _canPrayDisappear = false;
+            RaiseDisappeared();
+        }
+
+        // ── Resolution ───────────────────────────────────────────────────────────────────
+
+        /// <summary>Called by VoiceCommandRouter when the prayer is recognised.</summary>
+        public void OnPrayerSuccessful()
+        {
+            if (!CanBePrayerBanished()) return;
+
+            Debug.Log($"Prayer successful for anomaly {name}. Banishing...");
+
+            // Clear the flag first so the threat timer can't fire while we tear down.
+            _canPrayDisappear = false;
+            StopEverything();
+            HandleDisappear();
+        }
+
+        /// <summary>Check if this anomaly can be banished by prayer.</summary>
+        public bool CanBePrayerBanished()
+        {
+            return _canPrayDisappear && EffectiveRespondType == RespondType.MoveToTargetThenDisappear;
+        }
+
+        /// <summary>
+        /// Called by IncidentReportManager when the submitted report correctly matches this anomaly.
+        /// Resolves it immediately, the same way a successful prayer banishment does.
+        /// </summary>
+        public void ResolveByReport()
+        {
+            _canPrayDisappear = false;
+            StopEverything();
+            HandleDisappear();
+        }
+
+        private void HandleDisappear()
+        {
+            if (State == AnomalyState.Resolved) return;
+            State = AnomalyState.Resolved;
+
+            _presenter.PlayResolved();
+            _presenter.StopFightLoop();
+
+            if (_prayManager != null)
+                _prayManager.HidePrayPanel();
+
+            ClearAlert();
+
+            // Fire before disappearing, so scoring sees it.
+            RaiseDisappeared();
+
+            if (destroyAfterDisappear)
+                Destroy(gameObject, DespawnDelay); // delayed so the banish animation can play
+            else
+                StartCoroutine(DeactivateAfterDelay(DespawnDelay));
+        }
+
+        private IEnumerator DeactivateAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// The threat window closed. Announce it and let GameFlowManager decide what it costs -
+        /// this class deliberately knows nothing about save data or scenes.
+        /// </summary>
+        private void HandleThreatExpired()
+        {
+            if (!_canPrayDisappear || State == AnomalyState.Resolved) return;
+
+            _canPrayDisappear = false;
+
+            Debug.Log($"Anomaly {name} timeout reached. Player loses.", this);
+
+            OnThreatExpired?.Invoke(this);
+            OnAnyThreatExpired?.Invoke(this);
+
+            GameFlowManager.Instance?.EndNight(
+                NightOutcome.KilledByAnomaly,
+                definition != null ? definition.anomalyId : correctAnomalyType,
+                AssignedRoom != null ? AssignedRoom.roomId : null);
         }
 
         /// <summary>Fires both disappear events, but only once per activation.</summary>
@@ -107,255 +365,45 @@ namespace GameLogic
             OnAnyAnomalyDisappeared?.Invoke(this);
         }
 
-        void OnDisable()
-        {
-            // Remove this anomaly from the active list when disabled
-            _activeAnomalies.Remove(this);
-        }
-
-        void OnDestroy()
-        {
-            // Remove this anomaly from the active list when destroyed
-            _activeAnomalies.Remove(this);
-
-            // Safety net: if this anomaly is destroyed mid-jumpscare, don't leave the
-            // Incident Report window's ALERT badge stuck on.
-            if (_alertRaised)
-            {
-                _alertRaised = false;
-                IncidentReportManager.Instance?.SetAlert(false);
-            }
-        }
-
-        public void Respond()
-        {
-            StartCoroutine(DelayedRespond());
-        }
-
-        private IEnumerator DelayedRespond()
-        {
-            yield return new WaitForSeconds(4f); // Wait 4 seconds
-
-            switch (respondType)
-            {
-                case RespondType.DisappearInstantly:
-                    HandleDisappear();
-                    break;
-
-                case RespondType.MoveToTargetThenDisappear:
-                    if (moveTarget != null)
-                        StartCoroutine(MoveToTargetCoroutine(true));
-                    else
-                        Debug.LogWarning($"{name} has no target assigned!");
-                    break;
-
-                case RespondType.MoveOnly:
-                    if (moveTarget != null)
-                        StartCoroutine(MoveToTargetCoroutine(false));
-                    else
-                        Debug.LogWarning($"{name} has no target assigned!");
-                    break;
-            }
-        }
-
-        private IEnumerator MoveToTargetCoroutine(bool disappearAfter)
-        {
-            _isMoving = true;
-            
-            // Trigger movement animation
-            if (anomalyAnimator != null && !string.IsNullOrEmpty(moveTriggerName))
-            {
-                anomalyAnimator.SetTrigger(moveTriggerName);
-                Debug.Log($"Triggered animation: {moveTriggerName} for anomaly {name}");
-            }
-            
-        
-            // Enable prayer disappearing only for MoveToTargetThenDisappear type
-            if (respondType == RespondType.MoveToTargetThenDisappear)
-            {
-                _canPrayDisappear = true;
-                // Show prayer UI
-                if (_prayManager != null)
-                {
-                    _prayManager.ShowPrayPanel();
-                    jumpScareAudioSource.Play();
-
-                    _alertRaised = true;
-                    IncidentReportManager.Instance?.SetAlert(true);
-
-                    yield return new WaitForSeconds(0.2f);
-                    fightAudioSource.Play();
-                }
-            }
-        
-            // Start scale up animation
-            StartCoroutine(ScaleUpAnimation());
-
-            while (moveTarget != null && Vector3.Distance(transform.position, moveTarget.position) > 0.05f)
-            {
-                transform.position = Vector3.MoveTowards(
-                    transform.position,
-                    moveTarget.position,
-                    moveSpeed * Time.deltaTime
-                );
-                yield return null;
-            }
-
-            _isMoving = false;
-        
-            if (disappearAfter)
-            {
-                // Keep prayer UI active and wait for voice input (prayer)
-                if (respondType == RespondType.MoveToTargetThenDisappear)
-                {
-                    _canPrayDisappear = true;
-                
-                    // Wait for timeToDisappear seconds then reload scene if not banished by prayer
-                    float timer = 0f;
-                    while (timer < timeToDisappear && _canPrayDisappear && gameObject.activeInHierarchy)
-                    {
-                        timer += Time.deltaTime;
-                        yield return null;
-                    }
-                
-                    // Double check: If canPrayDisappear is still true and object is still active, load SampleScene (player loses)
-                    if (_canPrayDisappear && gameObject.activeInHierarchy)
-                    {
-                        Debug.Log($"Anomaly {name} timeout reached. Player loses - loading SampleScene...");
-                        
-                        // Save loss data regardless of current score
-                        PlayerPrefs.SetInt("FinalScore", 0); // Set score to 0 for loss
-                        PlayerPrefs.SetInt("GameWon", 0); // Mark as loss
-                        PlayerPrefs.SetInt("WinThreshold", 1); // Doesn't matter for loss
-                        PlayerPrefs.SetInt("AnomalyTimeout", 1); // Flag to indicate anomaly timeout
-                        PlayerPrefs.Save();
-                        
-                        // Load SampleScene immediately
-                        SceneManager.LoadScene("Result");
-                    }
-                }
-                else
-                {
-                    _canPrayDisappear = false;
-                    yield return new WaitForSeconds(disappearDelay);
-                    HandleDisappear();
-                }
-            }
-            else
-            {
-                _canPrayDisappear = false;
-                // For MoveOnly type, fire the disappear event for scoring even though it doesn't actually disappear
-                if (respondType == RespondType.MoveOnly)
-                {
-                    RaiseDisappeared();
-                }
-            }
-        }
-
-        private IEnumerator ScaleUpAnimation()
-        {
-            Vector3 targetScale = _originalScale * scaleUpAmount;
-        
-            while (Vector3.Distance(transform.localScale, targetScale) > 0.01f)
-            {
-                transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleAnimationSpeed * Time.deltaTime);
-                yield return null;
-            }
-        
-            transform.localScale = targetScale;
-        }
-
-        private void HandleDisappear()
-        {
-            // Trigger idle/banished animation
-            if (anomalyAnimator != null && !string.IsNullOrEmpty(idleTriggerName))
-            {
-                anomalyAnimator.SetTrigger(idleTriggerName);
-                Debug.Log($"Triggered animation: {idleTriggerName} for anomaly {name} - Banished");
-            }
-            
-            
-            
-            // Hide prayer UI
-            if (_prayManager != null)
-                _prayManager.HidePrayPanel();
-
-            if (_alertRaised)
-            {
-                _alertRaised = false;
-                IncidentReportManager.Instance?.SetAlert(false);
-            }
-
-            // Fire event before disappearing (for scoring system)
-            RaiseDisappeared();
-        
-            if (destroyAfterDisappear)
-                Destroy(gameObject, 0.6f); // Delay destruction to allow fade out
-            else
-                StartCoroutine(DelayedDeactivate(0.6f));
-        }
-        
-        private System.Collections.IEnumerator DelayedDeactivate(float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            gameObject.SetActive(false);
-        }
-
         /// <summary>
-        /// Public method for VoiceCommandRouter to call when prayer is successful
+        /// Stops this anomaly's own coroutines AND the movement component's - StopAllCoroutines
+        /// only reaches coroutines started by the MonoBehaviour that owns them.
         /// </summary>
-        public void OnPrayerSuccessful()
+        private void StopEverything()
         {
-            if (_canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear)
-            {
-                Debug.Log($"Prayer successful for anomaly {name}. Banishing...");
-            
-                // Set flag first to prevent scene reload
-                _canPrayDisappear = false;
-            
-                // Stop all coroutines to prevent timeout
-                StopAllCoroutines();
-                
-                fightAudioSource.Stop();
-                // Handle disappearing
-                HandleDisappear();
-            }
+            StopAllCoroutines();
+            _movement.Stop();
+            _threatTimer.Cancel();
         }
 
-        /// <summary>
-        /// Check if this anomaly can be banished by prayer
-        /// </summary>
-        public bool CanBePrayerBanished()
-        {
-            return _canPrayDisappear && respondType == RespondType.MoveToTargetThenDisappear;
-        }
+        // ── Report bookkeeping ───────────────────────────────────────────────────────────
 
         /// <summary>
         /// Called by IncidentReportManager as soon as the report form is opened for this anomaly,
         /// so a second click can't open another report while one is pending or resolved.
         /// </summary>
-        public void MarkReported()
-        {
-            _isReported = true;
-        }
+        public void MarkReported() => _isReported = true;
 
         /// <summary>
         /// Called by IncidentReportManager when a report is cancelled, so the anomaly can be
         /// clicked and reported again later instead of being permanently un-clickable.
         /// </summary>
-        public void ClearReportedFlag()
+        public void ClearReportedFlag() => _isReported = false;
+
+        private void RaiseAlert()
         {
-            _isReported = false;
+            if (_alertRaised) return;
+
+            _alertRaised = true;
+            IncidentReportManager.Instance?.SetAlert(true);
         }
 
-        /// <summary>
-        /// Called by IncidentReportManager when the submitted report correctly matches this anomaly.
-        /// Resolves it immediately, the same way a successful prayer banishment does.
-        /// </summary>
-        public void ResolveByReport()
+        private void ClearAlert()
         {
-            StopAllCoroutines();
-            HandleDisappear();
+            if (!_alertRaised) return;
+
+            _alertRaised = false;
+            IncidentReportManager.Instance?.SetAlert(false);
         }
     }
 }

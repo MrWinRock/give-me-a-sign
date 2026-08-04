@@ -78,6 +78,9 @@ namespace GameLogic.SpawnAndTime
 
         public int RemainingCount => _sorted.Count - _nextIndex;
 
+        /// <summary>How many anomalies have been spawned so far this night (destroyed ones still count).</summary>
+        public int TotalSpawned => _spawned.Count;
+
         void Start()
         {
             if (nightTimer == null)

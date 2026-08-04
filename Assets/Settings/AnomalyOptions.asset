@@ -15,10 +15,9 @@ MonoBehaviour:
   anomalyTypes:
   - Shadow
   - Demon
-  locations:
-  - Hallway
-  - Kitchen
-  - Bedroom
-  - Living room
-  - Basement
-  - Attic
+  - GMS001
+  - GMS002
+  - GMS003
+  - GMS004
+  - GMS005
+  - GMS006

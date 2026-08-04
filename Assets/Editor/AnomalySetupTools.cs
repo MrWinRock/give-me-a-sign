@@ -1,4 +1,4 @@
-using System.IO;
+
 using GameLogic;
 using UnityEditor;
 using UnityEngine;
@@ -39,42 +39,10 @@ namespace GiveMeASign.EditorTools
             EditorGUIUtility.PingObject(catalog);
         }
 
-        /// <summary>
-        /// Sets every Anomaly prefab's Correct Anomaly Type to "Shadow" for testing the
-        /// voice-matching flow end to end before real per-anomaly names are decided.
-        /// Correct Location Name is left untouched (Incident Report Manager's
-        /// "Require Correct Location" is off by default, so it isn't checked yet anyway).
-        /// </summary>
-        [MenuItem("Tools/Give Me A Sign/Set All Anomaly Types To Shadow (test)")]
-        public static void SetAllAnomalyTypesToShadow()
-        {
-            CreateCatalogIfMissing();
-
-            const string prefabFolder = "Assets/Prefabs";
-            var guids = AssetDatabase.FindAssets("t:Prefab", new[] { prefabFolder });
-            int updated = 0;
-
-            foreach (var guid in guids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var contents = PrefabUtility.LoadPrefabContents(path);
-                try
-                {
-                    var anomaly = contents.GetComponentInChildren<Anomaly>(true);
-                    if (anomaly == null) continue;
-
-                    anomaly.correctAnomalyType = "Shadow";
-                    PrefabUtility.SaveAsPrefabAsset(contents, path);
-                    updated++;
-                    Debug.Log($"AnomalySetupTools: set correctAnomalyType = \"Shadow\" on {Path.GetFileName(path)}");
-                }
-                finally
-                {
-                    PrefabUtility.UnloadPrefabContents(contents);
-                }
-            }
-
-            Debug.Log($"AnomalySetupTools: updated {updated} Anomaly prefab(s).");
-        }
+        // 'Set All Anomaly Types To Shadow (test)' was removed here. It stamped the same type
+        // string onto every prefab, which is exactly how all 7 anomalies ended up sharing the
+        // keyword "Shadow" - indistinguishable to the player. Anomaly identity now lives in
+        // AnomalyDefinition assets, one per kind, and DataValidator fails the build data if two
+        // kinds ever claim the same keyword again.
     }
 }

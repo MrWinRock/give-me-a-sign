@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 5238547682038521767}
   - component: {fileID: 4640814643063063137}
   - component: {fileID: 4336308198534594129}
+  - component: {fileID: 7487816374006001898}
+  - component: {fileID: 386444599788968149}
+  - component: {fileID: 4714833298111795383}
   m_Layer: 10
   m_Name: Anomaly2Res1
   m_TagString: Anomaly
@@ -46,22 +49,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b844fe9e006fca04f96ecd69cf516be8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anomaly
+  migrated: 1
   respondType: 0
+  timeToDisappear: 0
   moveTarget: {fileID: 0}
   moveSpeed: 3
-  disappearDelay: 0.5
-  destroyAfterDisappear: 0
   scaleUpAmount: 1.5
   scaleAnimationSpeed: 2
-  cutsceneCheck: {fileID: 0}
-  correctLocationName: 
-  correctAnomalyType: Shadow
   jumpScareAudioSource: {fileID: 0}
   fightAudioSource: {fileID: 0}
   anomalyAnimator: {fileID: 0}
   moveTriggerName: StartMove
   idleTriggerName: Idle
-  timeToDisappear: 0
+  correctAnomalyType: Shadow
+  definition: {fileID: 11400000, guid: 0303da8354038cc4caeeec63578262a4, type: 2}
+  destroyAfterDisappear: 0
 --- !u!70 &4336308198534594129
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -99,6 +101,52 @@ CapsuleCollider2D:
   m_Offset: {x: -0.55, y: 0.19}
   m_Size: {x: 2.55, y: 2.73}
   m_Direction: 0
+--- !u!114 &7487816374006001898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593009758373546416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36b654f83f7d6f149872085cc072a8d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyMovement
+  moveTarget: {fileID: 0}
+  moveSpeed: 3
+  scaleUpAmount: 1.5
+  scaleAnimationSpeed: 2
+--- !u!114 &386444599788968149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593009758373546416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e1b68087b30e04cb7109630ed45939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyPresenter
+  animator: {fileID: 0}
+  moveTriggerName: StartMove
+  idleTriggerName: Idle
+  jumpScareAudioSource: {fileID: 0}
+  fightAudioSource: {fileID: 0}
+--- !u!114 &4714833298111795383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593009758373546416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 980451ee6916e004b8a1157459b1ea2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyThreatTimer
+  timeoutSeconds: 0
 --- !u!1 &701147094271214925
 GameObject:
   m_ObjectHideFlags: 0

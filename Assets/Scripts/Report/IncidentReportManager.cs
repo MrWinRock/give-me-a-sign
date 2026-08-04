@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GameLogic;
+using GameLogic.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,12 +23,6 @@ namespace Report
         [Header("System References")]
         [SerializeField] private GameManager gameManager;
         [SerializeField] private bool autoFindReferences = true;
-
-        [Header("Rooms (data-driven)")]
-        [SerializeField] private List<string> roomNames = new List<string>
-        {
-            "Hallway", "Kitchen", "Bedroom", "Living room", "Basement", "Attic"
-        };
 
         [Header("Matching Settings")]
         [Tooltip("If true, the selected LOCATION must also match the anomaly's actual room for the report to succeed. If false, only the spoken anomaly type is checked.")]
@@ -50,6 +45,12 @@ namespace Report
         private int _activeAlertCount;
 
         public bool IsReportOpen { get; private set; }
+
+        /// <summary>Reports actually submitted this night (cancelling doesn't count).</summary>
+        public int ReportsFiled { get; private set; }
+
+        /// <summary>Of those, how many came back ERROR. Recorded on the night's result.</summary>
+        public int ReportsFailed { get; private set; }
 
         void Awake()
         {
@@ -77,7 +78,16 @@ namespace Report
                 return;
             }
 
-            reportUI.Initialize(this, roomNames);
+            // Room list comes from the RoomAnchors in the scene, so the dropdown always offers
+            // exactly the rooms the camera can actually reach.
+            if (RoomRegistry.Count == 0)
+            {
+                Debug.LogError(
+                    "IncidentReportManager: no RoomAnchors in the scene - the LOCATION dropdown will be empty. " +
+                    "Run 'Tools/Give Me A Sign/Setup/1. Create Rooms And Anchors'.", this);
+            }
+
+            reportUI.Initialize(this, RoomRegistry.DisplayNames());
             reportUI.Hide();
         }
 
@@ -174,7 +184,7 @@ namespace Report
             // Not incremented here - the same case number is shown again if this report is
             // cancelled and reopened. It only advances once the player actually submits.
             int caseNumber = _nextCaseNumber;
-            reportUI.Show(caseNumber, roomNames);
+            reportUI.Show(caseNumber, RoomRegistry.DisplayNames());
             reportUI.SetAlertVisual(_activeAlertCount > 0);
 
             if (showDebugInfo)
@@ -236,25 +246,22 @@ namespace Report
 
             // A blank report (opened via Spacebar with no anomaly active) has nothing to confirm
             // against, so it always comes back as an error rather than throwing on a null anomaly.
-            bool success = false;
-            if (_currentAnomaly != null)
-            {
-                bool typeMatches = IsKeywordMatch(_recognizedKeyword, _currentAnomaly.correctAnomalyType);
-                bool locationMatches = !requireCorrectLocation ||
-                    string.Equals(selectedRoom, _currentAnomaly.correctLocationName, StringComparison.OrdinalIgnoreCase);
-                success = typeMatches && locationMatches;
-            }
+            bool success = _currentAnomaly != null
+                && MatchesSpokenType(_currentAnomaly)
+                && MatchesLocation(_currentAnomaly, selectedRoom);
 
             if (showDebugInfo)
             {
                 string outcome = success ? "SUCCESS" : "FAILED";
                 string target = _currentAnomaly != null ? $"'{_currentAnomaly.name}'" : "(no anomaly attached)";
-                Debug.Log($"IncidentReportManager: Report {outcome} for {target}. Spoken: '{_recognizedKeyword}', Expected: '{_currentAnomaly?.correctAnomalyType}'.");
+                Debug.Log($"IncidentReportManager: Report {outcome} for {target}. Spoken: '{_recognizedKeyword}', Expected: [{ExpectedKeywordsLabel(_currentAnomaly)}].");
             }
 
             // The case number only advances once a report has actually been filed - cancelling
             // never consumes one.
             _nextCaseNumber++;
+            ReportsFiled++;
+            if (!success) ReportsFailed++;
 
             reportUI.ShowResult(success);
             StartCoroutine(FinishReportAfterDelay(success));
@@ -283,6 +290,67 @@ namespace Report
 
             if (gameManager != null)
                 gameManager.inputLocked = false;
+        }
+
+        /// <summary>
+        /// An anomaly kind can accept several spoken words - the proper name plus whatever the
+        /// speech-to-text is likely to hear instead - so any one of its keywords matching is a
+        /// correct report.
+        /// </summary>
+        private bool MatchesSpokenType(Anomaly anomaly)
+        {
+            var definition = anomaly.Definition;
+
+            if (definition == null)
+            {
+                // Pre-migration prefab: fall back to the legacy single-string field so the game
+                // stays playable until 'Tools/Give Me A Sign/Validate Data' passes.
+                Debug.LogWarning($"Anomaly '{anomaly.name}' has no AnomalyDefinition assigned - falling back to its legacy type string.", anomaly);
+                return IsKeywordMatch(_recognizedKeyword, anomaly.LegacyAnomalyType);
+            }
+
+            var keywords = definition.correctKeywords;
+            if (keywords == null || keywords.Length == 0)
+            {
+                Debug.LogWarning($"AnomalyDefinition '{definition.name}' has no correctKeywords - it can never be reported correctly.", definition);
+                return false;
+            }
+
+            foreach (var keyword in keywords)
+            {
+                if (IsKeywordMatch(_recognizedKeyword, keyword)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// The room is compared against the one assigned when the anomaly spawned, not a string
+        /// baked into its prefab. If nothing assigned a room we can't verify the answer, so the
+        /// check passes rather than failing the player over missing authoring data.
+        /// </summary>
+        private bool MatchesLocation(Anomaly anomaly, string selectedRoom)
+        {
+            if (!requireCorrectLocation) return true;
+
+            var assigned = anomaly.AssignedRoom;
+            if (assigned == null)
+            {
+                Debug.LogWarning($"Anomaly '{anomaly.name}' has no room assigned, so the LOCATION answer cannot be checked. Treating it as correct.", anomaly);
+                return true;
+            }
+
+            return string.Equals(selectedRoom, assigned.Label, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ExpectedKeywordsLabel(Anomaly anomaly)
+        {
+            if (anomaly == null) return "no anomaly";
+
+            var definition = anomaly.Definition;
+            if (definition?.correctKeywords != null && definition.correctKeywords.Length > 0)
+                return string.Join(" | ", definition.correctKeywords);
+
+            return anomaly.LegacyAnomalyType;
         }
 
         private bool IsKeywordMatch(string spoken, string correct)

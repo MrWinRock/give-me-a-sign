@@ -1,7 +1,7 @@
+using GameLogic.Flow;
 using Report;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace GameLogic.SpawnAndTime
 {
@@ -23,8 +23,6 @@ namespace GameLogic.SpawnAndTime
         [Min(0.1f)]
         [SerializeField] private float nightDurationMinutes = 5f;
         [SerializeField] private TextMeshProUGUI timeDisplayText;
-        [Tooltip("Build-settings index of the scene loaded when the night ends (the Result scene).")]
-        [SerializeField] private int nextSceneIndex = 2;
 
         [Header("Debug Info")]
         [SerializeField] private bool showDebugInfo = false;
@@ -123,14 +121,14 @@ namespace GameLogic.SpawnAndTime
             _isNightActive = false;
 
             if (showDebugInfo)
-                Debug.Log("Night ended! Loading next scene...");
+                Debug.Log("Night ended! Handing over to GameFlowManager.");
 
+            // Listeners first (ScoreManager freezes the score here), then hand the outcome to
+            // the one system that decides what a finished night means and loads the Result
+            // scene. This timer no longer touches SceneManager itself.
             OnNightEnded?.Invoke();
 
-            if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
-                SceneManager.LoadScene(nextSceneIndex);
-            else
-                Debug.LogWarning($"Next scene index {nextSceneIndex} is out of range! Scene count: {SceneManager.sceneCountInBuildSettings}");
+            GameFlowManager.Instance?.EndNight(NightOutcome.Survived);
         }
 
         public float GetNormalizedTime()

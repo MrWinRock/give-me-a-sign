@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e48cabf329ab0b4d9016ca366178ff6, type: 3}
+  m_Name: Anomaly_Anomaly1Res2
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
+  anomalyId: anomaly1res2
+  displayName: Shadow
+  correctKeywords:
+  - GMS001
+  prefab: {fileID: 6530810648022567755, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
+  respondType: 1
+  threatCost: 1
+  minNightIndex: 1
+  allowedRooms: []
+  moveSpeed: 30
+  threatTimeoutSeconds: 30
+  manualImage: {fileID: 0}
+  manualDescription: 
+  howToSpot: 
+  linkedHaunt: 0
