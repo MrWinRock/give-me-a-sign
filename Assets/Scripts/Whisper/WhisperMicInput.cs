@@ -181,6 +181,18 @@ namespace Whisper
         /// <summary>Counterpart to BeginPushToTalk(); call when the UI button is released.</summary>
         public void EndPushToTalk() => StopListening();
 
+        /// <summary>
+        /// Sprint 7, S-707. Injects text into the same queue recognized mic speech goes into, so it
+        /// reaches every system Update() already dispatches to below (prayer, Incident Report,
+        /// VoicePromptSystem, sign request) with zero duplicated routing logic. Used by
+        /// TypedInputFallback for players without a working microphone.
+        /// </summary>
+        public void EnqueueTypedText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            _pendingRoutes.Enqueue(text.Trim());
+        }
+
         private async void StartListening()
         {
             if (_isListening || whisperManager == null)

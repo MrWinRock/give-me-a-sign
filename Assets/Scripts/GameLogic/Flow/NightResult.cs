@@ -25,6 +25,14 @@ namespace GameLogic.Flow
     [System.Serializable]
     public class NightResult
     {
+        /// <summary>
+        /// Sprint 6, S-603: the designed length of the campaign arc ("เล่นได้ตั้งแต่เมนู → คืน 1-5
+        /// → จบเกม"). GameFlowManager.AdvanceProgression caps the unlocked-night save here rather
+        /// than unlocking an undefined "night 6" - completing this night replays as a capstone
+        /// instead of drifting into difficulty numbers nobody tuned for.
+        /// </summary>
+        public const int FinalNightIndex = 5;
+
         public NightOutcome outcome;
         public int nightIndex = 1;
         public int seed;
@@ -39,6 +47,9 @@ namespace GameLogic.Flow
 
         /// <summary>Surviving to 6:00 AM is necessary but not sufficient - the score has to clear the bar too.</summary>
         public bool Won => outcome == NightOutcome.Survived && score >= requiredScore;
+
+        /// <summary>Won the final night of the designed arc - the "you survived the week" ending.</summary>
+        public bool IsCampaignComplete => Won && nightIndex >= FinalNightIndex;
 
         /// <summary>True when the night ended because something got the player, rather than at the clock.</summary>
         public bool KilledByThreat =>

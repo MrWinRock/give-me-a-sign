@@ -1,4 +1,4 @@
-# รายงาน Sprint 5 (ตรวจสอบ) + Sprint 6 (พัฒนาใหม่)
+# รายงาน Sprint 5 (ตรวจสอบ) + Sprint 6 (พัฒนาใหม่) + Sprint 7 (เริ่ม)
 
 **วันที่:** 7 สิงหาคม 2026
 **ขอบเขต:** ตรวจสอบความถูกต้องของ Sprint 5 (HL-4 Radio Check, HL-5 Camera Betrayal) หลังผู้ใช้ทดสอบเล่นจริงแล้วผ่าน จากนั้นพัฒนา Sprint 6 ต่อ (HL-6 Impostor Case, HL-7 Give Me A Sign, ระบบ progression, death sequence, หน้า Result)
@@ -74,6 +74,60 @@
 - **S-608 Pause + Options ระหว่างเล่น** - งาน UI/scene wiring ที่ต้องดู layout จริงใน Editor ซึ่งผมมองไม่เห็น จึงปล่อยไว้ให้ทำเอง
 - **HL-6 เวอร์ชันเต็ม** (ฟอร์มโชว์ location/type ปลอมเต็มรูปแบบ) - รอจนกว่าจะมีระบบตัวตนผู้เล่น ตามที่ Cut List ของ Roadmap ระบุไว้แล้วว่าตัดได้
 - งาน Steam ops / trailer / capsule art ของ Sprint 5-6 - ไม่ใช่งาน coding
+
+---
+
+## 6. ตรวจสอบความครบถ้วนของ Sprint 6 (รอบสอง) + ปิดช่องโหว่
+
+ตรวจ Roadmap เทียบกับโค้ดจริงอีกรอบ พบ 3 จุดที่ยังไม่ครบ - ปิดให้หมดแล้ว:
+
+### 6.1 บั๊กตกหล่นจาก Sprint 5 (พบระหว่างตรวจ ไม่ใช่ Sprint 6 แต่ปิดไปพร้อมกัน)
+`RadioCheckHaunt` และ `CameraBetrayalHaunt`/`CameraFeedController` **ไม่เคยถูกเพิ่มเข้าซีนเลย** ตั้งแต่ Sprint 5 - เกมรันได้ปกติเพราะ `HauntDirector` แค่ข้ามเงียบๆเวลาไม่เจอ component แต่ HL-4/HL-5 ไม่เคยทำงานจริงมาตลอด **แก้แล้วโดยเพิ่ม GameObject ทั้งสองเข้าไปในซีนโดยตรง** (แก้ไฟล์ `.unity` เป็น text/YAML ตรงๆ ตรวจสอบ fileID ไม่ชนกันและ reference ถูกต้องครบ)
+
+### 6.2 S-603 ระบบคืน 1-5 + จบเกม (ที่ขาดไป)
+เดิม progression ที่ทำไว้รอบแรกปลดล็อกคืนถัดไปได้เรื่อยๆไม่มีเพดาน แต่ Roadmap ระบุชัดว่า milestone Sprint 6 คือ "เล่นได้ตั้งแต่เมนู → **คืน 1-5** → จบเกม" ปิดช่องโหว่โดย:
+- เพิ่ม `NightResult.FinalNightIndex = 5` และ `IsCampaignComplete`
+- `GameFlowManager.AdvanceProgression` เพดานที่คืน 5 ไม่ปลดล็อกคืน 6 ที่ไม่มีใครจูนค่าไว้
+- `ResultDisplay` โชว์ข้อความพิเศษ "YOU SURVIVED THE WEEK" + "Campaign complete." เมื่อชนะคืน 5 แทนข้อความชนะปกติ
+- เพิ่มปุ่ม optional **Restart Campaign** (`GameFlowManager.ResetProgression()`) ให้เริ่มนับคืน 1 ใหม่
+
+### 6.3 S-608 Pause + Options ระหว่างเล่น (เดิมข้ามไปเพราะกังวลเรื่อง UI wiring)
+สร้าง `GameLogic/Flow/PauseMenuController.cs` ใหม่ - กด **Esc** หยุดเกม (`Time.timeScale = 0` ซึ่งหยุดนาฬิกา/ตัวจับเวลา haunt ทุกตัวให้ฟรีเพราะทุกตัวอ่าน `Time.deltaTime` อยู่แล้ว) มีปุ่มปรับ Master/Music volume (ผูกตรงกับ `AudioManager` ที่มีอยู่แล้ว) + Resume + Quit to Menu ทำเป็น runtime-built UI ทั้งหมด (Canvas/Button สร้างจากโค้ดล้วน) **ไม่ต้องลาก UI ใน Editor เลย**
+
+**ตัดขอบเขตเจตนา:** ไม่ทำการเลือกไมค์ระหว่างเล่น (mic reselect กลางเกม) เพราะ WhisperMicInput อาจกำลังอัดเสียงอยู่ - การ stop/restart Microphone.Start กลางคันมีความเสี่ยง hang แบบเดียวกับที่ `GameFlowManager.EndNight` เคยมีปัญหามาก่อน การเลือกไมค์ยังคงอยู่ที่หน้า Control Panel ก่อนเริ่มเกมเหมือนเดิม
+
+---
+
+## 7. Sprint 7 (เริ่มแล้ว) - S-707 โหมดพิมพ์แทนไมค์
+
+เพิ่ม `WhisperMicInput.EnqueueTypedText(string)` - ยัดข้อความเข้าคิวเดียวกับที่เสียงพูดที่ Whisper รู้จำได้ไปลง ทำให้ routing ไปหาทุกระบบ (prayer, Incident Report, VoicePromptSystem, Give Me A Sign) **ใช้โค้ด dispatch เดิมทั้งหมด ไม่มีโค้ดซ้ำ**
+
+`Whisper/TypedInputFallback.cs` (ใหม่) - กล่องพิมพ์ข้อความมุมล่างซ้าย โชว์อัตโนมัติเมื่อ `Microphone.devices.Length == 0` (ไม่มีไมค์ในเครื่อง) ใช้ `OnGUI()` แบบเดียวกับ `NightPlanHud` ที่มีอยู่แล้วในโปรเจกต์ (proven pattern) แทนที่จะสร้าง TMP_InputField ใหม่ที่เสี่ยง wiring ผิดโดยตรวจสอบเองไม่ได้
+
+**สิ่งที่เหลือใน Sprint 7 (ตั้งใจข้าม เพราะไม่ใช่งาน coding ล้วน):**
+- S-701 Playtest กับคนนอก - ต้องมีคนเล่นจริง
+- S-702 Balance pass - ต้องรอข้อมูลจาก playtest ก่อน
+- S-703/704/705 เสียง ambient / เสียงต่อ haunt loop / VHS post-processing - ต้องมีไฟล์เสียง/shader/วิดีโอจริงที่ผมไม่มีให้
+- S-706 อัปเกรด Whisper เป็น `ggml-base.en` - ต้องดาวน์โหลดไฟล์โมเดลจาก HuggingFace เอง (ตามที่ระบุใน CLAUDE.md)
+
+---
+
+## 8. ไฟล์ที่แก้ไข/สร้างใหม่ทั้งหมด (Sprint 6 รอบสอง + Sprint 7)
+
+**ใหม่:**
+- `Assets/Scripts/GameLogic/Flow/PauseMenuController.cs` (+ `.meta`)
+- `Assets/Scripts/Whisper/TypedInputFallback.cs` (+ `.meta`)
+
+**แก้ไข:**
+- `Assets/Scripts/GameLogic/Flow/NightResult.cs` (FinalNightIndex, IsCampaignComplete)
+- `Assets/Scripts/GameLogic/Flow/GameFlowManager.cs` (เพดาน progression, ResetProgression)
+- `Assets/Scripts/Score/ResultDisplay.cs` (จอ campaign complete, ปุ่ม Restart Campaign)
+- `Assets/Scripts/Whisper/WhisperMicInput.cs` (EnqueueTypedText)
+- `Assets/Scenes/GameManager.unity` (**แก้ตรง** - เพิ่ม RadioCheckHaunt, CameraBetrayalHaunt+CameraFeedController, PauseMenuController, TypedInputFallback เข้าซีน + blackout entry "tutorial" ใน GlitchDirector)
+
+**การตรวจสอบไฟล์ซีน:** ตรวจ fileID ซ้ำ = ไม่มี, จำนวน document header ตรงกับที่คำนวณไว้ทุกครั้ง, component ทุกตัวอ้างอิง GameObject/Script GUID ถูกต้อง - แต่ยังต้องให้ Unity เปิดยืนยันเองอีกที เพราะผมแก้ YAML ตรงๆนอก Editor
+
+**ผลคือ: รอบนี้ไม่มี "สิ่งที่ต้องทำมือ" เหลือเลย** ทุกอย่างที่เคยขอให้ทำมือ ผมทำให้ในไฟล์เรียบร้อยแล้ว เหลือแค่เปิด Unity แล้วกด Play ตรวจสอบ
 
 ---
 

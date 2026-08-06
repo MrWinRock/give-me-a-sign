@@ -29,6 +29,8 @@ namespace Score
         [SerializeField] private TextMeshProUGUI progressionText;
         [Tooltip("Optional. Reloads the gameplay scene forced back onto this exact seed - same NightPlanProvider.ForcedSeed mechanism the debug Night Plan HUD (F3) already uses.")]
         [SerializeField] private Button replaySeedButton;
+        [Tooltip("Optional. Resets progression to Night 1 and starts a fresh run - most relevant after finishing the campaign, but works from any Result screen.")]
+        [SerializeField] private Button restartCampaignButton;
 
         [Header("Buttons")]
         [SerializeField] private Button playAgainButton;
@@ -74,9 +76,11 @@ namespace Score
 
             if (progressionText != null)
             {
-                progressionText.text = result.Won
-                    ? $"Night {GameFlowManager.UnlockedNightIndex} unlocked."
-                    : string.Empty;
+                progressionText.text = result.IsCampaignComplete
+                    ? "Campaign complete."
+                    : result.Won
+                        ? $"Night {GameFlowManager.UnlockedNightIndex} unlocked."
+                        : string.Empty;
             }
 
             // Being caught reads as a different kind of ending from simply not scoring enough,
@@ -91,6 +95,19 @@ namespace Score
 
                 SetActiveAll(anomalyDefeatObjects, true);
                 SetActiveAll(normalResultObjects, false);
+            }
+            else if (result.IsCampaignComplete)
+            {
+                // Sprint 6, S-603: the designed 5-night arc ends here, not on a silently-scaling
+                // night 6 - see NightResult.FinalNightIndex.
+                SetTexts(
+                    status: "YOU SURVIVED THE WEEK",
+                    statusColor: winColor,
+                    score: $"Final Score: {result.score}",
+                    threshold: "Thank you for playing.");
+
+                SetActiveAll(normalResultObjects, true);
+                SetActiveAll(anomalyDefeatObjects, false);
             }
             else
             {
@@ -150,6 +167,19 @@ namespace Score
 
             if (replaySeedButton != null)
                 replaySeedButton.onClick.AddListener(ReplaySeed);
+
+            if (restartCampaignButton != null)
+                restartCampaignButton.onClick.AddListener(RestartCampaign);
+        }
+
+        /// <summary>Sprint 6, S-603: resets the unlocked-night save to 1 and starts a fresh run.</summary>
+        public void RestartCampaign()
+        {
+            if (showDebugInfo)
+                Debug.Log("Restarting campaign from Night 1...");
+
+            GameFlowManager.ResetProgression();
+            GameFlowManager.StartNewNight(gameSceneName);
         }
 
         public void PlayAgain()

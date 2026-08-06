@@ -263,14 +263,25 @@ namespace GameLogic.Flow
         /// to the next night - NightPlanRunner.ResolveNightIndex() already reads the same key, so
         /// no separate "Continue" flow is needed. A loss leaves the key untouched, which is exactly
         /// "Play Again" retrying the night that was just failed.
+        ///
+        /// Capped at NightResult.FinalNightIndex: completing the last night of the designed arc
+        /// keeps replaying as a capstone rather than unlocking an undefined night 6+ that nothing
+        /// was tuned for (see S-603 in the roadmap).
         /// </summary>
         private static void AdvanceProgression(int completedNightIndex)
         {
-            int nextNight = completedNightIndex + 1;
+            int nextNight = Mathf.Min(completedNightIndex + 1, NightResult.FinalNightIndex);
             int unlocked = PlayerPrefs.GetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1);
             if (nextNight <= unlocked) return;
 
             PlayerPrefs.SetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, nextNight);
+            PlayerPrefs.Save();
+        }
+
+        /// <summary>Sprint 6: resets progression back to night 1 - used by the Result scene's "Restart Campaign" option.</summary>
+        public static void ResetProgression()
+        {
+            PlayerPrefs.SetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1);
             PlayerPrefs.Save();
         }
 
