@@ -28,6 +28,8 @@ namespace GameLogic.Night
         [Header("Profiles")]
         public DifficultyProfile difficulty;
         public GlitchProfile glitch;
+        [Tooltip("Sprint 4. Optional - a library with none configured simply never schedules a haunt loop.")]
+        public HauntProfile haunt;
 
         private static NightContentLibrary _cached;
 

@@ -27,3 +27,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5f5d9c0c1c880184eb6756a4eaa16ddb, type: 2}
   difficulty: {fileID: 11400000, guid: dcab2ac1afebe484ebba6e694f41c3ed, type: 2}
   glitch: {fileID: 11400000, guid: 312cbec31c590dc4e9d8699c60e81e43, type: 2}
+  haunt: {fileID: 11400000, guid: f6521cc2f2589e8439d73b149bf324ec, type: 2}

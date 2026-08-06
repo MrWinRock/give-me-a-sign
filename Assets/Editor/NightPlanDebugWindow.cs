@@ -110,7 +110,7 @@ namespace GiveMeASign.EditorTools
         private NightPlanGenerator BuildGenerator()
         {
             var rooms = _library.rooms != null ? _library.rooms : new List<RoomDefinition>();
-            return new NightPlanGenerator(_library, rooms, _library.difficulty, _library.glitch);
+            return new NightPlanGenerator(_library, rooms, _library.difficulty, _library.glitch, _library.haunt);
         }
 
         private void DumpSinglePlan()
@@ -192,6 +192,10 @@ namespace GiveMeASign.EditorTools
             foreach (var glitch in plan.glitches)
             {
                 sb.Append($"{glitch.type}@{glitch.atMinute:0.0000};");
+            }
+            foreach (var haunt in plan.haunts)
+            {
+                sb.Append($"{haunt.loop}@{haunt.atMinute:0.0000}/{haunt.room?.roomId};");
             }
             return sb.ToString();
         }

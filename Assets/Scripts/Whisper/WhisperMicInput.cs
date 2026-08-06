@@ -58,11 +58,10 @@ namespace Whisper
 
         private async void Start()
         {
-            if (router == null)
-                Debug.LogWarning("VoiceCommandRouter not assigned");
-
-            if (signRequestSystem == null)
-                Debug.LogWarning("SignRequestSystem not assigned");
+            // Both are genuinely optional - every call site already null-checks with ?. - and
+            // SignRequestSystem in particular has no component in the scene yet by design (its
+            // "Give me a sign" hint mechanic is Sprint 6 work). A missing reference here is
+            // expected, not a misconfiguration, so it no longer warns.
 
             try
             {
@@ -260,6 +259,12 @@ namespace Whisper
 
                     if (IsIncidentReportActive())
                         incidentReportManager?.Route(trimmed);
+
+                    // Sprint 4+: haunt loops (and Sprint 5's Radio Check) register a phrase with
+                    // VoicePromptSystem instead of each growing their own routing path here.
+                    var voicePrompt = VoicePromptSystem.Instance;
+                    if (voicePrompt != null && voicePrompt.IsAwaitingPrompt)
+                        voicePrompt.Route(trimmed);
 
                     signRequestSystem?.Route(trimmed);
                 }

@@ -117,10 +117,10 @@ namespace GameLogic
         private AnomalyThreatTimer _threatTimer;
         private PrayUiManager _prayManager;
 
-        // The transitional pre-split configuration lives in Anomaly.Legacy.cs - see that file.
-
-        /// <summary>Respond behaviour from the Definition when there is one, else the legacy field.</summary>
-        public RespondType EffectiveRespondType => definition != null ? definition.respondType : respondType;
+        /// <summary>Respond behaviour, always sourced from the Definition now that every prefab is migrated.</summary>
+        public RespondType EffectiveRespondType => definition != null
+            ? definition.respondType
+            : RespondType.MoveToTargetThenDisappear;
 
         // ── Lifecycle ────────────────────────────────────────────────────────────────────
 
@@ -129,11 +129,6 @@ namespace GameLogic
             _movement = Attach<AnomalyMovement>();
             _presenter = Attach<AnomalyPresenter>();
             _threatTimer = Attach<AnomalyThreatTimer>();
-
-            // Until the migration tool has run, the legacy fields are still the real
-            // configuration, so push them into the siblings that now own them.
-            if (!migrated)
-                SeedSiblingsFromLegacy(_movement, _presenter, _threatTimer);
 
             // A Definition, when present, is authoritative - editing the asset has to change the
             // anomaly without anyone re-touching prefabs.
@@ -302,7 +297,7 @@ namespace GameLogic
 
             GameFlowManager.Instance?.EndNight(
                 NightOutcome.KilledByAnomaly,
-                definition != null ? definition.anomalyId : correctAnomalyType,
+                definition != null ? definition.anomalyId : name,
                 AssignedRoom != null ? AssignedRoom.roomId : null);
         }
 

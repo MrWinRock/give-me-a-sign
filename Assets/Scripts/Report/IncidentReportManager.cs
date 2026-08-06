@@ -303,10 +303,10 @@ namespace Report
 
             if (definition == null)
             {
-                // Pre-migration prefab: fall back to the legacy single-string field so the game
-                // stays playable until 'Tools/Give Me A Sign/Validate Data' passes.
-                Debug.LogWarning($"Anomaly '{anomaly.name}' has no AnomalyDefinition assigned - falling back to its legacy type string.", anomaly);
-                return IsKeywordMatch(_recognizedKeyword, anomaly.LegacyAnomalyType);
+                // Every shipped prefab carries a Definition now (see 'Tools/Give Me A Sign/Validate
+                // Data'). One with none assigned is an authoring mistake, not a state to recover from.
+                Debug.LogError($"Anomaly '{anomaly.name}' has no AnomalyDefinition assigned - it can never be reported correctly.", anomaly);
+                return false;
             }
 
             var keywords = definition.correctKeywords;
@@ -350,7 +350,7 @@ namespace Report
             if (definition?.correctKeywords != null && definition.correctKeywords.Length > 0)
                 return string.Join(" | ", definition.correctKeywords);
 
-            return anomaly.LegacyAnomalyType;
+            return "(no definition)";
         }
 
         private bool IsKeywordMatch(string spoken, string correct)

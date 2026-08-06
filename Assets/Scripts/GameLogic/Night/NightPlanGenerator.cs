@@ -25,13 +25,16 @@ namespace GameLogic.Night
         private readonly List<RoomDefinition> _rooms;
         private readonly DifficultyProfile _difficulty;
         private readonly GlitchProfile _glitchProfile;
+        private readonly HauntProfile _hauntProfile;
 
         public NightPlanGenerator(NightContentLibrary library, IReadOnlyList<RoomDefinition> rooms,
-                                  DifficultyProfile difficulty, GlitchProfile glitchProfile)
+                                  DifficultyProfile difficulty, GlitchProfile glitchProfile,
+                                  HauntProfile hauntProfile = null)
         {
             _library = library;
             _difficulty = difficulty;
             _glitchProfile = glitchProfile;
+            _hauntProfile = hauntProfile;
 
             _rooms = new List<RoomDefinition>();
             if (rooms != null)
@@ -115,6 +118,7 @@ namespace GameLogic.Night
             }
 
             PlaceGlitches(plan, nightIndex, durationMinutes, rng);
+            PlaceHaunts(plan, nightIndex, durationMinutes, rng);
 
             plan.requiredScore = _difficulty != null
                 ? _difficulty.RequiredScoreFor(plan.anomalies.Count)
@@ -364,6 +368,43 @@ namespace GameLogic.Night
                     atMinute = Mathf.Min(atMinute, durationMinutes),
                     overrideText = "",
                     fireDelay = maxDelay > 0f ? (float)rng.NextDouble() * maxDelay : 0f,
+                });
+            }
+        }
+
+        // ── haunts ───────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Sprint 4. Same shape as PlaceGlitches (evenly sized slots after the onboarding quiet
+        /// stretch, one pick per slot) - deliberately NOT checked against anomaly/glitch timing:
+        /// a haunt loop landing on top of an active anomaly is extra pressure by design (see the
+        /// roadmap's Radio-Check-during-Silence-Protocol example), not a bug to prevent.
+        /// </summary>
+        private void PlaceHaunts(NightPlan plan, int nightIndex, float durationMinutes, System.Random rng)
+        {
+            if (_difficulty == null || _hauntProfile == null) return;
+
+            int count = _hauntProfile.HauntCountFor(nightIndex);
+            if (count <= 0) return;
+
+            float startMinute = durationMinutes * Mathf.Clamp01(_difficulty.onboardingQuietFraction);
+            float usable = durationMinutes - startMinute;
+            if (usable <= 0f) return;
+
+            float slot = usable / count;
+
+            for (int i = 0; i < count; i++)
+            {
+                var loop = _hauntProfile.PickLoop(nightIndex, rng);
+                if (loop == HauntLoopId.None) continue;
+
+                float atMinute = Mathf.Min(startMinute + i * slot + (float)rng.NextDouble() * slot, durationMinutes);
+
+                plan.haunts.Add(new HauntBeat
+                {
+                    loop = loop,
+                    room = _rooms.Count > 0 ? _rooms[rng.Next(_rooms.Count)] : null,
+                    atMinute = atMinute,
                 });
             }
         }

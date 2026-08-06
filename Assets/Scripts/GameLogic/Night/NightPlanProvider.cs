@@ -79,7 +79,7 @@ namespace GameLogic.Night
 
             if (library != null && library.difficulty != null && rooms.Count > 0)
             {
-                var generator = new NightPlanGenerator(library, rooms, library.difficulty, library.glitch);
+                var generator = new NightPlanGenerator(library, rooms, library.difficulty, library.glitch, library.haunt);
                 return generator.GenerateValid(nightIndex: 1, durationMinutes: 5f, seed: NextSeed());
             }
 

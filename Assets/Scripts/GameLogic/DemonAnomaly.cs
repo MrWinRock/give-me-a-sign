@@ -212,7 +212,7 @@ namespace GameLogic
             {
                 string expected = _anomaly.Definition != null
                     ? string.Join("' or '", _anomaly.Definition.correctKeywords)
-                    : _anomaly.LegacyAnomalyType;
+                    : "(no definition)";
                 Debug.Log($"DemonAnomaly: REVEALED in room '{(_room != null ? _room.Label : _roomCameraX.ToString("0.##"))}'. Speak '{expected}' to banish it!", this);
             }
         }

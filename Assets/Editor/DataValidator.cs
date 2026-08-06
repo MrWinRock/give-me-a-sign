@@ -10,11 +10,9 @@ namespace GiveMeASign.EditorTools
 {
     /// <summary>
     /// Checks that the game's data actually hangs together, so a broken asset is caught here
-    /// rather than as a night that cannot be won.
-    ///
-    /// This is what makes it safe to delete the legacy fields: run it, get a clean bill of
-    /// health, THEN remove Anomaly.Legacy.cs. Unity gives no warning when a serialized field
-    /// disappears - the values just silently vanish.
+    /// rather than as a night that cannot be won: every AnomalyDefinition has a prefab, unique
+    /// keywords and a real threat window; every RoomDefinition has an anchor in the open scene;
+    /// every anomaly prefab carries its full set of split components.
     /// </summary>
     public static class DataValidator
     {
@@ -92,7 +90,7 @@ namespace GiveMeASign.EditorTools
         {
             if (definitions.Count == 0)
             {
-                errors.Add("No AnomalyDefinition assets exist. Run 'Setup/2. Migrate Anomaly Prefabs'.");
+                errors.Add("No AnomalyDefinition assets exist. Create one per anomaly kind under Assets/Settings/Anomalies.");
                 return;
             }
 
@@ -203,9 +201,6 @@ namespace GiveMeASign.EditorTools
                 else if (!definedPrefabs.Contains(prefab))
                     warnings.Add($"Prefab '{name}' uses definition '{anomaly.Definition.name}', but that definition's prefab field points somewhere else.");
 
-                if (!anomaly.IsMigrated)
-                    errors.Add($"Prefab '{name}' has not been migrated - run 'Setup/2. Migrate Anomaly Prefabs'.");
-
                 CheckSplitComponents(anomaly, name, errors);
             }
         }
@@ -243,9 +238,9 @@ namespace GiveMeASign.EditorTools
             foreach (var error in errors) report.AppendLine($"  ERROR  {error}");
 
             if (errors.Count == 0 && warnings.Count == 0)
-                report.AppendLine("  All checks passed. Safe to delete Anomaly.Legacy.cs and its call in Anomaly.Awake.");
+                report.AppendLine("  All checks passed.");
             else if (errors.Count == 0)
-                report.AppendLine($"  No errors ({warnings.Count} warning(s)). Safe to delete Anomaly.Legacy.cs.");
+                report.AppendLine($"  No errors ({warnings.Count} warning(s)).");
             else
                 report.AppendLine($"  {errors.Count} error(s) - do NOT delete the legacy fields yet.");
 

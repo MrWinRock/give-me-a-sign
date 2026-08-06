@@ -60,7 +60,7 @@ namespace GameLogic.Night
             int seed = seedOverride != 0 ? seedOverride : NightPlanProvider.NextSeed();
             float duration = ResolveDurationMinutes();
 
-            var generator = new NightPlanGenerator(resolved, ResolveRooms(resolved), resolved.difficulty, resolved.glitch);
+            var generator = new NightPlanGenerator(resolved, ResolveRooms(resolved), resolved.difficulty, resolved.glitch, resolved.haunt);
             Plan = generator.GenerateValid(nightIndex, duration, seed);
 
             NightPlanProvider.Publish(Plan);
@@ -172,6 +172,17 @@ namespace GameLogic.Night
                     report.AppendLine(
                         $"    {glitch.atMinute,6:0.00}m  {ClockLabel(glitch.atMinute, plan.durationMinutes),-9}  " +
                         $"{glitch.type}{(glitch.fireDelay > 0f ? $"  (+{glitch.fireDelay:0.0}s)" : "")}");
+                }
+            }
+
+            if (plan.haunts.Count > 0)
+            {
+                report.AppendLine("  --- haunts ---");
+                foreach (var haunt in plan.haunts)
+                {
+                    report.AppendLine(
+                        $"    {haunt.atMinute,6:0.00}m  {ClockLabel(haunt.atMinute, plan.durationMinutes),-9}  " +
+                        $"{haunt.loop} in {haunt.room?.Label ?? "(no room)"}");
                 }
             }
 
