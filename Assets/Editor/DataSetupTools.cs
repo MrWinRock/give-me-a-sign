@@ -163,6 +163,7 @@ namespace GiveMeASign.EditorTools
             library.difficulty = FindOrCreate<DifficultyProfile>($"{SettingsFolder}/DifficultyProfile.asset");
             library.glitch = FindOrCreate<GlitchProfile>($"{SettingsFolder}/GlitchProfile.asset");
             library.haunt = FindOrCreate<HauntProfile>($"{SettingsFolder}/HauntProfile.asset");
+            EnsureDefaultHauntWeights(library.haunt);
 
             EditorUtility.SetDirty(library);
             AssetDatabase.SaveAssets();
@@ -176,6 +177,52 @@ namespace GiveMeASign.EditorTools
 
             Selection.activeObject = library;
             EditorGUIUtility.PingObject(library);
+        }
+
+        /// <summary>
+        /// Sprint 5: adds a default LoopWeight entry for any HauntLoopId that isn't in the profile
+        /// yet (RadioCheck, CameraBetrayal), so re-running this step after pulling Sprint 5's code
+        /// is enough to make both schedulable - no manual Inspector edit required. Never touches an
+        /// entry that already exists, so hand-tuned weights survive re-running this any number of
+        /// times. ImpostorCase (Sprint 6) is deliberately NOT added here yet - no IHauntLoop
+        /// implements it, so HauntDirector would just warn every time it got picked.
+        /// </summary>
+        private static void EnsureDefaultHauntWeights(HauntProfile profile)
+        {
+            if (profile == null) return;
+
+            var present = new HashSet<HauntLoopId>();
+            foreach (var entry in profile.loops)
+                if (entry != null) present.Add(entry.loop);
+
+            bool changed = false;
+
+            if (!present.Contains(HauntLoopId.RadioCheck))
+            {
+                profile.loops.Add(new HauntProfile.LoopWeight
+                {
+                    loop = HauntLoopId.RadioCheck,
+                    enabled = true,
+                    weight = 1.5f,   // rings more often than a full encounter - it's only an 8s ask
+                    minNightIndex = 1,
+                });
+                changed = true;
+            }
+
+            if (!present.Contains(HauntLoopId.CameraBetrayal))
+            {
+                profile.loops.Add(new HauntProfile.LoopWeight
+                {
+                    loop = HauntLoopId.CameraBetrayal,
+                    enabled = true,
+                    weight = 1f,
+                    minNightIndex = 1,
+                });
+                changed = true;
+            }
+
+            if (changed)
+                EditorUtility.SetDirty(profile);
         }
 
         private static List<T> LoadAllSorted<T>(System.Comparison<T> comparison) where T : ScriptableObject

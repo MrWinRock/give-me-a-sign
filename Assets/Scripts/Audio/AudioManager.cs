@@ -286,6 +286,21 @@ namespace Audio
         }
 
         /// <summary>
+        /// Plays an arbitrary AudioClip once through the shared SFX one-shot source - for sounds
+        /// that don't live in the library, e.g. Radio Check's "own voice" variant playing back a
+        /// clip <see cref="Whisper.PlayerVoiceRecorder"/> captured from the player earlier. Volume
+        /// is still mixed through the SFX/master sliders like everything else.
+        /// </summary>
+        public void PlayClip(AudioClip clip, float volume = 1f)
+        {
+            if (clip == null || _sfxOneShot == null) return;
+            _sfxOneShot.PlayOneShot(clip, Mathf.Clamp01(volume));
+
+            if (showDebugInfo)
+                Debug.Log($"AudioManager: PlayClip('{clip.name}')", this);
+        }
+
+        /// <summary>
         /// Starts a library sound looping on its own dedicated source (created once, then reused).
         /// The source is volume-managed like any other, so the sliders affect it live.
         /// </summary>

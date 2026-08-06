@@ -17,10 +17,20 @@ namespace Report
     {
         HauntLoopId LoopId { get; }
 
-        /// <summary>True while an encounter from this loop is in progress. HauntDirector will not
-        /// start a second beat of ANY loop while any registered loop reports true - overlapping
-        /// haunts aren't supported yet.</summary>
+        /// <summary>True while an encounter from this loop is in progress.</summary>
         bool IsActive { get; }
+
+        /// <summary>
+        /// True (the common case) means HauntDirector will not start a new beat of THIS loop, nor
+        /// let a new EXCLUSIVE loop start, while this one is active - the Sprint 4 rule.
+        ///
+        /// False opts a loop out of that rule entirely: it can always fire, even while an
+        /// exclusive loop (e.g. Silence Protocol) is active, and its own activity never blocks
+        /// anything else either. Sprint 5's Radio Check is the first user of this - the roadmap's
+        /// whole point for it is "the radio still calls while The Listener has you," a deliberate
+        /// dilemma, not a scheduling conflict to avoid.
+        /// </summary>
+        bool IsExclusive { get; }
 
         void Trigger(HauntBeat beat);
     }
@@ -136,7 +146,7 @@ namespace Report
                 _loops.Remove(loop.LoopId);
         }
 
-        /// <summary>True while any registered loop is mid-encounter.</summary>
+        /// <summary>True while any registered loop is mid-encounter (exclusive or not).</summary>
         public bool IsAnyHauntActive
         {
             get
@@ -144,6 +154,20 @@ namespace Report
                 foreach (var loop in _loops.Values)
                 {
                     if (loop != null && loop.IsActive) return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>True while an EXCLUSIVE loop is mid-encounter - the thing new exclusive beats
+        /// have to wait out. Non-exclusive loops (Radio Check) never count here.</summary>
+        private bool IsAnyExclusiveHauntActive
+        {
+            get
+            {
+                foreach (var loop in _loops.Values)
+                {
+                    if (loop != null && loop.IsExclusive && loop.IsActive) return true;
                 }
                 return false;
             }
@@ -184,18 +208,19 @@ namespace Report
         {
             if (beat.loop == HauntLoopId.None) return;
 
-            if (IsAnyHauntActive)
-            {
-                // Dropped rather than queued - Sprint 4 ships one loop type, so this only shows up
-                // once more loops exist and a night's beats happen to land close together. Loud on
-                // purpose so it is visible while authoring HauntProfile weights/counts.
-                Debug.LogWarning($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - another haunt is already active.", this);
-                return;
-            }
-
             if (!_loops.TryGetValue(beat.loop, out var loop) || loop == null)
             {
                 Debug.LogWarning($"HauntDirector: no IHauntLoop registered for {beat.loop} - is its component in the scene?", this);
+                return;
+            }
+
+            // Non-exclusive loops (Radio Check) always fire, even over an active exclusive loop -
+            // that overlap is the point (see IHauntLoop.IsExclusive). Exclusive loops still wait
+            // out whatever exclusive loop is currently running; an active non-exclusive loop never
+            // blocks them.
+            if (loop.IsExclusive && IsAnyExclusiveHauntActive)
+            {
+                Debug.LogWarning($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - another exclusive haunt is already active.", this);
                 return;
             }
 

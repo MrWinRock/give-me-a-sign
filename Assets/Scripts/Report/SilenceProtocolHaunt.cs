@@ -56,6 +56,11 @@ namespace Report
         public HauntLoopId LoopId => HauntLoopId.SilenceProtocol;
         public bool IsActive { get; private set; }
 
+        // Stays exclusive: two full-screen "stay quiet or die" encounters at once would just be
+        // confusing, not scarier. Radio Check (HL-4) is the one loop that is allowed to interrupt
+        // this - see IHauntLoop.IsExclusive.
+        public bool IsExclusive => true;
+
         private MicAmplitudeMonitor _monitor;
         private MicCalibrationRunner _calibrator;
         private SilenceProtocolHud _hud;
