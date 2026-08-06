@@ -25,6 +25,10 @@ MonoBehaviour:
     enabled: 1
     weight: 1
     minNightIndex: 1
+  - loop: 4
+    enabled: 1
+    weight: 0.8
+    minNightIndex: 2
   baseHauntCount: 1
   hauntGrowthPerNight: 0.5
   maxHauntCount: 4

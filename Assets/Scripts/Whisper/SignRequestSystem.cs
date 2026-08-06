@@ -1,18 +1,35 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using GameLogic;
+using GameLogic.Night;
+using Report;
 using UnityEngine;
 
 namespace Whisper
 {
     /// <summary>
-    /// Listens for the "Give me a sign" phrase in recognized speech and activates the
-    /// assigned GameObjects when it is heard.
-    /// Word matching lives in <see cref="PhraseMatcher"/>, shared with VoiceCommandRouter.
+    /// HL-7 "Give Me A Sign" - the mechanic the game is named after. Listens for the phrase at any
+    /// time (WhisperMicInput routes every recognized chunk here unconditionally, not gated behind
+    /// any panel) and, when heard, points at the nearest active anomaly's room - for a price.
+    ///
+    /// Restored per the roadmap rather than rebuilt: word matching still lives in PhraseMatcher,
+    /// shared with VoiceCommandRouter, and the original signGameObjects[] activation hook is kept
+    /// so anything already wired to it in the scene keeps working.
+    ///
+    /// The cost is deliberately immediate and legible rather than a hidden probability bump: asking
+    /// floors GlitchDirector's intensity a little higher each time (permanent for the rest of the
+    /// night, not stacking without limit), and - "บาง anomaly ตอบกลับ จริงๆ" (something answers for
+    /// real) - forces a Camera Betrayal glitch right now if one isn't already running. A literal
+    /// "increase the chance of a future Camera Betrayal beat" isn't implementable honestly: NightPlan
+    /// is generated once, deterministically, at night start (see NightPlanGenerator), so re-rolling
+    /// its schedule mid-night would break seed replay. Forcing an immediate consequence keeps the
+    /// same "asking has a cost" feeling without touching that contract.
     /// </summary>
     public class SignRequestSystem : MonoBehaviour
     {
         [Header("Sign Request Settings")]
-        [Tooltip("GameObjects activated when the sign request phrase is detected.")]
+        [Tooltip("GameObjects activated when the sign request phrase is detected. Legacy hook - kept for whatever the scene already wires here.")]
         public GameObject[] signGameObjects;
 
         [Header("Sign Detection")]
@@ -22,11 +39,38 @@ namespace Whisper
         [Tooltip("Per-word fuzzy similarity threshold (1 = exact match only).")]
         [Range(0.5f, 1f)] public float wordSimilarity = 0.7f;
 
+        [Header("HL-7 Hint (Sprint 6)")]
+        [Tooltip("How many times the player can ask per night. 0 = disabled (legacy activate-only behaviour).")]
+        [Min(0)] [SerializeField] private int usesPerNight = 3;
+        [Tooltip("GlitchDirector intensity floor added per use (1 + this * usesSpent). Permanent for the rest of the night.")]
+        [SerializeField] private float intensityBumpPerUse = 0.15f;
+        [SerializeField] private float hintDisplaySeconds = 4f;
+        [Tooltip("Force an immediate Camera Betrayal glitch on each successful use, if one isn't already running and a CameraBetrayalHaunt exists in the scene.")]
+        [SerializeField] private bool triggerCameraBetrayalOnUse = true;
+
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
         /// <summary>Fired on every routed phrase: true = sign request detected.</summary>
         public Action<bool> OnSignRequested;
+
+        private int _usesRemaining;
+        private GlitchDirector _glitchDirector;
+        private CameraBetrayalHaunt _cameraBetrayal;
+        private SignHintHud _hud;
+        private Coroutine _hudHide;
+
+        void Start()
+        {
+            _usesRemaining = usesPerNight;
+            _glitchDirector = FindFirstObjectByType<GlitchDirector>();
+            _cameraBetrayal = FindFirstObjectByType<CameraBetrayalHaunt>();
+        }
+
+        void OnDestroy()
+        {
+            _hud?.Destroy();
+        }
 
         public void Route(string recognizedText)
         {
@@ -58,21 +102,80 @@ namespace Whisper
 
         private void HandleSuccessfulSignRequest()
         {
-            if (signGameObjects == null || signGameObjects.Length == 0)
+            // Legacy behaviour kept as-is for whatever the scene already wires here.
+            if (signGameObjects != null)
             {
-                if (showDebugInfo)
-                    Debug.Log("SignRequestSystem: no GameObjects assigned to activate.");
+                foreach (var gameObj in signGameObjects)
+                {
+                    if (gameObj != null) gameObj.SetActive(true);
+                }
+
+                if (showDebugInfo && signGameObjects.Length > 0)
+                    Debug.Log($"Sign request handled! Activated {signGameObjects.Length} GameObjects.");
+            }
+
+            GiveHint();
+        }
+
+        private void GiveHint()
+        {
+            if (usesPerNight <= 0) return; // hint mechanic disabled - legacy activate-only behaviour
+
+            if (_usesRemaining <= 0)
+            {
+                ShowHudMessage("...nothing answers.", 2f);
                 return;
             }
 
-            foreach (var gameObj in signGameObjects)
+            _usesRemaining--;
+
+            var target = FindNearestUnreportedAnomaly();
+            string message = target != null && target.AssignedRoom != null
+                ? $"⚠ {target.AssignedRoom.Label}"
+                : "...nothing is out there right now.";
+
+            ShowHudMessage(message, hintDisplaySeconds);
+
+            // Cost 1: floors GlitchDirector's intensity a little higher per use spent. A floor, not
+            // a stacking multiply-every-time bump - asking three times shouldn't compound into an
+            // unplayable form, it should just mean "the rest of tonight is worse than before I asked".
+            if (_glitchDirector != null)
             {
-                if (gameObj != null)
-                    gameObj.SetActive(true);
+                int spent = usesPerNight - _usesRemaining;
+                _glitchDirector.SetIntensity(1f + intensityBumpPerUse * spent);
             }
 
+            // Cost 2: something answers for real, right now.
+            if (triggerCameraBetrayalOnUse && _cameraBetrayal != null && !_cameraBetrayal.IsActive)
+                _cameraBetrayal.Trigger(default);
+
             if (showDebugInfo)
-                Debug.Log($"Sign request handled! Activated {signGameObjects.Length} GameObjects.");
+                Debug.Log($"SignRequestSystem: hint given ('{message}'). {_usesRemaining}/{usesPerNight} uses left.", this);
+        }
+
+        private static Anomaly FindNearestUnreportedAnomaly()
+        {
+            foreach (var anomaly in Anomaly.ActiveAnomalies)
+            {
+                if (anomaly != null && anomaly.gameObject.activeInHierarchy && !anomaly.IsReported)
+                    return anomaly;
+            }
+            return null;
+        }
+
+        private void ShowHudMessage(string text, float seconds)
+        {
+            if (_hud == null) _hud = SignHintHud.Create();
+            _hud.SetText(text);
+
+            if (_hudHide != null) StopCoroutine(_hudHide);
+            _hudHide = StartCoroutine(HideAfter(seconds));
+        }
+
+        private IEnumerator HideAfter(float seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            _hud?.SetText(string.Empty);
         }
     }
 }

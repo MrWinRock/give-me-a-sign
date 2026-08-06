@@ -34,8 +34,8 @@ namespace GameLogic.Flow
         [Header("Pacing")]
         [Tooltip("Pause after surviving to 6:00 AM before the Result scene loads.")]
         [SerializeField] private float delayAfterSurviving = 1f;
-        [Tooltip("Pause after being caught, for the death sequence. Sprint 6 fills this in.")]
-        [SerializeField] private float delayAfterDeath;
+        [Tooltip("Total time the death sequence (fade + cause-of-death line, see DeathSequenceHud) holds before the Result scene loads.")]
+        [SerializeField] private float delayAfterDeath = 2.5f;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
@@ -114,6 +114,9 @@ namespace GameLogic.Flow
 
             LastResult = BuildResult(outcome, causeAnomalyId, causeRoomId);
 
+            if (LastResult.Won)
+                AdvanceProgression(LastResult.nightIndex);
+
             if (showDebugInfo)
             {
                 Debug.Log(
@@ -157,12 +160,67 @@ namespace GameLogic.Flow
 
         private IEnumerator PlayEndingThenLoad(NightOutcome outcome)
         {
-            // Sprint 6 hangs the death sequence off this delay.
-            float delay = outcome == NightOutcome.Survived ? delayAfterSurviving : delayAfterDeath;
-            if (delay > 0f)
-                yield return new WaitForSeconds(delay);
+            if (outcome == NightOutcome.Survived)
+            {
+                if (delayAfterSurviving > 0f)
+                    yield return new WaitForSeconds(delayAfterSurviving);
+            }
+            else
+            {
+                yield return PlayDeathSequence(outcome);
+            }
 
             LoadResultScene();
+        }
+
+        /// <summary>Sprint 6, S-606: fade to black + a cause-of-death line, held for delayAfterDeath seconds.</summary>
+        private IEnumerator PlayDeathSequence(NightOutcome outcome)
+        {
+            var hud = DeathSequenceHud.Create();
+            string cause = DescribeCause(outcome);
+
+            const float fadeDuration = 0.6f;
+            float t = 0f;
+            while (t < fadeDuration)
+            {
+                t += Time.unscaledDeltaTime;
+                float p = Mathf.Clamp01(t / fadeDuration);
+                hud.SetFade(p);
+                hud.SetCause(cause, p);
+                yield return null;
+            }
+
+            hud.SetFade(1f);
+            hud.SetCause(cause, 1f);
+
+            float hold = Mathf.Max(0f, delayAfterDeath - fadeDuration);
+            if (hold > 0f)
+                yield return new WaitForSecondsRealtime(hold);
+
+            hud.Destroy();
+        }
+
+        private string DescribeCause(NightOutcome outcome)
+        {
+            switch (outcome)
+            {
+                case NightOutcome.KilledByDemon:
+                    return "THE DEMON FOUND YOU.";
+
+                case NightOutcome.Negligence:
+                    // Only SilenceProtocolHaunt raises this outcome today, always with this cause id.
+                    return LastResult != null && LastResult.killedByAnomalyId == "silence_protocol"
+                        ? "IT HEARD YOU."
+                        : "NEGLIGENCE.";
+
+                case NightOutcome.KilledByAnomaly:
+                    return LastResult != null && !string.IsNullOrEmpty(LastResult.killedInRoomId)
+                        ? $"IT CAUGHT YOU IN THE {LastResult.killedInRoomId.ToUpperInvariant()}."
+                        : "IT CAUGHT YOU.";
+
+                default:
+                    return "YOU DID NOT SURVIVE.";
+            }
         }
 
         private void LoadResultScene()
@@ -190,6 +248,31 @@ namespace GameLogic.Flow
 
         /// <summary>Called by the Result scene's Play Again button so the next night starts clean.</summary>
         public static void ClearLastResult() => LastResult = null;
+
+        /// <summary>
+        /// Sprint 6, S-603/S-605: the furthest night unlocked so far - the same PlayerPrefs key
+        /// NightPlanRunner already reads when nothing overrides it. Static read API so nothing
+        /// outside this file needs to know the PlayerPrefs key by name (same pattern as
+        /// ControlPanelWindow's static settings getters).
+        /// </summary>
+        public static int UnlockedNightIndex =>
+            Mathf.Max(1, PlayerPrefs.GetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1));
+
+        /// <summary>
+        /// Advances the unlocked-night save on a win, so the next "Play Again" naturally continues
+        /// to the next night - NightPlanRunner.ResolveNightIndex() already reads the same key, so
+        /// no separate "Continue" flow is needed. A loss leaves the key untouched, which is exactly
+        /// "Play Again" retrying the night that was just failed.
+        /// </summary>
+        private static void AdvanceProgression(int completedNightIndex)
+        {
+            int nextNight = completedNightIndex + 1;
+            int unlocked = PlayerPrefs.GetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1);
+            if (nextNight <= unlocked) return;
+
+            PlayerPrefs.SetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, nextNight);
+            PlayerPrefs.Save();
+        }
 
         /// <summary>
         /// Drops the finished night and loads the gameplay scene. Kept here so scene loading stays

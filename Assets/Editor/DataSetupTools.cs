@@ -180,12 +180,11 @@ namespace GiveMeASign.EditorTools
         }
 
         /// <summary>
-        /// Sprint 5: adds a default LoopWeight entry for any HauntLoopId that isn't in the profile
-        /// yet (RadioCheck, CameraBetrayal), so re-running this step after pulling Sprint 5's code
-        /// is enough to make both schedulable - no manual Inspector edit required. Never touches an
+        /// Adds a default LoopWeight entry for any HauntLoopId that has a shipped IHauntLoop but
+        /// isn't in the profile yet, so re-running this step after pulling new Sprint code is
+        /// enough to make it schedulable - no manual Inspector edit required. Never touches an
         /// entry that already exists, so hand-tuned weights survive re-running this any number of
-        /// times. ImpostorCase (Sprint 6) is deliberately NOT added here yet - no IHauntLoop
-        /// implements it, so HauntDirector would just warn every time it got picked.
+        /// times.
         /// </summary>
         private static void EnsureDefaultHauntWeights(HauntProfile profile)
         {
@@ -197,32 +196,31 @@ namespace GiveMeASign.EditorTools
 
             bool changed = false;
 
-            if (!present.Contains(HauntLoopId.RadioCheck))
-            {
-                profile.loops.Add(new HauntProfile.LoopWeight
-                {
-                    loop = HauntLoopId.RadioCheck,
-                    enabled = true,
-                    weight = 1.5f,   // rings more often than a full encounter - it's only an 8s ask
-                    minNightIndex = 1,
-                });
-                changed = true;
-            }
+            changed |= AddIfMissing(profile, present, HauntLoopId.RadioCheck, weight: 1.5f, minNightIndex: 1);
+            changed |= AddIfMissing(profile, present, HauntLoopId.CameraBetrayal, weight: 1f, minNightIndex: 1);
 
-            if (!present.Contains(HauntLoopId.CameraBetrayal))
-            {
-                profile.loops.Add(new HauntProfile.LoopWeight
-                {
-                    loop = HauntLoopId.CameraBetrayal,
-                    enabled = true,
-                    weight = 1f,
-                    minNightIndex = 1,
-                });
-                changed = true;
-            }
+            // Sprint 6: ImpostorCase doesn't need the tutorial-safety a minNightIndex of 2 would
+            // give it the way an actual encounter would - HauntDirector already blocks EVERY haunt
+            // loop on night 1 via the "tutorial" flag (see HauntDirector.Fire), so this is really
+            // just "when it's allowed to start competing for a slot in the schedule at all".
+            changed |= AddIfMissing(profile, present, HauntLoopId.ImpostorCase, weight: 0.8f, minNightIndex: 2);
 
             if (changed)
                 EditorUtility.SetDirty(profile);
+        }
+
+        private static bool AddIfMissing(HauntProfile profile, HashSet<HauntLoopId> present, HauntLoopId loop, float weight, int minNightIndex)
+        {
+            if (present.Contains(loop)) return false;
+
+            profile.loops.Add(new HauntProfile.LoopWeight
+            {
+                loop = loop,
+                enabled = true,
+                weight = weight,
+                minNightIndex = minNightIndex,
+            });
+            return true;
         }
 
         private static List<T> LoadAllSorted<T>(System.Comparison<T> comparison) where T : ScriptableObject

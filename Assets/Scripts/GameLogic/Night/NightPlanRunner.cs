@@ -69,7 +69,7 @@ namespace GameLogic.Night
             GameFlowManager.CurrentNightIndex = nightIndex;
             GameFlowManager.CurrentSeed = seed;
 
-            ApplyGlitchProfile(resolved);
+            ApplyGlitchProfile(resolved, nightIndex);
 
             if (logPlanOnStart)
                 Debug.Log(Describe(Plan, generator.LastOutcome), this);
@@ -120,13 +120,20 @@ namespace GameLogic.Night
             return rooms;
         }
 
-        private void ApplyGlitchProfile(NightContentLibrary resolved)
+        private void ApplyGlitchProfile(NightContentLibrary resolved, int nightIndex)
         {
-            if (resolved.glitch == null) return;
-
             var director = FindFirstObjectByType<Report.GlitchDirector>();
-            if (director != null)
+            if (director == null) return;
+
+            if (resolved.glitch != null)
                 director.SetIntensity(resolved.glitch.intensity);
+
+            // Sprint 6, S-604: night 1 is the tutorial. GlitchDirector needs a matching
+            // "AlwaysWhenFlagSet" blackout entry (flagName "tutorial") in its own Inspector list to
+            // actually go quiet on this flag - add one by hand if the scene's GlitchDirector
+            // predates this. HauntDirector reads this same flag directly (see HauntDirector.Fire)
+            // to suppress every haunt beat on night 1 with no extra authoring needed there.
+            director.SetFlag("tutorial", nightIndex == 1);
         }
 
         // ── Debug ────────────────────────────────────────────────────────────────────────

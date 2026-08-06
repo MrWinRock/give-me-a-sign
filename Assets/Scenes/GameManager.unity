@@ -2211,6 +2211,201 @@ Transform:
   m_Children: []
   m_Father: {fileID: 283135907}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &724409223
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 724409224}
+  - component: {fileID: 724409225}
+  m_Layer: 0
+  m_Name: ImpostorCaseHaunt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &724409224
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 724409223}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 16.37736, y: -1.28302, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &724409225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 724409223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83707316165073e4b8fc457ec5e06e8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.ImpostorCaseHaunt
+  caseJumpRange: {x: 2, y: 4}
+  statusMessages:
+  - PREVIOUS OFFICER DID NOT REPORT
+  - CASE ALREADY ON FILE
+  - SEC-03 FILED THIS REPORT
+  showDebugInfo: 0
+--- !u!1 &786579303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 219540831}
+  - component: {fileID: 126855092}
+  m_Layer: 0
+  m_Name: RadioCheckHaunt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &219540831
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786579303}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &126855092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786579303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11354f7eb1df4b942aa81cf3ca195918, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Report.RadioCheckHaunt
+  radioId: SEC-04
+  wrongIds:
+  - SEC-01
+  - SEC-02
+  - SEC-03
+  responseWindowSeconds: 8
+  wordSimilarity: 0.7
+  normalWeight: 3
+  ownVoiceWeight: 1.5
+  wrongIdWeight: 1.5
+  strikesForConsequence: 3
+  wrongIdIntensityFloor: 1.25
+  callSoundName: RadioCall
+  missedSoundName: RadioMissed
+  showDebugInfo: 0
+--- !u!1 &896233790
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 395310485}
+  - component: {fileID: 362950628}
+  - component: {fileID: 339670711}
+  m_Layer: 0
+  m_Name: CameraBetrayalHaunt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &395310485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896233790}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &362950628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896233790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01dfffc2325304541acd8db437cc552c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Report.CameraBetrayalHaunt
+  variants:
+  - type: 0
+    enabled: 1
+    weight: 1.2
+  - type: 1
+    enabled: 1
+    weight: 1
+  - type: 2
+    enabled: 1
+    weight: 1
+  - type: 3
+    enabled: 1
+    weight: 0.7
+  - type: 4
+    enabled: 1
+    weight: 0.5
+  showDebugInfo: 0
+--- !u!114 &339670711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896233790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dec8d3dc2691364594e37155e5ca916, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Report.CameraFeedController
+  loopDurationRange: {x: 4, y: 8}
+  frozenDurationRange: {x: 2, y: 4}
+  blackoutDurationRange: {x: 1.5, y: 3}
+  ghostRoomDurationRange: {x: 3, y: 6}
+  mirrorDurationRange: {x: 3, y: 6}
+  ghostRoomLabels:
+  - CAM 07 — SUB-LEVEL
+  - CAM 09 — UNKNOWN SECTOR
+  - CAM 00 — ??????
+  mirrorLabel: CAM 00 — SECURITY OFFICE
+  mirrorHintText: '...someone is sitting there.'
+  verboseLogging: 0
 --- !u!1 &761785850
 GameObject:
   m_ObjectHideFlags: 0
@@ -3836,7 +4031,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0ac78011cfd2ba4ea4454c438867d63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Night.NightPlanRunner
-  library: {fileID: 11400000, guid: 4425eaa2cfa15674c82fa578d0f2970d, type: 2}
+  library: {fileID: 0}
   nightIndexOverride: 0
   seedOverride: 0
   useSceneRooms: 1
@@ -7112,11 +7307,14 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 724409224}
   - {fileID: 357971566}
   - {fileID: 479646212}
   - {fileID: 2091993506}
   - {fileID: 1068152285}
   - {fileID: 106559432}
+  - {fileID: 219540831}
+  - {fileID: 395310485}
   m_Father: {fileID: 477437160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1900000003
@@ -11909,7 +12107,11 @@ MonoBehaviour:
   - reason: No glitches while the anomaly is Passive
     condition: 2
     conditionValue: 0
-    flagName: 
+    flagName:
+  - reason: No glitches during the night 1 tutorial
+    condition: 3
+    conditionValue: 0
+    flagName: tutorial
   baseChance: 0.35
   minGlitchesPerSession: 1
   maxGlitchesPerSession: 2

@@ -1,4 +1,5 @@
 using GameLogic.Flow;
+using GameLogic.Night;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +22,14 @@ namespace Score
         [SerializeField] private Color winColor = Color.green;
         [SerializeField] private Color loseColor = Color.red;
 
+        [Header("Sprint 6 - Seed / Progression")]
+        [Tooltip("Optional. Shows 'Seed 123456 · Night 2'.")]
+        [SerializeField] private TextMeshProUGUI seedText;
+        [Tooltip("Optional. Shows an 'unlocked Night N' message on a win, blank otherwise.")]
+        [SerializeField] private TextMeshProUGUI progressionText;
+        [Tooltip("Optional. Reloads the gameplay scene forced back onto this exact seed - same NightPlanProvider.ForcedSeed mechanism the debug Night Plan HUD (F3) already uses.")]
+        [SerializeField] private Button replaySeedButton;
+
         [Header("Buttons")]
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Button quitButton;
@@ -34,6 +43,8 @@ namespace Score
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
+
+        private int _resultSeed;
 
         void Start()
         {
@@ -56,6 +67,18 @@ namespace Score
 
         private void Display(NightResult result)
         {
+            _resultSeed = result.seed;
+
+            if (seedText != null)
+                seedText.text = $"Seed {result.seed} · Night {result.nightIndex}";
+
+            if (progressionText != null)
+            {
+                progressionText.text = result.Won
+                    ? $"Night {GameFlowManager.UnlockedNightIndex} unlocked."
+                    : string.Empty;
+            }
+
             // Being caught reads as a different kind of ending from simply not scoring enough,
             // so it gets its own objects and copy.
             if (result.KilledByThreat)
@@ -124,6 +147,9 @@ namespace Score
 
             if (quitButton != null)
                 quitButton.onClick.AddListener(QuitGame);
+
+            if (replaySeedButton != null)
+                replaySeedButton.onClick.AddListener(ReplaySeed);
         }
 
         public void PlayAgain()
@@ -131,6 +157,22 @@ namespace Score
             if (showDebugInfo)
                 Debug.Log("Loading game scene...");
 
+            GameFlowManager.StartNewNight(gameSceneName);
+        }
+
+        /// <summary>
+        /// Sprint 6, S-607: forces the next night generated to reuse this exact seed - same
+        /// mechanism (NightPlanProvider.ForcedSeed) the debug Night Plan HUD's "Replay THIS seed"
+        /// button already uses. Note this pins the RNG stream only, not the night index: replaying
+        /// an old seed after unlocking a later night generates that seed against the CURRENTLY
+        /// unlocked night's difficulty, same as the debug tool - not a new limitation.
+        /// </summary>
+        public void ReplaySeed()
+        {
+            if (showDebugInfo)
+                Debug.Log($"Replaying seed {_resultSeed}...");
+
+            NightPlanProvider.ForcedSeed = _resultSeed;
             GameFlowManager.StartNewNight(gameSceneName);
         }
 

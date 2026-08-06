@@ -40,6 +40,11 @@ namespace Report
         // SubmitReport) - opening/cancelling a report never consumes a case number.
         private static int _nextCaseNumber = 1;
 
+        /// <summary>The case number that will be assigned the next time a report opens - a
+        /// read-only peek for haunt loops like ImpostorCaseHaunt that need to fake a case number
+        /// ahead of the real one without actually consuming it.</summary>
+        public static int NextCaseNumber => _nextCaseNumber;
+
         private Anomaly _currentAnomaly;
         private string _recognizedKeyword = "";
         private int _activeAlertCount;

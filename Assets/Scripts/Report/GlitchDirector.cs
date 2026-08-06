@@ -207,6 +207,15 @@ namespace Report
                 reason = "No glitches while the anomaly is Passive",
                 condition = BlackoutCondition.DuringPassiveAnomaly,
                 conditionValue = 0
+            },
+            new GlitchBlackout
+            {
+                // Sprint 6, S-604: NightPlanRunner calls SetFlag("tutorial", true) on night 1. Only
+                // a NEW GlitchDirector component gets this entry automatically - one already placed
+                // in a scene keeps its previously-serialized list, so add this by hand there too.
+                reason = "No glitches during the night 1 tutorial",
+                condition = BlackoutCondition.AlwaysWhenFlagSet,
+                flagName = "tutorial"
             }
         };
 

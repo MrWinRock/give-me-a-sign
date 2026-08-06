@@ -94,6 +94,7 @@ namespace Report
         private int _nextIndex;
         private bool _built;
         private readonly Dictionary<HauntLoopId, IHauntLoop> _loops = new Dictionary<HauntLoopId, IHauntLoop>();
+        private GlitchDirector _glitchDirector;
 
         void Awake()
         {
@@ -109,6 +110,8 @@ namespace Report
 
         void Start()
         {
+            _glitchDirector = FindFirstObjectByType<GlitchDirector>();
+
             if (nightTimer == null)
                 nightTimer = FindFirstObjectByType<NightTimer>();
 
@@ -207,6 +210,16 @@ namespace Report
         private void Fire(HauntBeat beat)
         {
             if (beat.loop == HauntLoopId.None) return;
+
+            // Sprint 6, S-604: night 1 is the tutorial - NightPlanRunner sets this flag on
+            // GlitchDirector for night 1 only. Checked here (not in NightPlanGenerator) so no
+            // haunt loop, present or future, needs its own tutorial-awareness.
+            if (_glitchDirector != null && _glitchDirector.GetFlag("tutorial"))
+            {
+                if (showDebugInfo)
+                    Debug.Log($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - tutorial night.", this);
+                return;
+            }
 
             if (!_loops.TryGetValue(beat.loop, out var loop) || loop == null)
             {
