@@ -92,6 +92,11 @@ namespace GameLogic.SpawnAndTime
         private bool _built;
         private bool _allSpawnedNotified;
 
+        // Distinct prefabs drawn from this night's own timeline, used by SpawnPenaltyAnomaly -
+        // built lazily the first time a penalty spawn is needed.
+        private readonly List<GameObject> _penaltyPool = new List<GameObject>();
+        private bool _penaltyPoolBuilt;
+
         // Seeded from the plan so which spawn point a room picks is part of the night's seed too -
         // otherwise replaying a seed would put anomalies in subtly different places.
         private System.Random _rng = new System.Random(0);
@@ -101,10 +106,25 @@ namespace GameLogic.SpawnAndTime
         /// <summary>Fired once when the last scheduled entry has spawned. Payload = total spawned.</summary>
         public System.Action<int> OnAllAnomaliesSpawned;
 
+        public static AnomalyScheduler Instance { get; private set; }
+
         public int RemainingCount => _sorted.Count - _nextIndex;
 
         /// <summary>How many anomalies have been spawned so far this night (destroyed ones still count).</summary>
         public int TotalSpawned => _spawned.Count;
+
+        void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else if (Instance != this)
+            {
+                Debug.LogWarning("Multiple AnomalyScheduler instances found! Destroying duplicate.", this);
+                Destroy(gameObject);
+            }
+        }
 
         void Start()
         {
@@ -125,6 +145,9 @@ namespace GameLogic.SpawnAndTime
         {
             if (nightTimer != null)
                 nightTimer.OnTimeChanged -= OnTimeChanged;
+
+            if (Instance == this)
+                Instance = null;
         }
 
         // ── Building the timeline ────────────────────────────────────────────────────────
@@ -267,6 +290,67 @@ namespace GameLogic.SpawnAndTime
 
             if (showDebugInfo)
                 Debug.Log($"AnomalyScheduler: spawned '{item.label}' at {instance.transform.position}.", this);
+        }
+
+        // ── Penalty spawns ───────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Spawns one extra anomaly right now, outside the authored timeline. This is the
+        /// consequence of a wrong Incident Report (see Anomaly.RespondAfterDelay) now that a
+        /// wrong report no longer threatens the player with a jumpscare/chase - it just raises
+        /// the pressure instead. Picks a random anomaly kind from this night's own roster (so it
+        /// never hands out something the night wasn't already using, like the Demon) in a random
+        /// room. Returns null if there is nothing available to spawn.
+        /// </summary>
+        public GameObject SpawnPenaltyAnomaly()
+        {
+            if (!_built)
+                BuildTimeline();
+
+            if (!_penaltyPoolBuilt)
+                BuildPenaltyPool();
+
+            if (_penaltyPool.Count == 0)
+            {
+                if (showDebugInfo)
+                    Debug.LogWarning("AnomalyScheduler: no anomaly prefab available to spawn as a penalty.", this);
+                return null;
+            }
+
+            var prefab = _penaltyPool[_rng.Next(_penaltyPool.Count)];
+            var anchor = RoomRegistry.Count > 0 ? RoomRegistry.All[_rng.Next(RoomRegistry.Count)] : null;
+
+            var spawn = new ScheduledSpawn
+            {
+                atMinute = -1f,
+                prefab = prefab,
+                point = anchor != null ? anchor.GetSpawnPoint(_rng) : null,
+                room = anchor != null ? anchor.Room : null,
+                label = $"PENALTY: {prefab.name} in {(anchor != null ? anchor.Room.Label : "(no room)")}",
+            };
+
+            Spawn(spawn);
+
+            if (showDebugInfo)
+                Debug.Log($"AnomalyScheduler: spawned penalty anomaly '{spawn.label}'.", this);
+
+            return _spawned[_spawned.Count - 1];
+        }
+
+        /// <summary>Distinct prefabs already used by this night's timeline, minus the Demon - it
+        /// runs its own dedicated jumpscare sequence and isn't something to hand out at random.</summary>
+        private void BuildPenaltyPool()
+        {
+            _penaltyPoolBuilt = true;
+            _penaltyPool.Clear();
+
+            foreach (var item in _sorted)
+            {
+                if (item.prefab == null || _penaltyPool.Contains(item.prefab)) continue;
+                if (item.prefab.GetComponentInChildren<DemonAnomaly>(true) != null) continue;
+
+                _penaltyPool.Add(item.prefab);
+            }
         }
 
         /// <summary>Spawned anomalies that still exist (nulls from destroyed ones are pruned).</summary>

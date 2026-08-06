@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GameLogic.Data;
 using GameLogic.Flow;
+using GameLogic.SpawnAndTime;
 using Pray;
 using Report;
 using UnityEngine;
@@ -48,8 +49,6 @@ namespace GameLogic
         private const float RespondDelay = 4f;
         /// <summary>Pause after the banish animation starts before the object goes away.</summary>
         private const float DespawnDelay = 0.6f;
-        /// <summary>Gap between the jumpscare stinger and the fight loop.</summary>
-        private const float FightAudioDelay = 0.2f;
 
         // ── Static registry ──────────────────────────────────────────────────────────────
 
@@ -196,7 +195,16 @@ namespace GameLogic
 
         /// <summary>
         /// Called when a report comes back wrong (or the player clicked without reporting).
-        /// The anomaly reacts according to its respond type after a short beat.
+        ///
+        /// Used to escalate into a jumpscare/chase (see git history for the old Threaten()/
+        /// Approach() coroutines) with a real chance of killing the player if the threat timer
+        /// ran out. That risk-of-instant-death reaction is gone: a wrong report now simply costs
+        /// the player pressure instead of a scare - this anomaly quietly disappears and a fresh
+        /// one spawns elsewhere via AnomalyScheduler.SpawnPenaltyAnomaly().
+        ///
+        /// The one exception is an anomaly with no move target assigned (the Demon, whose
+        /// RespondType is MoveOnly with an empty target on purpose) - it has nothing to escalate
+        /// into either way, so it is left completely alone and can simply be reported again.
         /// </summary>
         public void Respond()
         {
@@ -207,71 +215,14 @@ namespace GameLogic
         {
             yield return new WaitForSeconds(RespondDelay);
 
-            switch (EffectiveRespondType)
+            if (EffectiveRespondType != RespondType.DisappearInstantly && !_movement.HasTarget)
             {
-                case RespondType.DisappearInstantly:
-                    HandleDisappear();
-                    break;
-
-                case RespondType.MoveToTargetThenDisappear:
-                    if (RequireTarget())
-                        yield return StartCoroutine(Threaten());
-                    break;
-
-                case RespondType.MoveOnly:
-                    if (RequireTarget())
-                        yield return StartCoroutine(Approach());
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// An anomaly with nothing to walk toward stays put and does nothing - which is exactly
-        /// how the demon survives a wrong report so the player can try again.
-        /// </summary>
-        private bool RequireTarget()
-        {
-            if (_movement.HasTarget) return true;
-
-            Debug.LogWarning($"{name} has no target assigned!", this);
-            return false;
-        }
-
-        /// <summary>Comes for the player, opens the prayer window, then starts the countdown.</summary>
-        private IEnumerator Threaten()
-        {
-            State = AnomalyState.Threatening;
-            _canPrayDisappear = true;
-            _presenter.PlayThreatening();
-
-            if (_prayManager != null)
-            {
-                _prayManager.ShowPrayPanel();
-                _presenter.PlayJumpScare();
-
-                RaiseAlert();
-
-                yield return new WaitForSeconds(FightAudioDelay);
-                _presenter.PlayFightLoop();
+                // e.g. the Demon: nothing to escalate into, so it survives the wrong report as-is.
+                yield break;
             }
 
-            yield return _movement.MoveToTarget();
-
-            // Arrived and still not banished - the clock starts.
-            if (_canPrayDisappear)
-                _threatTimer.Begin();
-        }
-
-        /// <summary>Walks in and stays. Counts as dealt with on arrival - no prayer needed.</summary>
-        private IEnumerator Approach()
-        {
-            State = AnomalyState.Threatening;
-            _presenter.PlayThreatening();
-
-            yield return _movement.MoveToTarget();
-
-            _canPrayDisappear = false;
-            RaiseDisappeared();
+            HandleDisappear();
+            AnomalyScheduler.Instance?.SpawnPenaltyAnomaly();
         }
 
         // ── Resolution ───────────────────────────────────────────────────────────────────
@@ -389,14 +340,6 @@ namespace GameLogic
         /// clicked and reported again later instead of being permanently un-clickable.
         /// </summary>
         public void ClearReportedFlag() => _isReported = false;
-
-        private void RaiseAlert()
-        {
-            if (_alertRaised) return;
-
-            _alertRaised = true;
-            IncidentReportManager.Instance?.SetAlert(true);
-        }
 
         private void ClearAlert()
         {
