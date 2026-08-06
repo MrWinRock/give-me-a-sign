@@ -12356,7 +12356,7 @@ MonoBehaviour:
     clip: {fileID: 0}
     volume: 1
   verboseLogging: 0
-  debugHotkeys: 1
+  debugHotkeys: 0
   debugDurationOverride: 0
 --- !u!114 &4205114680779514440
 MonoBehaviour:

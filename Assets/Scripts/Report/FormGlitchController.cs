@@ -199,7 +199,7 @@ namespace Report
         [Tooltip("Log every glitch fire and revert to the console, including the exact before -> after text.")]
         [SerializeField] private bool verboseLogging;
         [Tooltip("Hotkeys while playing: F1=Phantom F2=FalseRecognition F3=CaseCorruption F4=StatusIntrusion F5=ClockDesync F6=CancelAll. Lets you fire a glitch while your eyes are on the Game view instead of the Inspector.")]
-        [SerializeField] private bool debugHotkeys = true;
+        [SerializeField] private bool debugHotkeys = false;
         [Tooltip("When > 0, EVERY timed glitch uses this duration (seconds) instead of its own range. Set to ~5 while testing - the shipping durations (0.3-2s) are deliberately too fast to study.")]
         [SerializeField] private float debugDurationOverride;
 

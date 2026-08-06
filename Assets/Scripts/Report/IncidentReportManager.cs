@@ -48,6 +48,7 @@ namespace Report
         private Anomaly _currentAnomaly;
         private string _recognizedKeyword = "";
         private int _activeAlertCount;
+        private GlitchStateSource _glitchStateSource;
 
         public bool IsReportOpen { get; private set; }
 
@@ -76,6 +77,15 @@ namespace Report
             {
                 gameManager = FindObjectOfType<GameManager>();
             }
+
+            // S-106 fix: this used to be found nowhere in the codebase - GlitchStateSource's
+            // ConsecutiveFailures (and the failure-streak escalation/scripted beats keyed off it,
+            // read by GlitchDirector via the wired stateSourceBehaviour) was permanently stuck at
+            // 0 because nothing ever reported a result back to it. Must target GlitchStateSource
+            // directly, not GlitchDirector - GlitchDirector.ReadConsecutiveFailures() ignores its
+            // own pushed value and reads _stateSource.ConsecutiveFailures whenever a state source
+            // is assigned (which it is, in this scene).
+            _glitchStateSource = FindObjectOfType<GlitchStateSource>();
 
             if (reportUI == null)
             {
@@ -267,6 +277,10 @@ namespace Report
             _nextCaseNumber++;
             ReportsFiled++;
             if (!success) ReportsFailed++;
+
+            // S-106 fix: bumps ConsecutiveFailures on GlitchStateSource so the failure-streak
+            // escalation and OnConsecutiveFailures scripted beats in GlitchDirector actually fire.
+            _glitchStateSource?.RegisterReportResult(success);
 
             reportUI.ShowResult(success);
             StartCoroutine(FinishReportAfterDelay(success));

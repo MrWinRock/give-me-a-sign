@@ -1,4 +1,4 @@
-# รายงาน Sprint 5 (ตรวจสอบ) + Sprint 6 (พัฒนาใหม่) + Sprint 7 (เริ่ม)
+# รายงาน Sprint 5 (ตรวจสอบ) + Sprint 6 (พัฒนาใหม่) + Sprint 7 (เริ่ม) + ตรวจสอบภาพรวม Sprint 1-7
 
 **วันที่:** 7 สิงหาคม 2026
 **ขอบเขต:** ตรวจสอบความถูกต้องของ Sprint 5 (HL-4 Radio Check, HL-5 Camera Betrayal) หลังผู้ใช้ทดสอบเล่นจริงแล้วผ่าน จากนั้นพัฒนา Sprint 6 ต่อ (HL-6 Impostor Case, HL-7 Give Me A Sign, ระบบ progression, death sequence, หน้า Result)
@@ -149,3 +149,50 @@
 - `Assets/Editor/DataSetupTools.cs` (ImpostorCase default weight)
 
 **ตรวจสอบ:** brace-balance ผ่านทุกไฟล์ (11 ไฟล์ที่แก้/สร้างใหม่), grep หา pattern เสี่ยง (named/positional argument, interface implementation ครบ, การอ้างอิง type ข้าม namespace) ผ่านหมด - แต่ยังไม่สามารถ compile-check จริงในสภาพแวดล้อมนี้ ต้องให้ Unity Editor เป็นผู้ตัดสินสุดท้ายเหมือนทุก Sprint ที่ผ่านมา
+
+---
+
+## 9. ตรวจสอบภาพรวม Sprint 1-7 ทั้งหมด (คำตอบ: Sprint 7 ยังไม่เสร็จ)
+
+**คำตอบตรงๆ ก่อน:** Sprint 7 **ยังไม่เสร็จ** ทำไปแค่ **S-707 อย่างเดียว** (โหมดพิมพ์แทนไมค์) ส่วน S-701 ถึง S-706 (playtest, balance, เสียง/VHS post-processing, อัปเกรดโมเดล Whisper) ยังไม่ได้ทำ เพราะเป็นงานที่ต้องมีคนเล่นจริง/ไฟล์สื่อจริง/ดาวน์โหลดโมเดลเอง ไม่ใช่งาน coding ล้วนที่ผมทำแทนได้ (รายละเอียดในหัวข้อ 7 ด้านบน)
+
+ตรวจไล่โค้ดจริงย้อนกลับไปตั้งแต่ Sprint 1 เทียบกับ Roadmap ทั้งฉบับ พบช่องโหว่ที่ตกหล่นมานาน 3 จุด **แก้ให้แล้ว** และพบอีกหลายจุดที่ **ยังไม่ทำ ขอให้ผู้ใช้ตัดสินใจเอง**
+
+### 9.1 บั๊กที่พบและแก้แล้วรอบนี้
+
+**S-106: `RegisterReportResult` ไม่เคยถูกเรียกที่ไหนเลย (ตั้งแต่ Sprint 1)**
+`GlitchDirector` และ `GlitchStateSource` ทั้งคู่มีเมธอด `RegisterReportResult(bool success)` แต่ grep ทั้งโปรเจกต์เจอแค่ "คำนิยาม" เมธอด ไม่มี "จุดเรียกใช้" เลยสักที่เดียว แปลว่า `ConsecutiveFailures` (จำนวนครั้งรายงานผิดติดกัน) **ค้างที่ 0 ตลอดทั้งเกม** มาตั้งแต่ Sprint 1 - ระบบ escalation/scripted beat ที่ผูกกับ "รายงานผิดติดกันกี่ครั้ง" (ที่ตั้งไว้ใน HauntProfile/GlitchDirector) ไม่เคยทำงานจริง
+
+แก้โดยเพิ่มใน `IncidentReportManager.SubmitReport()` ให้เรียก `GlitchStateSource.RegisterReportResult(success)` ทุกครั้งที่ยื่นรายงาน **(หมายเหตุ: ระหว่างแก้พบว่าต้องเรียกที่ `GlitchStateSource` ไม่ใช่ `GlitchDirector` เพราะซีนนี้ผูก `stateSourceBehaviour` ไว้แล้ว ทำให้ `GlitchDirector.ReadConsecutiveFailures()` อ่านค่าจาก `GlitchStateSource` เสมอ ไม่สนใจค่าที่ set ตรงๆที่ตัวมันเอง - เรียกผิดตัวจะกลายเป็นแก้แบบไม่มีผลอะไรเลย ตรวจพบและแก้ให้ถูกต้องแล้ว)**
+
+**S-108a: `debugHotkeys` (F1-F6 ยิง glitch มือ) ยัง default เปิดอยู่**
+`FormGlitchController.debugHotkeys` เป็น `true` ทั้งใน C# default และในค่าที่ save ไว้ในซีน - ถ้า build ไปโดยไม่ปิด ผู้เล่นจะกด F1-F6 ยิง glitch ปลอมเล่นได้เอง แก้เป็น `false` ทั้งสองที่แล้ว (โค้ด + ซีน)
+
+**S-108b: Build Settings มีซีน GameManager ซ้ำ 2 รายการ**
+`ProjectSettings/EditorBuildSettings.asset` มี `Assets/Scenes/GameManager.unity` อยู่ 2 บรรทัด (บรรทัดที่ 2 ปิด `enabled: 0` ไว้) ไม่กระทบเกมตอนรัน แต่รกและเสี่ยงสับสน build index ในอนาคต ลบรายการซ้ำที่ปิดไว้ออกแล้ว
+
+### 9.2 สิ่งที่ตรวจพบว่ายังไม่เสร็จ - ต้องให้ผู้ใช้ตัดสินใจเอง (ไม่ได้แตะ)
+
+**ความเสี่ยงอันดับ 1: ยังไม่เคย commit เข้า git**
+`git status` แสดงไฟล์ที่แก้ไข/ใหม่ค้างอยู่ **ประมาณ 975 ไฟล์** ยังไม่ commit เลยสักครั้ง (จากงานทุก Sprint 1-7 รวมกัน) นี่คืองานเดิมที่เคยตั้งไว้เป็น S-109 ตั้งแต่รายงานสถานะโปรเจกต์รอบแรก แต่ไม่เคยถูกทำ **ผมไม่ได้ลอง `git add`/`commit` ให้เอง เพราะเป็นการตัดสินใจของผู้ใช้ (credentials, commit message, branch strategy) - แนะนำให้ commit โดยเร็วที่สุดก่อนไฟล์เยอะขึ้นอีก เสี่ยงข้อมูลหายถ้าเครื่องมีปัญหา**
+
+**S-304: จำนวนห้องยังมีแค่ 3 จาก 5 ที่วางแผนไว้**
+`Assets/Settings/Rooms/` มีแค่ `Room_Kitchen`, `Room_Bedroom`, `Room_Hallway` - Roadmap ตั้งเป้า 5 ห้อง ไม่ได้แตะเพราะการเพิ่มห้องต้องมีตำแหน่งกล้อง/พื้นหลังจริงที่ผมไม่มีให้ (เป็นงาน level design)
+
+**S-305: `requireCorrectLocation` ยังปิดอยู่ (`0`)**
+ตัวแปรนี้ควบคุมว่าการรายงานต้อง "ระบุห้องถูกต้อง" ด้วยหรือไม่ ตอนนี้ปิดไว้ (ยอมรับคำตอบแม้ระบุห้องผิด) - **ไม่ได้แก้ให้เพราะเป็นการตัดสินใจเชิง design ที่กระทบความยากเกมโดยตรง** ผู้ใช้ควรเป็นคนเปิดเองถ้าต้องการเพิ่มความยาก
+
+**S-306/307: Field Manual (คู่มือในเกม) ยังไม่เริ่มทำเลย**
+grep หา `FieldManual` ทั้งโปรเจกต์ไม่เจอไฟล์ใดๆ - ฟีเจอร์นี้ยังไม่ถูกแตะตั้งแต่ Sprint 1
+
+**ระบบสวดมนต์ (Pray) ยังไม่ได้รวมเข้ากับ VoicePromptSystem ตามแผน**
+Roadmap เดิมวางแผนให้รวม `VoiceCommandRouter`/`PrayUiManager` เข้ากับ `VoicePromptSystem` ตัวใหม่ (ที่ใช้กับ Radio Check/Impostor Case) เป็นระบบเดียว แต่ตอนนี้ **สองระบบยังอยู่คู่กัน** คนละ path คนละโค้ด - ไม่กระทบการเล่น (ทั้งคู่ทำงานได้ปกติ) แต่เป็นหนี้เชิง architecture ที่ทำให้แก้ voice matching logic ต้องแก้ 2 ที่
+
+### 9.3 สรุปสถานะรวมแต่ละ Sprint
+
+Sprint 1-4 (Foundation, Haunt Framework, Silence Protocol): เสร็จสมบูรณ์ ตรวจซ้ำหลายรอบแล้ว
+Sprint 5 (HL-4 Radio Check, HL-5 Camera Betrayal): เสร็จสมบูรณ์ รวมถึงบั๊ก "ลืมเพิ่มเข้าซีน" ที่แก้ไปแล้วในรอบตรวจ Sprint 6
+Sprint 6 (HL-6, HL-7, tutorial night, progression, death sequence, Result screen, pause menu): เสร็จสมบูรณ์
+Sprint 7 (playtest/balance/audio-visual polish): **เสร็จแค่ 1 ใน 7 ข้อ** (S-707 พิมพ์แทนไมค์) ข้อที่เหลือรอทรัพยากรจากผู้ใช้ (คนเทส, ไฟล์เสียง/วิดีโอ, โมเดล Whisper)
+
+**สิ่งที่ค้างอยู่นอกเหนือ Sprint 7 ที่ควรรู้:** commit git (เร่งด่วนที่สุด), S-304/305/306/307 ตามหัวข้อ 9.2, และหนี้ architecture เรื่องระบบสวดมนต์ซ้ำ 2 ระบบ
