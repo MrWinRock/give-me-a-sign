@@ -43,6 +43,27 @@ namespace GameLogic.SpawnAndTime
         /// <summary>Real minutes elapsed since the night started.</summary>
         public float ElapsedMinutes => _currentTime / 60f;
 
+        /// <summary>
+        /// Overrides how long this night runs. Called by <see cref="Night.NightPlanRunner"/> in
+        /// Start, before the clock has ticked, so a later night can simply be a longer shift -
+        /// the lever that stops the anomaly count saturating once the night is full.
+        ///
+        /// Writes the serialized field as well as the cached seconds, so it does not matter
+        /// whether this lands before or after this component's own Start.
+        /// </summary>
+        public void SetNightDuration(float minutes)
+        {
+            if (minutes <= 0f) return;
+
+            nightDurationMinutes = minutes;
+            _totalNightDuration = minutes * 60f;
+
+            // The clock label is a function of the duration, so a mid-flight change has to
+            // invalidate the cached minute or the HUD would keep showing the old mapping.
+            _lastDisplayedMinute = -1;
+            UpdateTimeDisplay();
+        }
+
         void Start()
         {
             _totalNightDuration = nightDurationMinutes * 60f;

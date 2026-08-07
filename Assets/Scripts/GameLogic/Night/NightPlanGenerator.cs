@@ -96,7 +96,7 @@ namespace GameLogic.Night
             var selected = SelectAnomalies(nightIndex, rng);
             if (selected.Count > 0)
             {
-                var times = LayOutTimes(selected, durationMinutes, rng);
+                var times = LayOutTimes(selected, nightIndex, durationMinutes, rng);
 
                 // Times may be fewer than selected kinds when the night is too short to fit them
                 // all at a fair pace - better to run a shorter night than an unwinnable one.
@@ -121,8 +121,12 @@ namespace GameLogic.Night
             PlaceHaunts(plan, nightIndex, durationMinutes, rng);
 
             plan.requiredScore = _difficulty != null
-                ? _difficulty.RequiredScoreFor(plan.anomalies.Count)
+                ? _difficulty.RequiredScoreFor(plan.anomalies.Count, _difficulty.WinRatioFor(nightIndex))
                 : plan.anomalies.Count;
+
+            plan.penaltyAnomaliesPerWrongReport = _difficulty != null
+                ? _difficulty.PenaltyAnomaliesFor(nightIndex)
+                : 1;
 
             plan.SortByTime();
             return plan;
@@ -221,7 +225,8 @@ namespace GameLogic.Night
         /// impossible by construction - and if the night is too short for every selected anomaly,
         /// it returns fewer times rather than cramming them in.
         /// </summary>
-        private List<float> LayOutTimes(List<AnomalyDefinition> selected, float durationMinutes, System.Random rng)
+        private List<float> LayOutTimes(List<AnomalyDefinition> selected, int nightIndex,
+                                        float durationMinutes, System.Random rng)
         {
             var times = new List<float>();
             if (_difficulty == null || selected.Count == 0) return times;
@@ -236,7 +241,7 @@ namespace GameLogic.Night
             float longestThreat = 0f;
             foreach (var definition in selected) longestThreat = Mathf.Max(longestThreat, definition.threatTimeoutSeconds);
 
-            float requiredGap = Mathf.Max(_difficulty.minimumSpacingSeconds, longestThreat);
+            float requiredGap = Mathf.Max(_difficulty.MinimumSpacingFor(nightIndex), longestThreat);
             if (requiredGap <= 0f) requiredGap = 1f;
 
             int fits = Mathf.FloorToInt(usable / requiredGap) + 1;
@@ -439,7 +444,7 @@ namespace GameLogic.Night
             float longestThreat = 0f;
             foreach (var definition in pool) longestThreat = Mathf.Max(longestThreat, definition.threatTimeoutSeconds);
 
-            float gap = Mathf.Max(_difficulty.minimumSpacingSeconds, longestThreat) + _difficulty.handleCostSeconds;
+            float gap = Mathf.Max(_difficulty.MinimumSpacingFor(nightIndex), longestThreat) + _difficulty.handleCostSeconds;
             int count = Mathf.Max(1, Mathf.FloorToInt((endSeconds - startSeconds) / Mathf.Max(1f, gap)) + 1);
 
             for (int i = 0; i < count; i++)
@@ -452,7 +457,8 @@ namespace GameLogic.Night
                 });
             }
 
-            plan.requiredScore = _difficulty.RequiredScoreFor(plan.anomalies.Count);
+            plan.requiredScore = _difficulty.RequiredScoreFor(plan.anomalies.Count, _difficulty.WinRatioFor(nightIndex));
+            plan.penaltyAnomaliesPerWrongReport = _difficulty.PenaltyAnomaliesFor(nightIndex);
             plan.SortByTime();
 
             Debug.LogWarning(

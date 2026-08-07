@@ -195,7 +195,8 @@ namespace GameLogic
         /// Approach() coroutines) with a real chance of killing the player if the threat timer
         /// ran out. That risk-of-instant-death reaction is gone: a wrong report now simply costs
         /// the player pressure instead of a scare - this anomaly quietly disappears and a fresh
-        /// one spawns elsewhere via AnomalyScheduler.SpawnPenaltyAnomaly().
+        /// one spawns elsewhere via AnomalyScheduler.SpawnPenaltyAnomalies() - how many is
+        /// authored per night on the DifficultyProfile, and is 0 on the night-1 tutorial.
         ///
         /// The one exception is an anomaly with no move target assigned (the Demon, whose
         /// RespondType is MoveOnly with an empty target on purpose) - it has nothing to escalate
@@ -216,8 +217,10 @@ namespace GameLogic
                 yield break;
             }
 
-            HandleDisappear();
-            AnomalyScheduler.Instance?.SpawnPenaltyAnomaly();
+            // scores:false is the whole point - a wrong report must never pay out. HandleDisappear
+            // fires OnAnyAnomalyDisappeared, which ScoreManager treats as "one anomaly handled".
+            HandleDisappear(scores: false);
+            AnomalyScheduler.Instance?.SpawnPenaltyAnomalies();
         }
 
         // ── Resolution ───────────────────────────────────────────────────────────────────
@@ -252,7 +255,14 @@ namespace GameLogic
             HandleDisappear();
         }
 
-        private void HandleDisappear()
+        /// <summary>
+        /// Takes this anomaly off the board.
+        ///
+        /// <paramref name="scores"/> is what separates "the player dealt with it" from "it left on
+        /// its own": the disappear events are what ScoreManager counts, so the wrong-report path
+        /// must pass false or a failed report would quietly pay out a point.
+        /// </summary>
+        private void HandleDisappear(bool scores = true)
         {
             if (State == AnomalyState.Resolved) return;
             State = AnomalyState.Resolved;
@@ -266,7 +276,8 @@ namespace GameLogic
             ClearAlert();
 
             // Fire before disappearing, so scoring sees it.
-            RaiseDisappeared();
+            if (scores)
+                RaiseDisappeared();
 
             if (destroyAfterDisappear)
                 Destroy(gameObject, DespawnDelay); // delayed so the banish animation can play

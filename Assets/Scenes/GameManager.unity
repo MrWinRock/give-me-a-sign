@@ -611,6 +611,33 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 115135439}
   m_CullTransparentMesh: 1
+--- !u!114 &126855092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786579303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11354f7eb1df4b942aa81cf3ca195918, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.RadioCheckHaunt
+  radioId: SEC-04
+  wrongIds:
+  - SEC-01
+  - SEC-02
+  - SEC-03
+  responseWindowSeconds: 8
+  wordSimilarity: 0.7
+  normalWeight: 3
+  ownVoiceWeight: 1.5
+  wrongIdWeight: 1.5
+  strikesForConsequence: 3
+  wrongIdIntensityFloor: 1.25
+  callSoundName: RadioCall
+  missedSoundName: RadioMissed
+  showDebugInfo: 0
 --- !u!1 &135190652
 GameObject:
   m_ObjectHideFlags: 0
@@ -917,6 +944,21 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &219540831
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786579303}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &230240513
 GameObject:
@@ -1307,6 +1349,35 @@ Transform:
   - {fileID: 628111784}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &291987535
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743642838}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 477437160}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &314829375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 533768154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d519076c2d44eeb4a9a18168172a094a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Flow.PauseMenuController
+  mainMenuSceneName: MainMenu
+  showDebugInfo: 0
 --- !u!1 &326961357
 GameObject:
   m_ObjectHideFlags: 0
@@ -1445,6 +1516,46 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &339670711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896233790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dec8d3dc2691364594e37155e5ca916, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.CameraFeedController
+  loopDurationRange: {x: 4, y: 8}
+  frozenDurationRange: {x: 2, y: 4}
+  blackoutDurationRange: {x: 1.5, y: 3}
+  ghostRoomDurationRange: {x: 3, y: 6}
+  mirrorDurationRange: {x: 3, y: 6}
+  ghostRoomLabels:
+  - "CAM 07 \u2014 SUB-LEVEL"
+  - "CAM 09 \u2014 UNKNOWN SECTOR"
+  - "CAM 00 \u2014 ??????"
+  mirrorLabel: "CAM 00 \u2014 SECURITY OFFICE"
+  mirrorHintText: ...someone is sitting there.
+  verboseLogging: 0
+--- !u!114 &347242720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743642838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20415cf471614ec7aadaa34085b1e146, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Whisper.TypedInputFallback
+  forceEnabled: 0
+  whisperMicInput: {fileID: 0}
+  boxWidth: 420
+  showDebugInfo: 0
 --- !u!1 &357971564
 GameObject:
   m_ObjectHideFlags: 0
@@ -1622,6 +1733,50 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &362950628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896233790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01dfffc2325304541acd8db437cc552c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.CameraBetrayalHaunt
+  variants:
+  - type: 0
+    enabled: 1
+    weight: 1.2
+  - type: 1
+    enabled: 1
+    weight: 1
+  - type: 2
+    enabled: 1
+    weight: 1
+  - type: 3
+    enabled: 1
+    weight: 0.7
+  - type: 4
+    enabled: 1
+    weight: 0.5
+  showDebugInfo: 0
+--- !u!4 &395310485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896233790}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &399047735
 GameObject:
   m_ObjectHideFlags: 0
@@ -1947,6 +2102,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1900000002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &508830029
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 533768154}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 477437160}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &517907870
 GameObject:
   m_ObjectHideFlags: 0
@@ -1996,6 +2166,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1900000004}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &533768154
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 508830029}
+  - component: {fileID: 314829375}
+  m_Layer: 0
+  m_Name: PauseMenuController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &612621020
 GameObject:
   m_ObjectHideFlags: 0
@@ -2263,197 +2450,6 @@ MonoBehaviour:
   - CASE ALREADY ON FILE
   - SEC-03 FILED THIS REPORT
   showDebugInfo: 0
---- !u!1 &786579303
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 219540831}
-  - component: {fileID: 126855092}
-  m_Layer: 0
-  m_Name: RadioCheckHaunt
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &219540831
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 786579303}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1900000002}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &126855092
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 786579303}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11354f7eb1df4b942aa81cf3ca195918, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Report.RadioCheckHaunt
-  radioId: SEC-04
-  wrongIds:
-  - SEC-01
-  - SEC-02
-  - SEC-03
-  responseWindowSeconds: 8
-  wordSimilarity: 0.7
-  normalWeight: 3
-  ownVoiceWeight: 1.5
-  wrongIdWeight: 1.5
-  strikesForConsequence: 3
-  wrongIdIntensityFloor: 1.25
-  callSoundName: RadioCall
-  missedSoundName: RadioMissed
-  showDebugInfo: 0
---- !u!1 &896233790
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 395310485}
-  - component: {fileID: 362950628}
-  - component: {fileID: 339670711}
-  m_Layer: 0
-  m_Name: CameraBetrayalHaunt
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &395310485
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 896233790}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1900000002}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &362950628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 896233790}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01dfffc2325304541acd8db437cc552c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Report.CameraBetrayalHaunt
-  variants:
-  - type: 0
-    enabled: 1
-    weight: 1.2
-  - type: 1
-    enabled: 1
-    weight: 1
-  - type: 2
-    enabled: 1
-    weight: 1
-  - type: 3
-    enabled: 1
-    weight: 0.7
-  - type: 4
-    enabled: 1
-    weight: 0.5
-  showDebugInfo: 0
---- !u!114 &339670711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 896233790}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dec8d3dc2691364594e37155e5ca916, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Report.CameraFeedController
-  loopDurationRange: {x: 4, y: 8}
-  frozenDurationRange: {x: 2, y: 4}
-  blackoutDurationRange: {x: 1.5, y: 3}
-  ghostRoomDurationRange: {x: 3, y: 6}
-  mirrorDurationRange: {x: 3, y: 6}
-  ghostRoomLabels:
-  - CAM 07 — SUB-LEVEL
-  - CAM 09 — UNKNOWN SECTOR
-  - CAM 00 — ??????
-  mirrorLabel: CAM 00 — SECURITY OFFICE
-  mirrorHintText: '...someone is sitting there.'
-  verboseLogging: 0
---- !u!1 &533768154
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 508830029}
-  - component: {fileID: 314829375}
-  m_Layer: 0
-  m_Name: PauseMenuController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &508830029
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 533768154}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 477437160}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &314829375
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 533768154}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d519076c2d44eeb4a9a18168172a094a, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Flow.PauseMenuController
-  mainMenuSceneName: StartScene
-  showDebugInfo: 0
 --- !u!1 &743642838
 GameObject:
   m_ObjectHideFlags: 0
@@ -2471,37 +2467,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &291987535
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743642838}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 477437160}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &347242720
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743642838}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20415cf471614ec7aadaa34085b1e146, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Whisper.TypedInputFallback
-  forceEnabled: 0
-  whisperMicInput: {fileID: 0}
-  boxWidth: 420
-  showDebugInfo: 0
 --- !u!1 &761785850
 GameObject:
   m_ObjectHideFlags: 0
@@ -2613,6 +2578,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &786579303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 219540831}
+  - component: {fileID: 126855092}
+  m_Layer: 0
+  m_Name: RadioCheckHaunt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &817291829
 GameObject:
   m_ObjectHideFlags: 0
@@ -3201,6 +3183,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1900000006}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &896233790
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 395310485}
+  - component: {fileID: 362950628}
+  - component: {fileID: 339670711}
+  m_Layer: 0
+  m_Name: CameraBetrayalHaunt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &909022988
 GameObject:
   m_ObjectHideFlags: 0
@@ -12203,7 +12203,7 @@ MonoBehaviour:
   - reason: No glitches while the anomaly is Passive
     condition: 2
     conditionValue: 0
-    flagName:
+    flagName: 
   - reason: No glitches during the night 1 tutorial
     condition: 3
     conditionValue: 0

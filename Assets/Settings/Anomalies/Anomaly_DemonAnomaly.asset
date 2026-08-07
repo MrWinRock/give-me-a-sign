@@ -18,8 +18,8 @@ MonoBehaviour:
   - Demon
   prefab: {fileID: 1000000000000000001, guid: 3d7e9f2b8c1a4e6f9b0d5c3a7e1f8b2d, type: 3}
   respondType: 2
-  threatCost: 1
-  minNightIndex: 1
+  threatCost: 4
+  minNightIndex: 3
   allowedRooms:
   - {fileID: 11400000, guid: 9658ad65d85cfa74089500eb784e5769, type: 2}
   moveSpeed: 3

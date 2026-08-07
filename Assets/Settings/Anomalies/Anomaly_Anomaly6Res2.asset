@@ -18,11 +18,11 @@ MonoBehaviour:
   - GMS006
   prefab: {fileID: 6497321372195617453, guid: cad8235f9d8e9414d8273f746bc15a9a, type: 3}
   respondType: 1
-  threatCost: 1
-  minNightIndex: 1
+  threatCost: 2
+  minNightIndex: 4
   allowedRooms: []
   moveSpeed: 10
-  threatTimeoutSeconds: 30
+  threatTimeoutSeconds: 0
   manualImage: {fileID: 0}
   manualDescription: 
   howToSpot: 

@@ -58,7 +58,7 @@ namespace GameLogic.Night
 
             int nightIndex = ResolveNightIndex();
             int seed = seedOverride != 0 ? seedOverride : NightPlanProvider.NextSeed();
-            float duration = ResolveDurationMinutes();
+            float duration = ResolveDurationMinutes(resolved.difficulty, nightIndex);
 
             var generator = new NightPlanGenerator(resolved, ResolveRooms(resolved), resolved.difficulty, resolved.glitch, resolved.haunt);
             Plan = generator.GenerateValid(nightIndex, duration, seed);
@@ -82,13 +82,27 @@ namespace GameLogic.Night
             return Mathf.Max(1, PlayerPrefs.GetInt(UnlockedNightKey, 1));
         }
 
-        private float ResolveDurationMinutes()
+        /// <summary>
+        /// How long this night runs. The DifficultyProfile's per-night row wins when it specifies
+        /// a duration, and is pushed INTO the scene's NightTimer so the clock, the schedulers and
+        /// the plan all agree on one number. A night with no authored duration keeps whatever the
+        /// scene is set to, which is what makes this safe to add to an existing scene.
+        /// </summary>
+        private float ResolveDurationMinutes(DifficultyProfile difficulty, int nightIndex)
         {
             var timer = FindFirstObjectByType<NightTimer>();
-            if (timer != null) return timer.NightDurationMinutes;
+            float authored = difficulty != null ? difficulty.NightDurationFor(nightIndex) : 0f;
 
-            Debug.LogWarning("NightPlanRunner: no NightTimer in the scene - assuming a 5 minute night.", this);
-            return 5f;
+            if (timer == null)
+            {
+                Debug.LogWarning("NightPlanRunner: no NightTimer in the scene - assuming a 5 minute night.", this);
+                return authored > 0f ? authored : 5f;
+            }
+
+            if (authored > 0f)
+                timer.SetNightDuration(authored);
+
+            return timer.NightDurationMinutes;
         }
 
         /// <summary>
@@ -159,6 +173,7 @@ namespace GameLogic.Night
             report.AppendLine($"=== Night {plan.nightIndex} | seed {plan.seed} | {plan.durationMinutes:0.##} min ===");
             report.AppendLine($"  anomalies : {plan.anomalies.Count} (threat cost {plan.TotalThreatCost})");
             report.AppendLine($"  required  : {plan.requiredScore} to survive");
+            report.AppendLine($"  wrong rpt : +{plan.penaltyAnomaliesPerWrongReport} anomaly/anomalies per failed report");
             if (!string.IsNullOrEmpty(outcome))
                 report.AppendLine($"  generator : {outcome}");
 

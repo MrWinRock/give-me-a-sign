@@ -77,6 +77,14 @@ namespace GameLogic.Night
         /// </summary>
         public int requiredScore;
 
+        /// <summary>
+        /// Extra anomalies spawned when an Incident Report comes back wrong. Carried on the plan
+        /// rather than read from the DifficultyProfile at spawn time so the whole night - including
+        /// what a mistake costs - is one reproducible object, and so a replayed seed punishes
+        /// mistakes exactly the way the original run did.
+        /// </summary>
+        public int penaltyAnomaliesPerWrongReport = 1;
+
         public float DurationSeconds => durationMinutes * 60f;
 
         /// <summary>Total threat cost spent on this night - a rough difficulty readout.</summary>

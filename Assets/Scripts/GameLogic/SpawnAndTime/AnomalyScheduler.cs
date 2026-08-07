@@ -154,9 +154,17 @@ namespace GameLogic.SpawnAndTime
 
         private void BuildTimeline()
         {
+            // Owned here rather than by the caller, so a penalty spawn arriving before the first
+            // timer tick can safely build the timeline without OnTimeChanged then rebuilding it -
+            // a rebuild resets the cursor and would re-spawn everything already on screen.
+            _built = true;
+
             _sorted.Clear();
             _nextIndex = 0;
             _allSpawnedNotified = false;
+
+            // The pool is a view onto _sorted, so it has to be invalidated with it.
+            _penaltyPoolBuilt = false;
 
             if (source == ScheduleSource.NightPlan)
                 BuildFromPlan();
@@ -239,10 +247,7 @@ namespace GameLogic.SpawnAndTime
         {
             // Deferred to the first tick on purpose - see the class comment.
             if (!_built)
-            {
-                _built = true;
                 BuildTimeline();
-            }
 
             float elapsedMinutes = normalizedTime * nightTimer.NightDurationMinutes;
 
@@ -293,6 +298,29 @@ namespace GameLogic.SpawnAndTime
         }
 
         // ── Penalty spawns ───────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// The full cost of ONE wrong Incident Report: spawns however many extra anomalies this
+        /// night's plan says a mistake is worth. Night 1 authors this as 0, so the tutorial can be
+        /// fumbled without a spiral; later nights raise it. Returns how many actually spawned.
+        /// </summary>
+        public int SpawnPenaltyAnomalies()
+        {
+            int count = NightPlanProvider.HasPlan
+                ? Mathf.Max(0, NightPlanProvider.Current.penaltyAnomaliesPerWrongReport)
+                : 1;
+
+            int spawned = 0;
+            for (int i = 0; i < count; i++)
+            {
+                if (SpawnPenaltyAnomaly() != null) spawned++;
+            }
+
+            if (showDebugInfo && count > 0)
+                Debug.Log($"AnomalyScheduler: wrong report cost {spawned}/{count} penalty anomalies.", this);
+
+            return spawned;
+        }
 
         /// <summary>
         /// Spawns one extra anomaly right now, outside the authored timeline. This is the

@@ -54,7 +54,10 @@ namespace GameLogic.Night
         private static bool CheckSpacing(NightPlan plan, DifficultyProfile difficulty, out string reason)
         {
             reason = null;
-            float minimum = difficulty != null ? difficulty.minimumSpacingSeconds : 25f;
+
+            // Per-night, not the shared value: a late night deliberately runs a tighter pace, and
+            // validating it against the shared minimum would reject every plan it produces.
+            float minimum = difficulty != null ? difficulty.MinimumSpacingFor(plan.nightIndex) : 25f;
 
             for (int i = 1; i < plan.anomalies.Count; i++)
             {

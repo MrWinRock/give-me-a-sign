@@ -16,19 +16,19 @@ MonoBehaviour:
   - loop: 1
     enabled: 1
     weight: 1
-    minNightIndex: 1
+    minNightIndex: 2
   - loop: 2
     enabled: 1
     weight: 1.5
-    minNightIndex: 1
+    minNightIndex: 2
   - loop: 3
     enabled: 1
     weight: 1
-    minNightIndex: 1
+    minNightIndex: 3
   - loop: 4
     enabled: 1
     weight: 0.8
-    minNightIndex: 2
+    minNightIndex: 4
   baseHauntCount: 1
-  hauntGrowthPerNight: 0.5
+  hauntGrowthPerNight: 0.75
   maxHauntCount: 4
