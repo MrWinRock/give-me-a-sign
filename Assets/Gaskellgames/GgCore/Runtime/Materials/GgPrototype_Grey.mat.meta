@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 84959b4feba322d428de25e41709777b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304325
+  packageName: GgCore - Gaskellgames
+  packageVersion: 1.10.1
+  assetPath: Assets/Gaskellgames/GgCore/Runtime/Materials/GgPrototype_Grey.mat
+  uploadId: 944248

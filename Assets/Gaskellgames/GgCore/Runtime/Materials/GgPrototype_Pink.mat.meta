@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5a0bec6b506f52d48b0852551cf9a01a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304325
+  packageName: GgCore - Gaskellgames
+  packageVersion: 1.10.1
+  assetPath: Assets/Gaskellgames/GgCore/Runtime/Materials/GgPrototype_Pink.mat
+  uploadId: 944248

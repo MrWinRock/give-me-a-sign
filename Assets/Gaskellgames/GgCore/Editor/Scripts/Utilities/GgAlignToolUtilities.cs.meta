@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 36a3fed5b0da4e6d980e72da169670f5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {fileID: 2800000, guid: dab5722bd06abde40ae4bb813e56c525, type: 3}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304325
+  packageName: GgCore - Gaskellgames
+  packageVersion: 1.10.1
+  assetPath: Assets/Gaskellgames/GgCore/Editor/Scripts/Utilities/GgAlignToolUtilities.cs
+  uploadId: 944248
