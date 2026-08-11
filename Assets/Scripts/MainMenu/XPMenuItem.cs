@@ -10,9 +10,6 @@ namespace MainMenu
     /// One row of the Start menu (and of its footer). Owns nothing but its own hover visuals -
     /// <see cref="StartMenuController"/> wires the click, <see cref="DesktopManager"/> runs the
     /// <see cref="DesktopAction"/>.
-    ///
-    /// The footer rows ("Log Off", "Turn Off Computer") use the same component with different
-    /// colours: hover background = white at 20% alpha, label already white.
     /// </summary>
     public class XPMenuItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {

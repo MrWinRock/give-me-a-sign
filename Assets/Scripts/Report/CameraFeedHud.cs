@@ -12,16 +12,11 @@ namespace Report
     /// Camera Betrayal lies through - a stuck timestamp or a wrong label only reads as wrong if the
     /// player has already learned what right looks like, which means this has to run the whole
     /// night, not just during a glitch.
-    ///
-    /// Self-bootstrapping like HauntDirector/VoicePromptSystem - drop one in the scene to tune its
-    /// Inspector values, or don't; the first access creates one. <see cref="CameraFeedController"/>
-    /// is the only thing that should call the mutating methods below.
     /// </summary>
     public class CameraFeedHud : MonoBehaviour
     {
         private static CameraFeedHud _instance;
 
-        /// <summary>Do NOT call from OnDisable/OnDestroy - same auto-create teardown hazard as HauntDirector.Instance. Use ExistingInstance there instead.</summary>
         public static CameraFeedHud Instance
         {
             get
@@ -39,7 +34,6 @@ namespace Report
             }
         }
 
-        /// <summary>The instance if one currently exists, otherwise null - never creates one. Safe from OnDisable/OnDestroy.</summary>
         public static CameraFeedHud ExistingInstance => _instance;
 
         [Header("Debug")]
@@ -134,7 +128,6 @@ namespace Report
 
         public void UnfreezeTimestamp() => _timestampFrozen = false;
 
-        /// <summary>Also doubles as the Blackout variant's full-screen cover - see CameraFeedController.BlackoutRoutine.</summary>
         public void SetBlackout(bool on)
         {
             if (_blackout != null) _blackout.gameObject.SetActive(on);

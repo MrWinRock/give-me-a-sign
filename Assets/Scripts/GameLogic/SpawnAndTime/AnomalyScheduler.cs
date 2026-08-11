@@ -3,14 +3,17 @@ using GameLogic.Data;
 using GameLogic.Night;
 using UnityEngine;
 
+// Aliased, not imported: AnomalyScheduleEntry below uses UnityEngine's [Min], and a plain
+// `using Gaskellgames;` would make the simple name ambiguous (CS0104).
+// See CLAUDE.md - "Gaskellgames" for the project-wide rule.
+using GG = Gaskellgames;
+
 namespace GameLogic.SpawnAndTime
 {
     /// <summary>Where an AnomalyScheduler gets its timeline from.</summary>
     public enum ScheduleSource
     {
-        /// <summary>The procedurally generated NightPlan. The normal mode.</summary>
         NightPlan,
-        /// <summary>The hand-authored Schedule list below. Kept for testing a specific sequence.</summary>
         ManualList,
     }
 
@@ -36,7 +39,6 @@ namespace GameLogic.SpawnAndTime
 
         public bool IsValid() => anomalyPrefab != null;
 
-        /// <summary>Where this entry will actually spawn (spawn point override, else the prefab's own position).</summary>
         public Vector3 ResolvePosition()
         {
             if (spawnPoint != null) return spawnPoint.position;
@@ -47,17 +49,14 @@ namespace GameLogic.SpawnAndTime
     /// <summary>
     /// Spawns anomalies on a minute-based timeline, normally the one in the night's
     /// <see cref="NightPlan"/>.
-    ///
-    /// The timeline is built on the night timer's FIRST TICK rather than in Start, because that is
-    /// guaranteed to happen after every Start in the scene - so NightPlanRunner is certain to have
-    /// published its plan by then, with no script execution order to get right.
-    ///
-    /// Entries are pre-sorted once and consumed with a single index cursor, so the per-frame cost
-    /// is one float comparison - no list scans or allocations.
     /// </summary>
     public class AnomalyScheduler : MonoBehaviour
     {
+        // AnomalySchedulerEditor overrides Gaskellgames' global editor, so [Button] won't draw here
+        // - the debug actions below stay on [ContextMenu].
         [Header("Source")]
+        [GG.InfoBox("Schedule below is IGNORED in NightPlan mode - the timeline comes from the generated night.",
+                    GG.InfoMessageType.Info, nameof(source), (int)ScheduleSource.NightPlan)]
         [Tooltip("NightPlan = procedurally generated (normal). ManualList = the hand-authored Schedule below, for testing a fixed sequence.")]
         [SerializeField] private ScheduleSource source = ScheduleSource.NightPlan;
 
@@ -101,16 +100,13 @@ namespace GameLogic.SpawnAndTime
         // otherwise replaying a seed would put anomalies in subtly different places.
         private System.Random _rng = new System.Random(0);
 
-        /// <summary>Fired right after an anomaly is instantiated.</summary>
         public System.Action<GameObject> OnAnomalySpawned;
-        /// <summary>Fired once when the last scheduled entry has spawned. Payload = total spawned.</summary>
         public System.Action<int> OnAllAnomaliesSpawned;
 
         public static AnomalyScheduler Instance { get; private set; }
 
         public int RemainingCount => _sorted.Count - _nextIndex;
 
-        /// <summary>How many anomalies have been spawned so far this night (destroyed ones still count).</summary>
         public int TotalSpawned => _spawned.Count;
 
         void Awake()
@@ -299,11 +295,6 @@ namespace GameLogic.SpawnAndTime
 
         // ── Penalty spawns ───────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// The full cost of ONE wrong Incident Report: spawns however many extra anomalies this
-        /// night's plan says a mistake is worth. Night 1 authors this as 0, so the tutorial can be
-        /// fumbled without a spiral; later nights raise it. Returns how many actually spawned.
-        /// </summary>
         public int SpawnPenaltyAnomalies()
         {
             int count = NightPlanProvider.HasPlan
@@ -322,14 +313,6 @@ namespace GameLogic.SpawnAndTime
             return spawned;
         }
 
-        /// <summary>
-        /// Spawns one extra anomaly right now, outside the authored timeline. This is the
-        /// consequence of a wrong Incident Report (see Anomaly.RespondAfterDelay) now that a
-        /// wrong report no longer threatens the player with a jumpscare/chase - it just raises
-        /// the pressure instead. Picks a random anomaly kind from this night's own roster (so it
-        /// never hands out something the night wasn't already using, like the Demon) in a random
-        /// room. Returns null if there is nothing available to spawn.
-        /// </summary>
         public GameObject SpawnPenaltyAnomaly()
         {
             if (!_built)
@@ -365,8 +348,6 @@ namespace GameLogic.SpawnAndTime
             return _spawned[_spawned.Count - 1];
         }
 
-        /// <summary>Distinct prefabs already used by this night's timeline, minus the Demon - it
-        /// runs its own dedicated jumpscare sequence and isn't something to hand out at random.</summary>
         private void BuildPenaltyPool()
         {
             _penaltyPoolBuilt = true;
@@ -381,14 +362,12 @@ namespace GameLogic.SpawnAndTime
             }
         }
 
-        /// <summary>Spawned anomalies that still exist (nulls from destroyed ones are pruned).</summary>
         public List<GameObject> GetSpawnedAnomalies()
         {
             _spawned.RemoveAll(go => go == null);
             return new List<GameObject>(_spawned);
         }
 
-        /// <summary>In-game clock label (e.g. "2:24 AM") for a schedule minute, given the current night duration.</summary>
         public string GameClockLabelFor(float minute)
         {
             float duration = nightTimer != null ? nightTimer.NightDurationMinutes : 5f;

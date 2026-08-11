@@ -40,18 +40,12 @@ namespace GameLogic.Night
         [Tooltip("Hard ceiling, so a late night can't stack haunt beats on top of every anomaly.")]
         [Min(0)] public int maxHauntCount = 4;
 
-        /// <summary>Number of scheduled haunt beats for a given night.</summary>
         public int HauntCountFor(int nightIndex)
         {
             int extra = Mathf.RoundToInt(hauntGrowthPerNight * Mathf.Max(0, nightIndex - 1));
             return Mathf.Clamp(baseHauntCount + extra, 0, maxHauntCount);
         }
 
-        /// <summary>
-        /// Weighted pick among loops unlocked by <paramref name="nightIndex"/>, using the caller's
-        /// RNG. Returns <see cref="HauntLoopId.None"/> (never fired) when nothing is available or
-        /// configured, so a blank profile is inert rather than an error.
-        /// </summary>
         public HauntLoopId PickLoop(int nightIndex, System.Random rng)
         {
             if (loops == null || loops.Count == 0) return HauntLoopId.None;

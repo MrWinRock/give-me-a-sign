@@ -11,15 +11,6 @@ namespace Report
     /// Corruption) alongside a status-bar line implying someone else already filed it (Status
     /// Intrusion) - reusing two glitches that are already proven and revertible instead of building
     /// new UI, since both are exactly the right shape for "the form is lying about what's on record".
-    ///
-    /// A full "case pre-filled with the player's own name" version needs a player-identity concept
-    /// the game doesn't have yet - the roadmap's own cut list already flags all of HL-6 as safely
-    /// cuttable/deferrable, so this is the honest, shippable MVP of it rather than a placeholder.
-    ///
-    /// Reports no encounter of its own (IsActive is always false) - it never blocks another haunt
-    /// and is never blocked by one; it just queues a one-shot trap for the next form open, the same
-    /// "fire the moment the form next opens" contract GlitchScheduler already documents for its own
-    /// beats scheduled while the form happens to be closed.
     /// </summary>
     public class ImpostorCaseHaunt : MonoBehaviour, IHauntLoop
     {

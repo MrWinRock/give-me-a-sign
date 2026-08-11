@@ -10,17 +10,6 @@ namespace GameLogic
     /// The "Demon" - a jumpscare that IS an anomaly. It hides in one room; the moment the
     /// player pans the camera into that room it takes over the whole screen (a fullscreen
     /// overlay that lives inside the room, so panning away still works) and screams.
-    ///
-    /// The player banishes it the same way as any other anomaly: open the Incident Report
-    /// (Spacebar), pick the room, and SPEAK its type ("Demon") into the mic - while the
-    /// GlitchDirector makes the form misbehave, firing several glitch types at once.
-    ///
-    /// Flow:
-    ///   spawn (hidden, not reportable) -> camera enters room -> REVEAL: overlay + scream,
-    ///   Anomaly component enabled so the report can attach to it, glitch intensity raised
-    ///   -> report submitted correctly = banished (+score, like every anomaly)
-    ///   -> wrong report = window closes, demon stays, player may retry
-    ///   -> optional time limit runs out = player loses (same path as anomaly timeout).
     /// </summary>
     [RequireComponent(typeof(Anomaly))]
     public class DemonAnomaly : MonoBehaviour
@@ -118,10 +107,6 @@ namespace GameLogic
             }
         }
 
-        /// <summary>
-        /// A room handed over at spawn time wins over the serialized one - that is how a
-        /// procedurally generated night places the demon in a room it picked.
-        /// </summary>
         private RoomDefinition ResolveRoom()
         {
             if (_anomaly != null && _anomaly.AssignedRoom != null) return _anomaly.AssignedRoom;
@@ -217,7 +202,6 @@ namespace GameLogic
             }
         }
 
-        /// <summary>Activates the overlay (video takes priority over the static image if assigned) and scales it to cover the camera view of this room.</summary>
         private void ShowOverlay()
         {
             if (overlayRoot == null)
@@ -270,7 +254,6 @@ namespace GameLogic
             _videoPlayer.Play();
         }
 
-        /// <summary>Builds a textured quad + VideoPlayer once, parented under overlayRoot. No manual scene setup required.</summary>
         private void BuildVideoOverlay()
         {
             var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -303,7 +286,6 @@ namespace GameLogic
             _videoOverlayObject = quad;
         }
 
-        /// <summary>Scales+positions an overlay transform (in world units of the given base size) to fill this room's camera view.</summary>
         private void CoverCameraView(Transform overlay, Vector2 baseSize)
         {
             if (_camera == null || !_camera.orthographic || baseSize.x <= 0f || baseSize.y <= 0f) return;
@@ -353,7 +335,6 @@ namespace GameLogic
                 _room != null ? _room.roomId : null);
         }
 
-        /// <summary>Reverts everything the reveal turned on (alert badge, glitch intensity, global flag).</summary>
         private void EndThreat()
         {
             if (!_revealed) return;

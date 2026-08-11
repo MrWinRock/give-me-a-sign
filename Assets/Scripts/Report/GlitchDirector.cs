@@ -31,11 +31,6 @@ namespace Report
     /// <summary>
     /// Decides WHEN the Incident Report form betrays the player. Owns all timing;
     /// <see cref="FormGlitchController"/> owns all execution.
-    ///
-    /// Every time the form opens, exactly one branch is taken, evaluated in this order:
-    ///   1. Scripted beat  - an authored, deterministic moment. Never mixed with random.
-    ///   2. Blackout       - a guaranteed-clean window.
-    ///   3. Ambient random - the weighted roll, with its chance derived from game state.
     /// </summary>
     public class GlitchDirector : MonoBehaviour
     {
@@ -330,10 +325,8 @@ namespace Report
         private enum SessionMode { Clean, Scripted, Ambient }
         private SessionMode _sessionMode = SessionMode.Clean;
 
-        /// <summary>Human-readable trace of the last branch taken. Surface this in a debug overlay.</summary>
         public string LastDecisionReason { get; private set; } = "(no session yet)";
 
-        /// <summary>Seconds the report form has been open in the current session.</summary>
         public float FormOpenSeconds => _formOpenSeconds;
 
         // =======================================================================================
@@ -390,7 +383,6 @@ namespace Report
         // Session lifecycle
         // =======================================================================================
 
-        /// <summary>Call when the Incident Report window opens (automatic unless autoDetectFormLifecycle is off).</summary>
         public void NotifyFormOpened()
         {
             _sessionActive = true;
@@ -416,7 +408,6 @@ namespace Report
             Decide();
         }
 
-        /// <summary>Call when the Incident Report window closes. Cancels everything in flight.</summary>
         public void NotifyFormClosed()
         {
             _sessionActive = false;
@@ -569,12 +560,6 @@ namespace Report
             FireGlitch(type.Value, null, "ambient");
         }
 
-        /// <summary>
-        /// Immediately fires up to <paramref name="count"/> DIFFERENT glitch types in the same
-        /// moment, bypassing the cooldown, the session budget, and any blackout window.
-        /// Intended for big scripted scares (e.g. the Demon jumpscare) where the form should
-        /// visibly break in several ways at once. Does nothing while the form is closed.
-        /// </summary>
         public void TriggerBurst(int count)
         {
             if (!_sessionActive || glitchController == null || count <= 0) return;
@@ -597,12 +582,6 @@ namespace Report
                 Debug.Log($"[GlitchDirector] Burst fired {fired}/{count} glitches.", this);
         }
 
-        /// <summary>
-        /// Fires exactly one glitch immediately, bypassing the cooldown, session budget, and any
-        /// blackout window - used by GlitchScheduler for glitches pinned to a specific real-time
-        /// minute. Does nothing if that glitch type is already running (FormGlitchController's own
-        /// safety guard) or if the form is closed (nothing to glitch).
-        /// </summary>
         public void FireGlitchNow(GlitchType type, string overrideText = null)
         {
             FireGlitch(type, overrideText, "scheduled");
@@ -703,11 +682,6 @@ namespace Report
             _scheduledBeat = null;
         }
 
-        /// <summary>
-        /// Fires a beat by name regardless of its condition - the intended way to drive
-        /// Manual beats from cutscenes, Timeline signals, or other scripts.
-        /// Returns false if the name is unknown or the beat is fireOnce and already spent.
-        /// </summary>
         public bool FireBeatByName(string beatName)
         {
             if (string.IsNullOrWhiteSpace(beatName)) return false;
@@ -766,11 +740,6 @@ namespace Report
             return null;
         }
 
-        /// <summary>
-        /// Gates glitches from anywhere - e.g. SetFlag("tutorial", true) during onboarding, or
-        /// SetFlag("cutscene", true) while a scripted sequence plays. Pair with an
-        /// AlwaysWhenFlagSet blackout using the same name.
-        /// </summary>
         public void SetFlag(string flagName, bool value)
         {
             if (string.IsNullOrWhiteSpace(flagName)) return;
@@ -780,7 +749,6 @@ namespace Report
                 Debug.Log($"[GlitchDirector] Flag '{flagName}' = {value}", this);
         }
 
-        /// <summary>Reads back a flag set via SetFlag(). Unknown flags read as false.</summary>
         public bool GetFlag(string flagName)
         {
             return !string.IsNullOrWhiteSpace(flagName) && _flags.TryGetValue(flagName, out var v) && v;
@@ -830,10 +798,6 @@ namespace Report
             return clamped;
         }
 
-        /// <summary>
-        /// Global escalation hook. Call from your anomaly/night systems to make the form more
-        /// hostile later in the night. 1 = normal, 2 = twice as likely.
-        /// </summary>
         public void SetIntensity(float multiplier)
         {
             intensityMultiplier = Mathf.Max(0f, multiplier);
@@ -846,14 +810,12 @@ namespace Report
         // Part 4 - State the director reads
         // =======================================================================================
 
-        /// <summary>Successful submissions this playthrough.</summary>
         public void SetReportCount(int value)
         {
             _pushedReportCount = value;
             _reportCountProvided = true;
         }
 
-        /// <summary>Current in-game hour, plus normalised progress across the whole shift (0-1).</summary>
         public void SetGameHour(int hour, float shiftProgress01)
         {
             _pushedGameHour = hour;
@@ -862,7 +824,6 @@ namespace Report
             _shiftProgressProvided = true;
         }
 
-        /// <summary>Current anomaly pressure: None / Passive / Active.</summary>
         public void SetAnomalyState(GlitchAnomalyState state)
         {
             _pushedAnomalyState = state;
@@ -872,17 +833,12 @@ namespace Report
                 _hasSeenActiveAnomaly = true;
         }
 
-        /// <summary>Consecutive failed reports. Reset to 0 on a success.</summary>
         public void SetConsecutiveFailures(int value)
         {
             _pushedConsecutiveFailures = Mathf.Max(0, value);
             _failuresProvided = true;
         }
 
-        /// <summary>
-        /// Convenience for wiring straight off a submit result: bumps the report count on success
-        /// and maintains the consecutive-failure streak.
-        /// </summary>
         public void RegisterReportResult(bool success)
         {
             if (success)
@@ -963,10 +919,6 @@ namespace Report
         // Part 5 - Authoring support
         // =======================================================================================
 
-        /// <summary>
-        /// Logs which branch the director WOULD take for the current state, without touching the
-        /// form. Lets you verify authoring without playing through the whole night.
-        /// </summary>
         [ContextMenu("Dump Glitch Plan")]
         public void DumpGlitchPlan()
         {

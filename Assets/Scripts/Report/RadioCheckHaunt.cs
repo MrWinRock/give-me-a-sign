@@ -11,21 +11,6 @@ namespace Report
     /// HL-4 Radio Check. Every so often HQ pings over the radio and the player has a few seconds
     /// to answer by voice - the mechanic that keeps the mic "alive" all night instead of only
     /// during the Incident Report form (see the roadmap's "ไมค์มีชีวิตตลอดคืน").
-    ///
-    /// Three variants, picked at random each time this fires:
-    ///   Normal   - ordinary call, answer "{radioId}, copy" in time or take a negligence strike.
-    ///   OwnVoice - same, but the "call" plays back a clip of the PLAYER'S OWN earlier response
-    ///              (see PlayerVoiceRecorder) instead of the stock call sound, if one exists yet.
-    ///   WrongId  - HQ calls an ID that isn't the player's. The correct move is to say nothing;
-    ///              answering it anyway is treated as admitting to be someone else - a soft,
-    ///              narrative-flavoured consequence (see EndEncounter), not a fail state, and the
-    ///              seed the roadmap plants for a future story beat (HL-6 Impostor Case).
-    ///
-    /// Deliberately non-exclusive (<see cref="IsExclusive"/> = false): unlike Silence Protocol,
-    /// this loop is allowed to fire on top of another active haunt. The roadmap calls this out by
-    /// name - "ระหว่าง Silence Protocol วิทยุก็ยังเรียก → บังคับให้ต้องเลือกอีกครั้ง" (the radio
-    /// still calls during Silence Protocol - forcing another choice) - so overlapping is the
-    /// feature, not a bug HauntDirector needs to prevent.
     /// </summary>
     public class RadioCheckHaunt : MonoBehaviour, IHauntLoop
     {
@@ -117,10 +102,8 @@ namespace Report
             var voice = VoicePromptSystem.Instance;
             voice?.Expect(expectedPhrase, ok => matched = ok, minimumWordsRequired: 2, wordSimilarity: wordSimilarity);
 
-            // Only capture a fresh clip for a FUTURE Own-Voice call when this call was actually
-            // meant to be answered - recording during a WrongId call would only ever capture
-            // silence (the correct response) or the admission itself, neither of which is a useful
-            // "own voice, answering normally" sample.
+            // A WrongId call is answered with silence, so recording it would never capture a usable
+            // "own voice answering normally" sample for a future Own-Voice call.
             bool shouldRecord = variant != Variant.WrongId;
             if (shouldRecord) _recorder.BeginCapture(responseWindowSeconds);
 
@@ -171,10 +154,6 @@ namespace Report
             return wrongIds[Random.Range(0, wrongIds.Length)];
         }
 
-        /// <summary>
-        /// Ends the current call. <paramref name="silent"/> is for teardown paths (object disabled
-        /// mid-call, e.g. scene unload) where nothing should be scored either way.
-        /// </summary>
         private void EndEncounter(bool respondedCorrectly, bool wrongIdAdmitted, bool silent = false)
         {
             IsActive = false;
@@ -196,10 +175,8 @@ namespace Report
 
             if (wrongIdAdmitted)
             {
-                // Soft consequence, not a negligence strike - the roadmap frames this as a story
-                // hook (HL-6 Impostor Case), not a fail state. GlitchDirector doesn't expose its
-                // current multiplier, so this is a floor rather than a stacking bump: admitting
-                // once is enough to sour the rest of the night, admitting again doesn't compound.
+                // Soft consequence, not a fail state. A floor rather than a stacking bump, so
+                // admitting twice doesn't compound.
                 _glitchDirector?.SetFlag("impostor_admitted", true);
                 _glitchDirector?.SetIntensity(wrongIdIntensityFloor);
 

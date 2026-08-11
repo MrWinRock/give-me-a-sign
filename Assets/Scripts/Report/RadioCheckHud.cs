@@ -67,7 +67,6 @@ namespace Report
             if (_hintText != null) _hintText.text = text;
         }
 
-        /// <summary>remaining/total in seconds - the fill drains left to right as the window closes, and reddens near the end.</summary>
         public void SetCountdown(float remaining, float total)
         {
             if (_countdownFill == null) return;
@@ -79,7 +78,6 @@ namespace Report
                 : new Color(0.3f, 0.8f, 0.9f, 0.9f);
         }
 
-        /// <summary>Flashes green (responded) or red (missed / wrongly admitted) right before Destroy().</summary>
         public void FlashResult(bool good)
         {
             if (_panel != null)

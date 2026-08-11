@@ -8,11 +8,6 @@ namespace GameLogic.SpawnAndTime
     /// <summary>
     /// FNAF-style night clock. Real time (default 5 minutes) is mapped onto an in-game
     /// clock that runs 0:00 AM -> 6:00 AM, then the Result scene is loaded.
-    ///
-    /// Other systems read time from here in whichever unit is most convenient:
-    ///   - ElapsedMinutes      real minutes since the night started (used by AnomalyScheduler)
-    ///   - GetNormalizedTime() 0-1 progress across the whole night
-    ///   - GetGameTimeHours()  0-6 in-game hours (used by the glitch/report systems)
     /// </summary>
     public class NightTimer : MonoBehaviour
     {
@@ -32,25 +27,13 @@ namespace GameLogic.SpawnAndTime
         private bool _isNightActive = true;
         private int _lastDisplayedMinute = -1; // avoid rebuilding the TMP string every frame
 
-        /// <summary>Fires every frame while the night is running. Payload = normalized time (0-1).</summary>
         public System.Action<float> OnTimeChanged;
-        /// <summary>Fires once when the clock reaches 6:00 AM, right before the Result scene loads.</summary>
         public System.Action OnNightEnded;
 
-        /// <summary>Total night length in real minutes (as configured in the Inspector).</summary>
         public float NightDurationMinutes => nightDurationMinutes;
 
-        /// <summary>Real minutes elapsed since the night started.</summary>
         public float ElapsedMinutes => _currentTime / 60f;
 
-        /// <summary>
-        /// Overrides how long this night runs. Called by <see cref="Night.NightPlanRunner"/> in
-        /// Start, before the clock has ticked, so a later night can simply be a longer shift -
-        /// the lever that stops the anomaly count saturating once the night is full.
-        ///
-        /// Writes the serialized field as well as the cached seconds, so it does not matter
-        /// whether this lands before or after this component's own Start.
-        /// </summary>
         public void SetNightDuration(float minutes)
         {
             if (minutes <= 0f) return;
@@ -119,11 +102,6 @@ namespace GameLogic.SpawnAndTime
                 Debug.Log($"Real Time: {_currentTime:F1}s / {_totalNightDuration:F1}s | Game Time: {timeString}");
         }
 
-        /// <summary>
-        /// Formats a game-time value (0-6 hours) the same way this timer's own on-screen clock
-        /// does, so any other UI reading from GetGameTimeHours() (e.g. the Incident Report
-        /// window) renders identically and can never drift out of sync with the main HUD clock.
-        /// </summary>
         public static string FormatGameTime(float gameTimeHours, bool includeSeconds = true)
         {
             int hours = Mathf.FloorToInt(gameTimeHours);

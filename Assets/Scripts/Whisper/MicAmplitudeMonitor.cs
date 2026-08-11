@@ -8,14 +8,6 @@ namespace Whisper
     /// Unity's own <see cref="Microphone"/> API. This is what Sprint 4's Silence Protocol (and
     /// Sprint 5's Radio Check) watch to know whether the player is being loud; it costs nothing
     /// while idle and nothing but a cheap array scan per frame while running.
-    ///
-    /// Device sharing gotcha: WhisperMicInput's push-to-talk pipeline records from the SAME OS
-    /// device through the Whisper.Utils MicrophoneRecord wrapper, which calls Microphone.End() on
-    /// stop. If that happens while this monitor is also reading the same device, this monitor's
-    /// clip goes stale. Update() detects that (the clip stops reporting IsRecording) and silently
-    /// re-acquires the device rather than reading dead data for the rest of the night - so a
-    /// report filed mid-encounter recovers on its own within a frame or two instead of needing a
-    /// scripted hand-off between the two systems.
     /// </summary>
     public class MicAmplitudeMonitor : MonoBehaviour
     {
@@ -29,10 +21,8 @@ namespace Whisper
         private string _device;
         private float[] _samples;
 
-        /// <summary>Smoothed RMS loudness, gained by the player's mic-gain setting. 0 when not monitoring or no mic exists.</summary>
         public float CurrentLevel { get; private set; }
 
-        /// <summary>False when the system has no capture device at all - callers should treat that as "always quiet", never as a fault of the player.</summary>
         public bool IsAvailable { get; private set; }
 
         public bool IsMonitoring { get; private set; }
@@ -98,7 +88,6 @@ namespace Whisper
             CurrentLevel = Mathf.Lerp(CurrentLevel, gained, smoothing);
         }
 
-        /// <summary>The player's saved device if it still exists, else the system default (null = default in the Microphone API).</summary>
         private static string ResolveDevice()
         {
             var saved = ControlPanelWindow.MicrophoneDevice;

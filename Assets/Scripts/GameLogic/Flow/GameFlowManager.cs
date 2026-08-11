@@ -1,4 +1,5 @@
 using System.Collections;
+using DG.Tweening;
 using GameLogic.Night;
 using GameLogic.SpawnAndTime;
 using Report;
@@ -12,16 +13,6 @@ namespace GameLogic.Flow
     /// The single owner of "the night is over". Anomalies, the demon and the clock all just
     /// report what happened; this decides the outcome, records it, and moves to the Result
     /// scene.
-    ///
-    /// Before this existed, Anomaly, DemonAnomaly and ScoreManager each wrote the same four
-    /// PlayerPrefs keys and loaded the Result scene themselves, so ScoreManager had to inspect
-    /// an "AnomalyTimeout" flag to find out whether one of the others had got there first.
-    /// Adding a new way to lose meant editing Anomaly.cs; now it means calling EndNight with a
-    /// new outcome.
-    ///
-    /// No scene wiring required - the first call to <see cref="Instance"/> creates one if the
-    /// scene doesn't contain it. Drop the component in the scene when you want to tune its
-    /// Inspector values.
     /// </summary>
     public class GameFlowManager : MonoBehaviour
     {
@@ -42,10 +33,6 @@ namespace GameLogic.Flow
 
         private static GameFlowManager _instance;
 
-        /// <summary>
-        /// The scene's instance, created on demand so nothing breaks if it was never placed.
-        /// Returns null outside Play mode rather than littering the scene with objects.
-        /// </summary>
         public static GameFlowManager Instance
         {
             get
@@ -63,17 +50,10 @@ namespace GameLogic.Flow
             }
         }
 
-        /// <summary>
-        /// The night that just finished. Static, so it survives the load into the Result scene
-        /// without going through PlayerPrefs. Null when no night has been played this session
-        /// (e.g. the Result scene was opened directly while testing).
-        /// </summary>
         public static NightResult LastResult { get; private set; }
 
-        /// <summary>Which night is being played. Sprint 2's night plans set this; defaults to the first night.</summary>
         public static int CurrentNightIndex { get; set; } = 1;
 
-        /// <summary>Seed the current night was generated from. Sprint 2 sets this; 0 means "not procedurally generated".</summary>
         public static int CurrentSeed { get; set; }
 
         private bool _ending;
@@ -95,19 +75,13 @@ namespace GameLogic.Flow
             if (_instance == this) _instance = null;
         }
 
-        /// <summary>
-        /// Ends the night. Safe to call from several places at once - only the first call counts,
-        /// which is what stops a dying anomaly and the 6:00 AM clock from fighting over the result.
-        /// </summary>
         public void EndNight(NightOutcome outcome, string causeAnomalyId = null, string causeRoomId = null)
         {
             if (_ending) return;
             _ending = true;
 
-            // Always close the report window first. Loading a scene out from under a live
-            // WhisperMicInput recording used to hang the game and leave stale HUD elements
-            // behind; IncidentReportUI.Hide() stops the mic synchronously, so doing this
-            // before the load keeps that path clean.
+            // Close the report first - loading a scene out from under a live mic recording hangs
+            // the game. Hide() stops the mic synchronously.
             var reportManager = IncidentReportManager.Instance;
             if (reportManager != null && reportManager.IsReportOpen)
                 reportManager.CancelReport();
@@ -173,25 +147,12 @@ namespace GameLogic.Flow
             LoadResultScene();
         }
 
-        /// <summary>Sprint 6, S-606: fade to black + a cause-of-death line, held for delayAfterDeath seconds.</summary>
         private IEnumerator PlayDeathSequence(NightOutcome outcome)
         {
             var hud = DeathSequenceHud.Create();
-            string cause = DescribeCause(outcome);
 
             const float fadeDuration = 0.6f;
-            float t = 0f;
-            while (t < fadeDuration)
-            {
-                t += Time.unscaledDeltaTime;
-                float p = Mathf.Clamp01(t / fadeDuration);
-                hud.SetFade(p);
-                hud.SetCause(cause, p);
-                yield return null;
-            }
-
-            hud.SetFade(1f);
-            hud.SetCause(cause, 1f);
+            yield return hud.PlayFadeIn(DescribeCause(outcome), fadeDuration).WaitForCompletion();
 
             float hold = Mathf.Max(0f, delayAfterDeath - fadeDuration);
             if (hold > 0f)
@@ -246,28 +207,11 @@ namespace GameLogic.Flow
                 $"Build Settings and index {resultSceneIndex} is out of range.", this);
         }
 
-        /// <summary>Called by the Result scene's Play Again button so the next night starts clean.</summary>
         public static void ClearLastResult() => LastResult = null;
 
-        /// <summary>
-        /// Sprint 6, S-603/S-605: the furthest night unlocked so far - the same PlayerPrefs key
-        /// NightPlanRunner already reads when nothing overrides it. Static read API so nothing
-        /// outside this file needs to know the PlayerPrefs key by name (same pattern as
-        /// ControlPanelWindow's static settings getters).
-        /// </summary>
         public static int UnlockedNightIndex =>
             Mathf.Max(1, PlayerPrefs.GetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1));
 
-        /// <summary>
-        /// Advances the unlocked-night save on a win, so the next "Play Again" naturally continues
-        /// to the next night - NightPlanRunner.ResolveNightIndex() already reads the same key, so
-        /// no separate "Continue" flow is needed. A loss leaves the key untouched, which is exactly
-        /// "Play Again" retrying the night that was just failed.
-        ///
-        /// Capped at NightResult.FinalNightIndex: completing the last night of the designed arc
-        /// keeps replaying as a capstone rather than unlocking an undefined night 6+ that nothing
-        /// was tuned for (see S-603 in the roadmap).
-        /// </summary>
         private static void AdvanceProgression(int completedNightIndex)
         {
             int nextNight = Mathf.Min(completedNightIndex + 1, NightResult.FinalNightIndex);
@@ -278,17 +222,12 @@ namespace GameLogic.Flow
             PlayerPrefs.Save();
         }
 
-        /// <summary>Sprint 6: resets progression back to night 1 - used by the Result scene's "Restart Campaign" option.</summary>
         public static void ResetProgression()
         {
             PlayerPrefs.SetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1);
             PlayerPrefs.Save();
         }
 
-        /// <summary>
-        /// Drops the finished night and loads the gameplay scene. Kept here so scene loading stays
-        /// in one place rather than being duplicated across the result UI.
-        /// </summary>
         public static void StartNewNight(string gameplaySceneName)
         {
             ClearLastResult();

@@ -7,17 +7,6 @@ namespace GameLogic.Night
 {
     /// <summary>
     /// Builds a night from a seed. Same seed in, same night out - every time.
-    ///
-    /// CRITICAL: this class never touches UnityEngine.Random. That generator is global state
-    /// shared with animation, VFX and the glitch weighting, so one extra roll anywhere else in
-    /// the project would change what a seed produces and break replay entirely. Everything
-    /// random here comes from a System.Random instance nobody else can reach.
-    ///
-    /// Rather than scattering placements and hoping they validate, the layout is built to satisfy
-    /// the pacing rules by construction: times are dealt into evenly spaced slots wide enough for
-    /// the longest threat window, kinds are picked avoiding a repeat of the previous one, and
-    /// rooms are dealt out to guarantee coverage. <see cref="NightPlanValidator"/> is still the
-    /// authority - this just means it rarely has to reject anything.
     /// </summary>
     public class NightPlanGenerator
     {
@@ -46,15 +35,10 @@ namespace GameLogic.Night
             }
         }
 
-        /// <summary>Reason the last GenerateValid call ended the way it did - shown by the debug tools.</summary>
         public string LastOutcome { get; private set; } = "(not run)";
 
         // ── generate → validate → retry ──────────────────────────────────────────────────
 
-        /// <summary>
-        /// Rolls plans until one passes validation, then returns it. Deterministic: attempt N
-        /// always uses seed+N, so the same seed always lands on the same accepted plan.
-        /// </summary>
         public NightPlan GenerateValid(int nightIndex, float durationMinutes, int seed)
         {
             int maxAttempts = _difficulty != null ? _difficulty.maxAttempts : 50;
@@ -78,7 +62,6 @@ namespace GameLogic.Night
             return GenerateFallback(nightIndex, durationMinutes, seed);
         }
 
-        /// <summary>One raw attempt. Public so the debug tools can inspect rejected rolls.</summary>
         public NightPlan Generate(int nightIndex, float durationMinutes, int seed, int attempt = 0)
         {
             // The attempt number perturbs the stream so a retry differs, while the whole
@@ -134,10 +117,6 @@ namespace GameLogic.Night
 
         // ── which anomalies ──────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Spends the night's threat budget. Prefers a kind different from the one just picked, so
-        /// the Type Spread rule is satisfied while choosing rather than checked afterwards.
-        /// </summary>
         private List<AnomalyDefinition> SelectAnomalies(int nightIndex, System.Random rng)
         {
             var selected = new List<AnomalyDefinition>();
@@ -183,7 +162,6 @@ namespace GameLogic.Night
             return affordable;
         }
 
-        /// <summary>The list minus the previous pick, unless that would leave nothing to choose from.</summary>
         private static List<AnomalyDefinition> WithoutRepeat(List<AnomalyDefinition> options, AnomalyDefinition previous)
         {
             if (previous == null || options.Count <= 1) return options;
@@ -197,10 +175,6 @@ namespace GameLogic.Night
             return filtered.Count > 0 ? filtered : options;
         }
 
-        /// <summary>
-        /// Puts the costliest kind in the final slot, which is where the Climax rule wants it.
-        /// A no-op when every kind costs the same, in which case the rule is meaningless anyway.
-        /// </summary>
         private static void MoveCostliestLast(List<AnomalyDefinition> selected)
         {
             if (selected.Count < 2) return;
@@ -219,12 +193,6 @@ namespace GameLogic.Night
 
         // ── when ─────────────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Deals times into evenly sized slots and jitters inside each one. The slot width is
-        /// never smaller than the gap the rules demand, so spacing and threat-window overlap are
-        /// impossible by construction - and if the night is too short for every selected anomaly,
-        /// it returns fewer times rather than cramming them in.
-        /// </summary>
         private List<float> LayOutTimes(List<AnomalyDefinition> selected, int nightIndex,
                                         float durationMinutes, System.Random rng)
         {
@@ -268,10 +236,6 @@ namespace GameLogic.Night
 
         // ── where ────────────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Deals rooms out so every room gets used before any is reused, then keeps avoiding the
-        /// previous room. That covers both halves of the Room Spread rule.
-        /// </summary>
         private List<RoomDefinition> AssignRooms(List<AnomalyDefinition> selected, System.Random rng)
         {
             var assigned = new List<RoomDefinition>(selected.Count);
@@ -320,7 +284,6 @@ namespace GameLogic.Night
             }
         }
 
-        /// <summary>Pulls an allowed room out of the bag, skipping the previous one where possible.</summary>
         private RoomDefinition TakeFromBag(List<RoomDefinition> bag, List<RoomDefinition> allowed,
                                            RoomDefinition previous, System.Random rng)
         {
@@ -379,12 +342,6 @@ namespace GameLogic.Night
 
         // ── haunts ───────────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Sprint 4. Same shape as PlaceGlitches (evenly sized slots after the onboarding quiet
-        /// stretch, one pick per slot) - deliberately NOT checked against anomaly/glitch timing:
-        /// a haunt loop landing on top of an active anomaly is extra pressure by design (see the
-        /// roadmap's Radio-Check-during-Silence-Protocol example), not a bug to prevent.
-        /// </summary>
         private void PlaceHaunts(NightPlan plan, int nightIndex, float durationMinutes, System.Random rng)
         {
             if (_difficulty == null || _hauntProfile == null) return;
@@ -416,11 +373,6 @@ namespace GameLogic.Night
 
         // ── fallback ─────────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Used when every attempt was rejected. Prioritises the one rule that actually matters -
-        /// the night must be winnable - over the cosmetic spread rules: anomalies are laid out at
-        /// the widest possible spacing with rooms and kinds dealt round-robin.
-        /// </summary>
         public NightPlan GenerateFallback(int nightIndex, float durationMinutes, int seed)
         {
             var plan = new NightPlan

@@ -9,11 +9,6 @@ namespace Report
     /// HL-5 Camera Betrayal. Fires one random <see cref="CameraGlitchType"/> variant through
     /// <see cref="CameraFeedController"/> per beat - the same when/how split as every other haunt
     /// loop, and as FormGlitchController/GlitchDirector before it.
-    ///
-    /// Exclusive by default (like Silence Protocol): a visual camera lie and a full-screen mic
-    /// threat firing in the same breath would be noise, not extra dread, so this loop still waits
-    /// its turn behind whatever exclusive haunt is active. Radio Check is the one loop allowed to
-    /// interrupt regardless - see IHauntLoop.IsExclusive.
     /// </summary>
     [RequireComponent(typeof(CameraFeedController))]
     public class CameraBetrayalHaunt : MonoBehaviour, IHauntLoop

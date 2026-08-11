@@ -34,15 +34,6 @@ namespace Report
     /// Fires Form Glitches on a simple minute-based timeline, completely independent of
     /// GlitchDirector's report-count/game-hour scripted beats and ambient random system -
     /// same idea as AnomalyScheduler, but for glitches instead of anomalies.
-    ///
-    /// How to use:
-    ///   1. Add entries to the Schedule list: pick a glitch type and type the minute it should fire.
-    ///   2. Press Play - each entry fires once its minute passes, bypassing cooldowns/blackouts
-    ///      (this is an authored beat, not a random roll).
-    ///
-    /// Form Glitches only make sense while the Incident Report window is open (they glitch that
-    /// window's own widgets), so a scheduled entry whose minute arrives while the form is CLOSED
-    /// is queued and fires the moment the form next opens - it never gets silently skipped.
     /// </summary>
     public class GlitchScheduler : MonoBehaviour
     {
@@ -118,10 +109,6 @@ namespace Report
                 LogSchedule();
         }
 
-        /// <summary>
-        /// Converts the night plan's glitch beats into the same entry type the manual list uses, so
-        /// the queueing and firing logic below is shared by both sources.
-        /// </summary>
         private void BuildFromPlan()
         {
             foreach (var beat in NightPlanProvider.Current.glitches)
@@ -206,7 +193,6 @@ namespace Report
 
         private static string NullIfEmpty(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
 
-        /// <summary>In-game clock label (e.g. "2:24 AM") for a schedule minute, given the current night duration.</summary>
         public string GameClockLabelFor(float minute)
         {
             float duration = nightTimer != null ? nightTimer.NightDurationMinutes : 5f;

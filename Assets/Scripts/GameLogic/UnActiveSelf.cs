@@ -1,142 +1,134 @@
-using System.Collections;
+using DG.Tweening;
+using Gaskellgames;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace GameLogic
 {
+    /// <summary>
+    /// Waits, fades whatever renderer is on this GameObject, then switches it off.
+    /// </summary>
     public class UnActiveSelf : MonoBehaviour
     {
-        private static readonly int Color1 = Shader.PropertyToID("_Color");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
 
         [Header("Deactivation Settings")]
-        [SerializeField] private bool noDelay;           // Skip delay and fade immediately
-        [SerializeField] private bool noFade;            // Skip fade effect and deactivate instantly
-        [SerializeField] private float deactivateDelay = 4f; // Time in seconds before deactivating
-        [SerializeField] private float fadeDuration = 0.5f;  // Fade out duration
+        [Tooltip("Skip the wait and start fading immediately.")]
+        [SerializeField] private bool noDelay;
 
-        private Coroutine _deactRoutine;
+        [Tooltip("Switch off instantly with no fade at all.")]
+        [SerializeField] private bool noFade;
+
+        [HideIf(nameof(noDelay))]
+        [Tooltip("Seconds before this object switches itself off.")]
+        [SerializeField] private float deactivateDelay = 4f;
+
+        [HideIf(nameof(noFade))]
+        [Tooltip("How long the fade-out takes. Counted as part of the delay, not added to it.")]
+        [SerializeField] private float fadeDuration = 0.5f;
+
+        [HideIf(nameof(noFade))]
+        [Tooltip("Shape of the fade. Linear matches the old hand-written behaviour.")]
+        [SerializeField] private Ease fadeEase = Ease.Linear;
+
+        private Sequence _sequence;
 
         void OnEnable()
         {
             ResetVisuals();
-            if (_deactRoutine != null) StopCoroutine(_deactRoutine);
-            _deactRoutine = StartCoroutine(DeactivationRoutine());
+            PlaySequence();
         }
 
-        void OnDisable()
+        void OnDisable() => KillSequence();
+
+        void OnDestroy() => KillSequence();
+
+        private void PlaySequence()
         {
-            if (_deactRoutine != null)
-            {
-                StopCoroutine(_deactRoutine);
-                _deactRoutine = null;
-            }
-        }
+            KillSequence();
 
-        private void ResetVisuals()
-        {
-            var cg = GetComponent<CanvasGroup>();
-            if (cg != null)
-            {
-                cg.alpha = 1f;
-                return;
-            }
+            _sequence = DOTween.Sequence().SetTarget(this);
 
-            var graphic = GetComponent<Graphic>();
-            if (graphic != null)
-            {
-                Color c = graphic.color;
-                graphic.color = new Color(c.r, c.g, c.b, 1f);
-                return;
-            }
-
-            var sr = GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                Color c = sr.color;
-                sr.color = new Color(c.r, c.g, c.b, 1f);
-                return;
-            }
-
-            var rend = GetComponent<Renderer>();
-            if (rend != null && rend.material != null && rend.material.HasProperty(Color1))
-            {
-                Color c = rend.material.color;
-                rend.material.color = new Color(c.r, c.g, c.b, 1f);
-            }
-        }
-
-        private IEnumerator DeactivationRoutine()
-        {
             if (!noDelay)
             {
-                float waitTime = noFade ? deactivateDelay : Mathf.Max(0f, deactivateDelay - fadeDuration);
-                if (waitTime > 0f) yield return new WaitForSeconds(waitTime);
+                // The fade eats into the delay rather than extending it - that was the original
+                // behaviour and changing it would make every existing prefab linger longer.
+                float wait = noFade ? deactivateDelay : Mathf.Max(0f, deactivateDelay - fadeDuration);
+                if (wait > 0f) _sequence.AppendInterval(wait);
             }
 
             if (!noFade)
             {
-                yield return StartCoroutine(FadeOut(fadeDuration));
+                var fade = BuildFadeTween();
+                if (fade != null) _sequence.Append(fade.SetEase(fadeEase));
             }
 
-            gameObject.SetActive(false);
-            _deactRoutine = null;
+            _sequence.OnComplete(() =>
+            {
+                // Dropped BEFORE deactivating: SetActive(false) runs OnDisable synchronously,
+                // which would otherwise try to Kill the very sequence delivering this callback.
+                _sequence = null;
+                gameObject.SetActive(false);
+            });
         }
 
-        private IEnumerator FadeOut(float duration)
+        private Tween BuildFadeTween()
         {
-            var cg = GetComponent<CanvasGroup>();
-            if (cg != null)
+            var canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+                return canvasGroup.DOFade(0f, fadeDuration);
+
+            var graphic = GetComponent<Graphic>();
+            if (graphic != null)
+                return graphic.DOFade(0f, fadeDuration);
+
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+                return spriteRenderer.DOFade(0f, fadeDuration);
+
+            var renderer3D = GetComponent<Renderer>();
+            if (renderer3D != null && renderer3D.material != null && renderer3D.material.HasProperty(ColorId))
+                return renderer3D.material.DOFade(0f, fadeDuration);
+
+            return null;
+        }
+
+        private void ResetVisuals()
+        {
+            var canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
             {
-                float start = cg.alpha;
-                for (float t = 0f; t < duration; t += Time.deltaTime)
-                {
-                    cg.alpha = Mathf.Lerp(start, 0f, t / duration);
-                    yield return null;
-                }
-                cg.alpha = 0f;
-                yield break;
+                canvasGroup.alpha = 1f;
+                return;
             }
 
             var graphic = GetComponent<Graphic>();
             if (graphic != null)
             {
-                Color start = graphic.color;
-                for (float t = 0f; t < duration; t += Time.deltaTime)
-                {
-                    graphic.color = Color.Lerp(start, new Color(start.r, start.g, start.b, 0f), t / duration);
-                    yield return null;
-                }
-                graphic.color = new Color(start.r, start.g, start.b, 0f);
-                yield break;
+                graphic.color = WithFullAlpha(graphic.color);
+                return;
             }
 
-            var sr = GetComponent<SpriteRenderer>();
-            if (sr != null)
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
             {
-                Color start = sr.color;
-                for (float t = 0f; t < duration; t += Time.deltaTime)
-                {
-                    sr.color = Color.Lerp(start, new Color(start.r, start.g, start.b, 0f), t / duration);
-                    yield return null;
-                }
-                sr.color = new Color(start.r, start.g, start.b, 0f);
-                yield break;
+                spriteRenderer.color = WithFullAlpha(spriteRenderer.color);
+                return;
             }
 
-            var rend = GetComponent<Renderer>();
-            if (rend != null && rend.material != null && rend.material.HasProperty(Color1))
-            {
-                Color start = rend.material.color;
-                for (float t = 0f; t < duration; t += Time.deltaTime)
-                {
-                    rend.material.color = Color.Lerp(start, new Color(start.r, start.g, start.b, 0f), t / duration);
-                    yield return null;
-                }
-                rend.material.color = new Color(start.r, start.g, start.b, 0f);
-                yield break;
-            }
+            var renderer3D = GetComponent<Renderer>();
+            if (renderer3D != null && renderer3D.material != null && renderer3D.material.HasProperty(ColorId))
+                renderer3D.material.color = WithFullAlpha(renderer3D.material.color);
+        }
 
-            if (duration > 0f) yield return new WaitForSeconds(duration);
+        private static Color WithFullAlpha(Color color) => new Color(color.r, color.g, color.b, 1f);
+
+        private void KillSequence()
+        {
+            if (_sequence == null) return;
+
+            _sequence.Kill();
+            _sequence = null;
         }
     }
 }

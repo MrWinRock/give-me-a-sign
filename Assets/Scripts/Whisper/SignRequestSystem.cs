@@ -12,19 +12,6 @@ namespace Whisper
     /// HL-7 "Give Me A Sign" - the mechanic the game is named after. Listens for the phrase at any
     /// time (WhisperMicInput routes every recognized chunk here unconditionally, not gated behind
     /// any panel) and, when heard, points at the nearest active anomaly's room - for a price.
-    ///
-    /// Restored per the roadmap rather than rebuilt: word matching still lives in PhraseMatcher,
-    /// shared with VoiceCommandRouter, and the original signGameObjects[] activation hook is kept
-    /// so anything already wired to it in the scene keeps working.
-    ///
-    /// The cost is deliberately immediate and legible rather than a hidden probability bump: asking
-    /// floors GlitchDirector's intensity a little higher each time (permanent for the rest of the
-    /// night, not stacking without limit), and - "บาง anomaly ตอบกลับ จริงๆ" (something answers for
-    /// real) - forces a Camera Betrayal glitch right now if one isn't already running. A literal
-    /// "increase the chance of a future Camera Betrayal beat" isn't implementable honestly: NightPlan
-    /// is generated once, deterministically, at night start (see NightPlanGenerator), so re-rolling
-    /// its schedule mid-night would break seed replay. Forcing an immediate consequence keeps the
-    /// same "asking has a cost" feeling without touching that contract.
     /// </summary>
     public class SignRequestSystem : MonoBehaviour
     {
@@ -51,7 +38,6 @@ namespace Whisper
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
-        /// <summary>Fired on every routed phrase: true = sign request detected.</summary>
         public Action<bool> OnSignRequested;
 
         private int _usesRemaining;

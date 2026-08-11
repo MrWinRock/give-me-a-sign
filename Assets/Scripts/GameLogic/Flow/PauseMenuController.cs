@@ -15,17 +15,6 @@ namespace GameLogic.Flow
     /// countdowns, glitch timers - since they all read Time.deltaTime/Time.time rather than the
     /// unscaled variants. Shows Master/Music volume controls bound straight to AudioManager, plus
     /// Resume and Quit to Menu.
-    ///
-    /// Deliberately does NOT include microphone device reselection mid-game: WhisperMicInput's
-    /// push-to-talk pipeline may be mid-stream, and tearing down/restarting Microphone.Start on a
-    /// live recording is exactly the class of hang GameFlowManager.EndNight's own comments already
-    /// warn about for scene loads. Mic selection stays in the Control Panel's pre-game Options
-    /// screen, where it's safe to change.
-    ///
-    /// Runtime-built UI, same disposable-builder style as every HUD since Sprint 4 - no scene
-    /// wiring needed for the UI itself, only for this component being present at all. Unlike the
-    /// display-only HUDs, this one needs real clicks, so its GraphicRaycaster stays enabled and it
-    /// uses actual UnityEngine.UI.Button components (the scene already has an EventSystem).
     /// </summary>
     public class PauseMenuController : MonoBehaviour
     {

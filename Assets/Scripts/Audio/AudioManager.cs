@@ -32,20 +32,6 @@ namespace Audio
     /// Central audio hub. Lives on a prefab in Assets/Resources and bootstraps itself before
     /// the first scene loads, then survives every scene change (DontDestroyOnLoad) - so the
     /// player's volume settings work from StartScene all the way through Result.
-    ///
-    /// What it does:
-    ///   - Owns three volumes - Master, Music, SFX - persisted to PlayerPrefs automatically.
-    ///     A future options UI only needs sliders bound to the MasterVolume / MusicVolume /
-    ///     SfxVolume properties; everything else already reacts.
-    ///   - AUTO-REGISTERS every AudioSource in every scene as it loads (as SFX by default),
-    ///     scaling each one's authored volume by the sliders. Existing sounds keep their
-    ///     mix balance; add a ManagedAudioSource component to mark one as Music instead.
-    ///   - Sound library: named clips playable from anywhere via Play("name") /
-    ///     PlayLoop("name") / StopLoop("name"). This is the easy path for FUTURE sounds -
-    ///     drop a clip into the library list in the Inspector and call Play.
-    ///
-    /// Tuning in the Inspector: the three sliders on this component apply live while the
-    /// game is playing (OnValidate), so you can mix by ear in Play mode.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -66,7 +52,6 @@ namespace Audio
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
-        /// <summary>Fired whenever any volume changes - e.g. for UI or systems with non-AudioSource audio (video direct-out).</summary>
         public event Action OnVolumesChanged;
 
         private class Registered
@@ -85,11 +70,6 @@ namespace Audio
         // Bootstrap & lifecycle
         // =======================================================================================
 
-        /// <summary>
-        /// Spawns the AudioManager prefab from Resources before the first scene loads, so it
-        /// exists in every scene (including play-testing GameManager.unity directly) without
-        /// any scene wiring.
-        /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
@@ -175,7 +155,6 @@ namespace Audio
             set { sfxVolume = Mathf.Clamp01(value); PlayerPrefs.SetFloat(SfxKey, sfxVolume); ApplyAll(); }
         }
 
-        /// <summary>Channel volume x master - e.g. for non-AudioSource audio like a VideoPlayer's direct output.</summary>
         public float GetEffectiveVolume(AudioChannel channel)
         {
             float ch = channel == AudioChannel.Music ? musicVolume : sfxVolume;
@@ -186,12 +165,6 @@ namespace Audio
         // Source registration
         // =======================================================================================
 
-        /// <summary>
-        /// Registers one AudioSource so the volume sliders control it. Its CURRENT volume is
-        /// captured as the authored mix level and multiplied by the sliders from then on.
-        /// Already-registered sources are left alone unless <paramref name="overrideChannel"/>
-        /// is true (used by ManagedAudioSource to claim its channel over the auto-scan default).
-        /// </summary>
         public void RegisterSource(AudioSource source, AudioChannel channel, bool overrideChannel = false)
         {
             if (source == null) return;
@@ -211,10 +184,6 @@ namespace Audio
             ApplyTo(source, reg);
         }
 
-        /// <summary>
-        /// Registers every AudioSource under a spawned object (e.g. an anomaly prefab instance).
-        /// Null-safe static helper so callers don't need to check Instance themselves.
-        /// </summary>
         public static void RegisterHierarchy(GameObject root)
         {
             if (Instance == null || root == null) return;
@@ -227,7 +196,6 @@ namespace Audio
             }
         }
 
-        /// <summary>Sweeps the loaded scene(s) for AudioSources not yet registered. New ones default to SFX.</summary>
         private void RegisterAllInScene()
         {
             var all = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -272,7 +240,6 @@ namespace Audio
         // Sound library (the easy path for future sounds)
         // =======================================================================================
 
-        /// <summary>Plays a library sound once. Safe to call from anywhere: AudioManager.Instance.Play("JumpScare").</summary>
         public void Play(string soundName)
         {
             var def = FindDef(soundName);
@@ -285,12 +252,6 @@ namespace Audio
                 Debug.Log($"AudioManager: Play('{soundName}')", this);
         }
 
-        /// <summary>
-        /// Plays an arbitrary AudioClip once through the shared SFX one-shot source - for sounds
-        /// that don't live in the library, e.g. Radio Check's "own voice" variant playing back a
-        /// clip <see cref="Whisper.PlayerVoiceRecorder"/> captured from the player earlier. Volume
-        /// is still mixed through the SFX/master sliders like everything else.
-        /// </summary>
         public void PlayClip(AudioClip clip, float volume = 1f)
         {
             if (clip == null || _sfxOneShot == null) return;
@@ -300,10 +261,6 @@ namespace Audio
                 Debug.Log($"AudioManager: PlayClip('{clip.name}')", this);
         }
 
-        /// <summary>
-        /// Starts a library sound looping on its own dedicated source (created once, then reused).
-        /// The source is volume-managed like any other, so the sliders affect it live.
-        /// </summary>
         public AudioSource PlayLoop(string soundName)
         {
             var def = FindDef(soundName);
@@ -323,7 +280,6 @@ namespace Audio
             return src;
         }
 
-        /// <summary>Stops a loop started with PlayLoop().</summary>
         public void StopLoop(string soundName)
         {
             if (_loops.TryGetValue(soundName, out var src) && src != null)

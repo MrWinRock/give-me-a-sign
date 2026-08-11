@@ -12,10 +12,6 @@ namespace Whisper
     /// The mic only records (and Whisper only runs) between BeginPushToTalk() and
     /// EndPushToTalk() - e.g. while the Incident Report window's "Hold to Speak"
     /// button is held - so speech recognition costs nothing the rest of the time.
-    ///
-    /// Recognized text is queued from the Whisper worker thread and drained on the
-    /// main thread in Update(), then routed to the prayer, incident report, and
-    /// sign request systems.
     /// </summary>
     public class WhisperMicInput : MonoBehaviour
     {
@@ -58,10 +54,8 @@ namespace Whisper
 
         private async void Start()
         {
-            // Both are genuinely optional - every call site already null-checks with ?. - and
-            // SignRequestSystem in particular has no component in the scene yet by design (its
-            // "Give me a sign" hint mechanic is Sprint 6 work). A missing reference here is
-            // expected, not a misconfiguration, so it no longer warns.
+            // Both are optional (every call site null-checks), so a missing reference is expected
+            // rather than a misconfiguration - no warning.
 
             try
             {
@@ -111,7 +105,6 @@ namespace Whisper
             whisperManager.ModelPath = desiredModel;
         }
 
-        /// <summary>Low-latency streaming settings shared by both the created and scene-provided manager.</summary>
         private void ApplyStreamingSettings()
         {
             whisperManager.language = string.IsNullOrWhiteSpace(language) ? "en" : language;
@@ -172,21 +165,10 @@ namespace Whisper
             microphone.echo = false;
         }
 
-        /// <summary>
-        /// Explicit push-to-talk entry point for UI-driven mic capture (e.g. the Incident Report
-        /// window's "Hold to Speak" button). This is the only way the microphone is triggered.
-        /// </summary>
         public void BeginPushToTalk() => StartListening();
 
-        /// <summary>Counterpart to BeginPushToTalk(); call when the UI button is released.</summary>
         public void EndPushToTalk() => StopListening();
 
-        /// <summary>
-        /// Sprint 7, S-707. Injects text into the same queue recognized mic speech goes into, so it
-        /// reaches every system Update() already dispatches to below (prayer, Incident Report,
-        /// VoicePromptSystem, sign request) with zero duplicated routing logic. Used by
-        /// TypedInputFallback for players without a working microphone.
-        /// </summary>
         public void EnqueueTypedText(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return;

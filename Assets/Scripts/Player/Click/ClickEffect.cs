@@ -1,37 +1,47 @@
+using DG.Tweening;
 using UnityEngine;
 
 namespace Player.Click
 {
+    /// <summary>
+    /// The little puff that plays where the player clicked: swells while fading out, then
+    /// deletes itself. Driven by one DOTween sequence instead of a per-frame Update, so it costs
+    /// nothing once the tween is handed over and cannot outlive its own GameObject.
+    /// </summary>
+    [RequireComponent(typeof(SpriteRenderer))]
     public class ClickEffect : MonoBehaviour
     {
-        public float duration = 0.5f; // เวลาที่ใช้ก่อนหายไป
+        [Tooltip("เวลาที่ใช้ก่อนหายไป - how long the puff takes to swell, fade and die.")]
+        public float duration = 0.5f;
+
+        [Tooltip("Final scale as a multiple of the starting scale.")]
         public float scaleUp = 1.5f;
 
-        private float _timer;
-        private SpriteRenderer _sr;
-        private Color _startColor;
+        [Tooltip("Shape of the swell. Linear matches the old per-frame behaviour; OutQuad reads punchier.")]
+        public Ease scaleEase = Ease.OutQuad;
+
+        private Sequence _sequence;
 
         void Start()
         {
-            _sr = GetComponent<SpriteRenderer>();
-            _startColor = _sr.color;
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+
+            // Join, not Append: the swell and the fade are the same beat, not a sequence of two.
+            _sequence = DOTween.Sequence()
+                .SetTarget(this)
+                .Append(transform.DOScale(transform.localScale * scaleUp, duration).SetEase(scaleEase))
+                .Join(spriteRenderer.DOFade(0f, duration).SetEase(Ease.Linear))
+                .OnComplete(() =>
+                {
+                    _sequence = null;
+                    Destroy(gameObject);
+                });
         }
 
-        void Update()
+        void OnDestroy()
         {
-            _timer += Time.deltaTime;
-            float t = _timer / duration;
-
-            // ขยายขนาด
-            transform.localScale = Vector3.Lerp(Vector3.one, Vector3.one * scaleUp, t);
-
-            // ค่อย ๆ จางหาย
-            _sr.color = new Color(_startColor.r, _startColor.g, _startColor.b, 1 - t);
-
-            if (_timer >= duration)
-            {
-                Destroy(gameObject);
-            }
+            _sequence?.Kill();
+            _sequence = null;
         }
     }
 }

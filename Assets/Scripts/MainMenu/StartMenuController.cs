@@ -8,9 +8,6 @@ namespace MainMenu
     /// <summary>
     /// The XP Start menu: open/close, the depressed start-button look while open, and routing
     /// each item to its <see cref="DesktopAction"/>.
-    ///
-    /// It closes when an item is clicked, when the start button is clicked again, or when the
-    /// desktop is clicked (DesktopManager calls <see cref="Close"/> for that last one).
     /// </summary>
     public class StartMenuController : MonoBehaviour
     {
@@ -57,7 +54,6 @@ namespace MainMenu
             ApplyStartButtonVisual(false);
         }
 
-        /// <summary>Called by DesktopManager in Awake.</summary>
         public void Bind(DesktopManager desktop)
         {
             _desktop = desktop;

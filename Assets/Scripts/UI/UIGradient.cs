@@ -7,12 +7,6 @@ namespace UI
     /// <summary>
     /// Vertical two- or three-stop gradient for any uGUI <see cref="Graphic"/> (Image, RawImage).
     /// Tints the generated mesh's vertex colours, so it costs no extra draw call and no texture.
-    ///
-    /// NOTE: this is an IMeshModifier, and TextMeshPro does NOT run mesh modifiers - put it on
-    /// Images only. For gradient text use TMP's own vertex gradient instead.
-    ///
-    /// <see cref="midPosition"/> is measured FROM THE TOP (0 = top edge, 1 = bottom edge) so it
-    /// matches how the XP palette is authored ("#1A2838 top -> #24384C at 45% -> #1E3326 bottom").
     /// </summary>
     [AddComponentMenu("UI/Effects/UI Gradient")]
     [DisallowMultipleComponent]
@@ -53,14 +47,12 @@ namespace UI
             set { useMidColor = value; Refresh(); }
         }
 
-        /// <summary>Position of the middle stop, measured from the TOP edge (0 = top, 1 = bottom).</summary>
         public float MidPosition
         {
             get => midPosition;
             set { midPosition = Mathf.Clamp01(value); Refresh(); }
         }
 
-        /// <summary>Sets both stops at once (the common case) with a single mesh rebuild.</summary>
         public void SetColors(Color top, Color bottom)
         {
             topColor = top;

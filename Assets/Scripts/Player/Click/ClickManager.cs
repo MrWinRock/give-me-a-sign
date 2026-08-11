@@ -16,10 +16,8 @@ namespace Player.Click
 
     private PlayerInputActions _inputActions;
 
-    // Unity explicitly warns against calling EventSystem.IsPointerOverGameObject() from inside
-    // an InputAction callback (like OnClick below) - at that point it can only see last frame's
-    // UI state, not the current one. So instead we sample it once per frame in Update() and use
-    // the cached value in OnClick, which is the pattern Unity's own docs recommend.
+    // Sampled once per frame in Update: IsPointerOverGameObject() only sees last frame's UI state
+    // when called from inside an InputAction callback.
     private bool _pointerOverUI;
 
     void Awake()
@@ -52,10 +50,8 @@ namespace Player.Click
 
     private void OnClick(InputAction.CallbackContext ctx)
     {
-        // Don't raycast into the game world while a modal UI (Incident Report window, etc.)
-        // is up - without this, clicking a button/dropdown inside the window ALSO fired a
-        // world raycast at the same screen position, which could re-trigger anomaly
-        // detection underneath the window on every single click.
+        // No world raycast while a modal UI is up, or clicking inside the Incident Report window
+        // would also hit whatever anomaly sits behind it.
         if (_pointerOverUI)
             return;
 

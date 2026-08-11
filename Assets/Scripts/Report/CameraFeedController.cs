@@ -19,13 +19,6 @@ namespace Report
     /// for a beat, then always reverts. Same pure-executor split as FormGlitchController: this
     /// class only knows HOW to run each variant; <see cref="CameraBetrayalHaunt"/> decides WHEN
     /// and WHICH.
-    ///
-    /// The game has one physical camera that pans between rooms (see GameManager), not a
-    /// render-texture-per-room feed, so every variant here is deliberately implemented as a HUD
-    /// watermark trick on <see cref="CameraFeedHud"/> rather than a real video effect - Ghost Room
-    /// and Mirror in particular are "the label lies" rather than "a new room exists", which needs
-    /// no new art and stays inside this system's job. A real freeze-frame / extra camera render
-    /// is future content work (Sprint 7's VHS pass and beyond), not a blocker for the mechanic.
     /// </summary>
     public class CameraFeedController : MonoBehaviour
     {
@@ -50,13 +43,8 @@ namespace Report
 
         private readonly Dictionary<CameraGlitchType, Coroutine> _running = new Dictionary<CameraGlitchType, Coroutine>();
 
-        /// <summary>True while at least one variant is mid-flight.</summary>
         public bool IsGlitchActive => _running.Count > 0;
 
-        /// <summary>
-        /// Runs one variant. overrideDuration &lt;= 0 picks randomly from that variant's own range.
-        /// Returns false if that variant type is already running, or the HUD isn't available.
-        /// </summary>
         public bool PlayGlitch(CameraGlitchType type, float overrideDuration = 0f)
         {
             if (_running.ContainsKey(type))
@@ -84,12 +72,6 @@ namespace Report
             return true;
         }
 
-        /// <summary>
-        /// Same "claim the slot before StartCoroutine" trick as FormGlitchController.BeginTracked -
-        /// StartCoroutine runs the routine body synchronously up to its first yield, so if a routine
-        /// ever finished in one go its own _running.Remove() would fire before the handle could be
-        /// stored, leaving a stale entry that blocks that type forever.
-        /// </summary>
         private void BeginTracked(CameraGlitchType type, IEnumerator routine)
         {
             _running[type] = null;
@@ -97,7 +79,6 @@ namespace Report
             if (_running.ContainsKey(type)) _running[type] = handle;
         }
 
-        /// <summary>Stops every running variant and forces the HUD back to normal in one shot. Safe to call anytime.</summary>
         public void CancelAllGlitches()
         {
             var types = new List<CameraGlitchType>(_running.Keys);

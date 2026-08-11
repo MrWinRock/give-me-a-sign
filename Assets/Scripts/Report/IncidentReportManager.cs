@@ -40,9 +40,6 @@ namespace Report
         // SubmitReport) - opening/cancelling a report never consumes a case number.
         private static int _nextCaseNumber = 1;
 
-        /// <summary>The case number that will be assigned the next time a report opens - a
-        /// read-only peek for haunt loops like ImpostorCaseHaunt that need to fake a case number
-        /// ahead of the real one without actually consuming it.</summary>
         public static int NextCaseNumber => _nextCaseNumber;
 
         private Anomaly _currentAnomaly;
@@ -52,10 +49,8 @@ namespace Report
 
         public bool IsReportOpen { get; private set; }
 
-        /// <summary>Reports actually submitted this night (cancelling doesn't count).</summary>
         public int ReportsFiled { get; private set; }
 
-        /// <summary>Of those, how many came back ERROR. Recorded on the night's result.</summary>
         public int ReportsFailed { get; private set; }
 
         void Awake()
@@ -78,13 +73,8 @@ namespace Report
                 gameManager = FindObjectOfType<GameManager>();
             }
 
-            // S-106 fix: this used to be found nowhere in the codebase - GlitchStateSource's
-            // ConsecutiveFailures (and the failure-streak escalation/scripted beats keyed off it,
-            // read by GlitchDirector via the wired stateSourceBehaviour) was permanently stuck at
-            // 0 because nothing ever reported a result back to it. Must target GlitchStateSource
-            // directly, not GlitchDirector - GlitchDirector.ReadConsecutiveFailures() ignores its
-            // own pushed value and reads _stateSource.ConsecutiveFailures whenever a state source
-            // is assigned (which it is, in this scene).
+            // Must be GlitchStateSource, not GlitchDirector: the director reads the state source's
+            // ConsecutiveFailures instead of any value pushed into it.
             _glitchStateSource = FindObjectOfType<GlitchStateSource>();
 
             if (reportUI == null)
@@ -129,24 +119,12 @@ namespace Report
             }
         }
 
-        /// <summary>
-        /// Pressing Spacebar again while the report window is open closes it (same as Cancel),
-        /// unless the SENT/ERROR result flash is currently showing - that shouldn't be interrupted.
-        /// </summary>
         private void CloseReportViaSpacebar()
         {
             if (reportUI != null && reportUI.IsLocked) return;
             CancelReport();
         }
 
-        /// <summary>
-        /// Spacebar opens the Incident Report window at any time - it is not gated on an anomaly
-        /// being active. If an un-reported anomaly is currently spawned, the report is linked to it
-        /// (existing behavior: the anomaly only disappears afterwards if the submitted report is
-        /// correct, via ResolveByReport). If nothing is active, a blank report opens instead so the
-        /// player can still bring up the terminal; submitting a blank report always comes back
-        /// ERROR since there is nothing on record to confirm.
-        /// </summary>
         private void TryOpenReportViaSpacebar()
         {
             foreach (var anomaly in Anomaly.ActiveAnomalies)
@@ -165,9 +143,6 @@ namespace Report
             OpenBlankReport();
         }
 
-        /// <summary>
-        /// Call from ClickManager when the player clicks an anomaly, instead of calling Anomaly.Respond() directly.
-        /// </summary>
         public void OpenReport(Anomaly anomaly)
         {
             if (IsReportOpen || anomaly == null || anomaly.IsReported) return;
@@ -176,10 +151,6 @@ namespace Report
             OpenReportInternal(anomaly);
         }
 
-        /// <summary>
-        /// Opens the report window with no anomaly attached, so Spacebar can bring up the terminal
-        /// even when nothing has been detected yet.
-        /// </summary>
         private void OpenBlankReport()
         {
             if (IsReportOpen) return;
@@ -210,10 +181,6 @@ namespace Report
             }
         }
 
-        /// <summary>
-        /// Called by IncidentReportUI when the player clicks Cancel or the titlebar Close button.
-        /// The anomaly is left unresolved (and un-flagged) so it can be clicked and reported again later.
-        /// </summary>
         public void CancelReport()
         {
             if (!IsReportOpen) return;
@@ -225,11 +192,6 @@ namespace Report
                 Debug.Log("IncidentReportManager: Report cancelled, anomaly left unresolved.");
         }
 
-        /// <summary>
-        /// Called by an Anomaly whenever it enters/exits its active jumpscare state, regardless of
-        /// whether that anomaly is the one currently being reported. Multiple anomalies can raise
-        /// this concurrently, hence the counter rather than a single bool.
-        /// </summary>
         public void SetAlert(bool active)
         {
             _activeAlertCount = Mathf.Max(0, _activeAlertCount + (active ? 1 : -1));
@@ -238,9 +200,6 @@ namespace Report
                 reportUI.SetAlertVisual(_activeAlertCount > 0);
         }
 
-        /// <summary>
-        /// Called by WhisperMicInput while the report's Push-to-Talk button is held down.
-        /// </summary>
         public void Route(string recognizedText)
         {
             if (!IsReportOpen || string.IsNullOrWhiteSpace(recognizedText)) return;
@@ -249,12 +208,6 @@ namespace Report
             reportUI.ShowRecognizedKeyword(_recognizedKeyword);
         }
 
-        /// <summary>
-        /// Called by IncidentReportUI when the player presses SUBMIT REPORT. Flashes a SENT/ERROR
-        /// badge for a beat via reportUI.ShowResult(), then closes the window and resolves/escalates
-        /// the anomaly. Runs on a coroutine, not Time.timeScale, so background jumpscare animations
-        /// keep playing throughout.
-        /// </summary>
         public void SubmitReport(string selectedRoom)
         {
             if (!IsReportOpen) return;
@@ -311,11 +264,6 @@ namespace Report
                 gameManager.inputLocked = false;
         }
 
-        /// <summary>
-        /// An anomaly kind can accept several spoken words - the proper name plus whatever the
-        /// speech-to-text is likely to hear instead - so any one of its keywords matching is a
-        /// correct report.
-        /// </summary>
         private bool MatchesSpokenType(Anomaly anomaly)
         {
             var definition = anomaly.Definition;
@@ -342,11 +290,6 @@ namespace Report
             return false;
         }
 
-        /// <summary>
-        /// The room is compared against the one assigned when the anomaly spawned, not a string
-        /// baked into its prefab. If nothing assigned a room we can't verify the answer, so the
-        /// check passes rather than failing the player over missing authoring data.
-        /// </summary>
         private bool MatchesLocation(Anomaly anomaly, string selectedRoom)
         {
             if (!requireCorrectLocation) return true;

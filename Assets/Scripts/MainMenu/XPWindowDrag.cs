@@ -7,10 +7,6 @@ namespace MainMenu
     /// Makes an XP window draggable by its titlebar, like real Windows XP. Lives ON the
     /// titlebar object (drag events must land on the raycast target being grabbed) and moves
     /// the whole window's RectTransform.
-    ///
-    /// Assumes the window's pivot/anchors are centered (which is how the builder authors every
-    /// window). Clamps so the titlebar can never be dragged above the screen top or below the
-    /// taskbar line - a window you can't grab anymore is a window you can't close.
     /// </summary>
     public class XPWindowDrag : MonoBehaviour, IPointerDownHandler, IDragHandler
     {

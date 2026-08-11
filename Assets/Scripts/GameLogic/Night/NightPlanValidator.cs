@@ -8,14 +8,9 @@ namespace GameLogic.Night
     /// Judges whether a generated night is actually playable. A rejected plan is simply re-rolled,
     /// which is far easier to reason about (and debug) than a generator clever enough to never
     /// produce a bad one.
-    ///
-    /// <see cref="IsSolvable"/> is the important one: it simulates a flawless player to prove the
-    /// night can be won at all. That check is what stops the original "need 9 points from 8
-    /// anomalies" class of bug from ever shipping again, no matter how the numbers are tuned.
     /// </summary>
     public static class NightPlanValidator
     {
-        /// <summary>All checks. Returns false with a human-readable reason on the first failure.</summary>
         public static bool Validate(NightPlan plan, DifficultyProfile difficulty, int roomCount, out string reason)
         {
             reason = null;
@@ -73,10 +68,6 @@ namespace GameLogic.Night
 
         // ── No Overlap ───────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Two anomalies with live threat windows at the same moment would need the player in two
-        /// rooms at once. Kinds without a deadline can happily coexist.
-        /// </summary>
         private static bool CheckNoOverlap(NightPlan plan, out string reason)
         {
             reason = null;
@@ -188,10 +179,6 @@ namespace GameLogic.Night
 
         // ── Climax ───────────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// The nastiest thing of the night should land near the end. Skipped when every kind costs
-        /// the same, because then there is no "nastiest" to place.
-        /// </summary>
         private static bool CheckClimax(NightPlan plan, DifficultyProfile difficulty, out string reason)
         {
             reason = null;
@@ -235,11 +222,6 @@ namespace GameLogic.Night
             return false;
         }
 
-        /// <summary>
-        /// Simulates a player who never makes a mistake, spending handleCost seconds per anomaly
-        /// (open form, pick room, speak, wait for speech-to-text, submit, switch camera) and
-        /// carrying that cost forward - so anomalies bunched together genuinely can't all be caught.
-        /// </summary>
         public static int CountResolvable(NightPlan plan, float handleCostSeconds)
         {
             if (plan == null || plan.anomalies.Count == 0) return 0;
@@ -268,11 +250,9 @@ namespace GameLogic.Night
             return resolvable;
         }
 
-        /// <summary>Convenience for the debug tools: can this plan be won at all?</summary>
         public static bool IsSolvable(NightPlan plan, float handleCostSeconds) =>
             plan != null && CountResolvable(plan, handleCostSeconds) >= plan.requiredScore;
 
-        /// <summary>Narrowest gap between consecutive anomalies, in seconds. Used for batch statistics.</summary>
         public static float TightestGapSeconds(NightPlan plan)
         {
             if (plan == null || plan.anomalies.Count < 2) return float.PositiveInfinity;

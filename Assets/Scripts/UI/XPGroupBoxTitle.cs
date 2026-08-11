@@ -7,10 +7,6 @@ namespace UI
     /// Classic WinForms GroupBox title "notch": sizes a background panel (colored to match
     /// the window background) to hug the title text width, so it sits on top of the
     /// GroupBox's border line and masks it out where the title reads.
-    ///
-    /// Setup: put this on the title label's parent panel. Assign the label and the panel's
-    /// own RectTransform (or a dedicated background Image's RectTransform). The panel should
-    /// be positioned so its vertical center lines up with the GroupBox top border.
     /// </summary>
     [ExecuteAlways]
     public class XPGroupBoxTitle : MonoBehaviour

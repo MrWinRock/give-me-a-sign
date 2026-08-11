@@ -54,10 +54,6 @@ namespace Score
             SetupButtons();
         }
 
-        /// <summary>
-        /// Falls back to a placeholder when there is no recorded night - that happens when the
-        /// Result scene is opened directly in the editor, and a null-ref there is just noise.
-        /// </summary>
         private NightResult ResolveResult()
         {
             var result = GameFlowManager.LastResult;
@@ -172,7 +168,6 @@ namespace Score
                 restartCampaignButton.onClick.AddListener(RestartCampaign);
         }
 
-        /// <summary>Sprint 6, S-603: resets the unlocked-night save to 1 and starts a fresh run.</summary>
         public void RestartCampaign()
         {
             if (showDebugInfo)
@@ -190,13 +185,6 @@ namespace Score
             GameFlowManager.StartNewNight(gameSceneName);
         }
 
-        /// <summary>
-        /// Sprint 6, S-607: forces the next night generated to reuse this exact seed - same
-        /// mechanism (NightPlanProvider.ForcedSeed) the debug Night Plan HUD's "Replay THIS seed"
-        /// button already uses. Note this pins the RNG stream only, not the night index: replaying
-        /// an old seed after unlocking a later night generates that seed against the CURRENTLY
-        /// unlocked night's difficulty, same as the debug tool - not a new limitation.
-        /// </summary>
         public void ReplaySeed()
         {
             if (showDebugInfo)

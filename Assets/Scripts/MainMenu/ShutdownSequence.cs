@@ -11,12 +11,6 @@ namespace MainMenu
 {
     /// <summary>
     /// The two full-screen black overlays that bookend the desktop:
-    ///
-    ///   BOOT     - plays when the shift starts. Terminal lines appear one at a time, then the
-    ///              game scene (already loading in the background) is activated.
-    ///   SHUTDOWN - plays on Turn Off. "It is now safe to turn off your computer.", hold, quit.
-    ///
-    /// Everything is on unscaled time; this script never touches Time.timeScale.
     /// </summary>
     public class ShutdownSequence : MonoBehaviour
     {
@@ -48,7 +42,6 @@ namespace MainMenu
 
         private Coroutine _routine;
 
-        /// <summary>The scene the boot sequence loads. Also the fallback target when boot is skipped.</summary>
         public string GameSceneName => gameSceneName;
 
         public bool IsPlaying => _routine != null;

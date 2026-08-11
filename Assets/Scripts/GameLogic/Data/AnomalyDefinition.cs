@@ -1,33 +1,36 @@
 using UnityEngine;
 
+// Aliased, not imported: this file uses UnityEngine's [Min], and a plain `using Gaskellgames;`
+// would make the simple name `Min` ambiguous (CS0104) because Gaskellgames ships its own.
+// See CLAUDE.md - "Gaskellgames" for the project-wide rule.
+using GG = Gaskellgames;
+
 namespace GameLogic.Data
 {
     /// <summary>
     /// Everything permanent about one KIND of anomaly: what it is called, what the player has
     /// to say to report it, how dangerous it is, and which rooms it may appear in.
-    ///
-    /// The rule that makes procedural nights possible:
-    ///   kind = static (lives here, in the asset)
-    ///   room = runtime (chosen when it spawns, via Anomaly.AssignRoom)
-    ///
-    /// Prefabs used to carry both, which meant the room was baked in at author time and could
-    /// not be randomised. Adding a new anomaly kind is now one asset plus one prefab.
     /// </summary>
     [CreateAssetMenu(fileName = "Anomaly_", menuName = "Give Me A Sign/Anomaly Definition")]
     public class AnomalyDefinition : ScriptableObject
     {
         [Header("Identity")]
+        [GG.InfoBox("anomalyId is referenced by saves and night seeds. Renaming it after the anomaly ships breaks both.", GG.InfoMessageType.Warning)]
         [Tooltip("Permanent key. Referenced by saves and night seeds - don't change it after the anomaly ships.")]
         public string anomalyId = "shadow";
 
         [Tooltip("Name shown in the field manual and debug output.")]
         public string displayName = "Shadow Figure";
 
+        [GG.Required]
         [Tooltip("คำที่นับว่าถูกทั้งหมด รวมคำที่ผู้เล่นน่าจะพูดพลาด. ANY of these spoken into the mic counts as a correct report - list the likely mishearings too.")]
         public string[] correctKeywords = { "Shadow", "Shadow Figure" };
 
         [Header("Spawning")]
+        [GG.Required]
+        [Tooltip("Must contain an Anomaly component. Without this the generator skips this kind entirely.")]
         public GameObject prefab;
+
         public Anomaly.RespondType respondType = Anomaly.RespondType.MoveToTargetThenDisappear;
 
         [Tooltip("ราคาในงบภัยคุกคามของคืน ยิ่งสูง = ยิ่งอันตราย. Spent from the night's threat budget by the generator.")]
@@ -42,8 +45,9 @@ namespace GameLogic.Data
         [Header("Timing")]
         public float moveSpeed = 3f;
 
+        [GG.InfoBox("0 = this kind never runs the player out of time. Normal anomalies use 0; only the Demon reserves a window here.")]
         [Tooltip("เวลาที่ผู้เล่นมีก่อนแพ้ หลังมันเข้าโหมดคุกคาม. 0 = never times out (it just lurks).")]
-        public float threatTimeoutSeconds = 30f;
+        [Min(0f)] public float threatTimeoutSeconds;
 
         [Header("Field Manual")]
         public Sprite manualImage;
@@ -54,10 +58,8 @@ namespace GameLogic.Data
         [Tooltip("Sprint 4 - not read by anything yet.")]
         public HauntLoopId linkedHaunt = HauntLoopId.None;
 
-        /// <summary>displayName, falling back to anomalyId so debug output is never blank.</summary>
         public string Label => string.IsNullOrWhiteSpace(displayName) ? anomalyId : displayName;
 
-        /// <summary>True when this kind may be placed in the given room (empty allowedRooms = anywhere).</summary>
         public bool AllowsRoom(RoomDefinition room)
         {
             if (allowedRooms == null || allowedRooms.Length == 0) return true;

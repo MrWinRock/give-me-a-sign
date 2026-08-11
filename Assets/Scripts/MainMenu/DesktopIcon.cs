@@ -9,9 +9,6 @@ namespace MainMenu
     /// One desktop icon: 32x32 image with a label underneath. Pure view + click forwarding -
     /// <see cref="DesktopManager"/> owns selection state and double-click timing, so an icon
     /// never has to know about its siblings.
-    ///
-    /// The label is drawn twice (a black copy offset 1px behind the white one) because TMP does
-    /// not run uGUI's Shadow mesh effect.
     /// </summary>
     public class DesktopIcon : MonoBehaviour
     {
@@ -47,7 +44,6 @@ namespace MainMenu
             SetSelected(false);
         }
 
-        /// <summary>Called by DesktopManager in Awake so the icon doesn't need a manager reference wired.</summary>
         public void Bind(DesktopManager desktop)
         {
             _desktop = desktop;

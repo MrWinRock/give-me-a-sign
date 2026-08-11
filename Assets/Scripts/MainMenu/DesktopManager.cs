@@ -36,16 +36,6 @@ namespace MainMenu
 
     /// <summary>
     /// Owner of the fake Windows XP desktop that stands in for the main menu.
-    ///
-    /// Responsibilities:
-    ///   - desktop wallpaper / gradient background
-    ///   - icon selection + double-click detection (the threshold lives here, not on the icons)
-    ///   - window lifetime: instantiate-once-then-reuse, one window open at a time, z-order
-    ///   - routing every <see cref="DesktopAction"/> to the thing it actually does
-    ///   - the UI sound cues
-    ///
-    /// The player never sees a "Play" or "Quit" button: starting the shift is a desktop icon,
-    /// quitting is Start > Turn Off Computer > Turn Off.
     /// </summary>
     public class DesktopManager : MonoBehaviour
     {
@@ -93,7 +83,6 @@ namespace MainMenu
         [SerializeField] private AudioClip iconClickClip;
         [SerializeField] private AudioClip errorClip;
 
-        /// <summary>prefab -> the single live instance spawned from it (pooled, never duplicated).</summary>
         private readonly Dictionary<XPWindowController, XPWindowController> _windowPool =
             new Dictionary<XPWindowController, XPWindowController>();
 
@@ -101,7 +90,6 @@ namespace MainMenu
         private DesktopIcon _selectedIcon;
         private float _lastIconClickTime = float.NegativeInfinity;
 
-        /// <summary>The window currently on screen, or null. Only ever one at a time.</summary>
         public XPWindowController OpenWindow => _openWindow;
 
         void Awake()
@@ -127,10 +115,6 @@ namespace MainMenu
         // Background
         // =======================================================================================
 
-        /// <summary>
-        /// Applies the wallpaper if one is assigned, otherwise the three-stop gradient.
-        /// Safe to call at any time; the builder and OnValidate both use it.
-        /// </summary>
         public void ApplyBackground()
         {
             if (desktopBackground != null)
@@ -156,10 +140,6 @@ namespace MainMenu
         // Icons
         // =======================================================================================
 
-        /// <summary>
-        /// Called by every <see cref="DesktopIcon"/> on click. Owns the double-click timing so
-        /// the threshold is tuned in one place.
-        /// </summary>
         public void OnIconClicked(DesktopIcon icon)
         {
             if (icon == null) return;
@@ -208,7 +188,6 @@ namespace MainMenu
         // Action routing
         // =======================================================================================
 
-        /// <summary>The one place that maps a clicked thing to what the game does.</summary>
         public void Execute(DesktopAction action)
         {
             switch (action)
@@ -225,7 +204,6 @@ namespace MainMenu
             }
         }
 
-        /// <summary>Boot sequence, then the game scene. Reached by double-clicking "Start Shift".</summary>
         public void StartShift()
         {
             CloseOpenWindow();
@@ -237,7 +215,6 @@ namespace MainMenu
                 Debug.LogError("DesktopManager: no ShutdownSequence assigned - cannot start the shift.", this);
         }
 
-        /// <summary>Start > Turn Off Computer > Turn Off.</summary>
         public void QuitGame()
         {
             CloseOpenWindow();
@@ -249,7 +226,6 @@ namespace MainMenu
                 Debug.LogError("DesktopManager: no ShutdownSequence assigned - cannot shut down.", this);
         }
 
-        /// <summary>Start > Turn Off Computer > Restart: reloads this scene.</summary>
         public void RestartMenu()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -259,10 +235,6 @@ namespace MainMenu
         // Windows
         // =======================================================================================
 
-        /// <summary>
-        /// Shows the window for a prefab, spawning it the first time and reusing that instance
-        /// forever after. Any other open window is closed first (one modal at a time).
-        /// </summary>
         public XPWindowController OpenWindowPrefab(XPWindowController prefab)
         {
             if (prefab == null)
@@ -298,7 +270,6 @@ namespace MainMenu
             _openWindow?.Hide();
         }
 
-        /// <summary>Called by <see cref="XPWindowController.Show"/>. Enforces the single-window rule.</summary>
         public void NotifyWindowShown(XPWindowController window)
         {
             if (window == null) return;
@@ -314,7 +285,6 @@ namespace MainMenu
             BringToFront(window);
         }
 
-        /// <summary>Called by <see cref="XPWindowController.Hide"/>.</summary>
         public void NotifyWindowClosed(XPWindowController window)
         {
             if (_openWindow == window)
@@ -333,7 +303,6 @@ namespace MainMenu
         // Audio
         // =======================================================================================
 
-        /// <summary>Null-safe: an unassigned clip or missing AudioSource simply plays nothing.</summary>
         public void PlayCue(MenuCue cue)
         {
             if (uiAudioSource == null) return;

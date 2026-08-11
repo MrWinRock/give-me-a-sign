@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Aliased, not imported: this file uses UnityEngine's [Min] and [Range], and a plain
+// `using Gaskellgames;` would make both simple names ambiguous (CS0104).
+// See CLAUDE.md - "Gaskellgames" for the project-wide rule.
+using GG = Gaskellgames;
+
 namespace GameLogic.Night
 {
     /// <summary>
@@ -8,10 +13,6 @@ namespace GameLogic.Night
     /// formulas below. This exists because the formulas alone cannot describe the shape the
     /// campaign actually wants: night 1 has to be a gentle tutorial, and nights 2-5 have to
     /// keep getting harder in ways a single "+2 per night" curve saturates against.
-    ///
-    /// Every numeric field uses a SENTINEL for "not overridden" (0, or -1 where 0 is a
-    /// meaningful value) so a half-filled entry falls back to the formula field by field
-    /// instead of silently zeroing a knob nobody meant to touch.
     /// </summary>
     [System.Serializable]
     public class NightTuning
@@ -45,22 +46,12 @@ namespace GameLogic.Night
     /// <summary>
     /// Every knob that decides how hard a night is. One asset, tuned by ear - no code edit and
     /// no re-authoring of timelines.
-    ///
-    /// Two layers, in this order:
-    ///   1. the linear formulas (base + growth per night) - a sane curve for any night index
-    ///   2. the <see cref="nights"/> table - hand-authored overrides for the designed 1-5 arc
-    ///
-    /// Layer 2 wins where it is filled in. The formulas are kept underneath so a night index
-    /// with no row (or a half-filled row) still produces a playable night rather than a blank one.
-    ///
-    /// The pacing rules here are also what the generated plan is validated against, so a value
-    /// that makes nights unplayable shows up as rejected plans in the console rather than as a
-    /// night the player quietly cannot win.
     /// </summary>
     [CreateAssetMenu(fileName = "DifficultyProfile", menuName = "Give Me A Sign/Difficulty Profile")]
     public class DifficultyProfile : ScriptableObject
     {
         [Header("Campaign (per-night overrides, applied on top of the formulas below)")]
+        [GG.InfoBox("Rows here WIN over the growth formulas below, field by field. Use 'Log Campaign Curve' to see what the current numbers actually produce.")]
         [Tooltip("One row per night of the designed arc. A night with no row here falls back entirely to the growth formulas.")]
         public List<NightTuning> nights = new List<NightTuning>();
 
@@ -116,7 +107,6 @@ namespace GameLogic.Night
 
         // ── Per-night lookup ─────────────────────────────────────────────────────────────
 
-        /// <summary>The authored row for a night, or null when that night runs on formulas alone.</summary>
         public NightTuning TuningFor(int nightIndex)
         {
             if (nights == null) return null;
@@ -128,7 +118,6 @@ namespace GameLogic.Night
             return null;
         }
 
-        /// <summary>Threat budget for a given night, clamped to the ceiling.</summary>
         public int ThreatBudgetFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
@@ -139,7 +128,6 @@ namespace GameLogic.Night
             return Mathf.Clamp(baseThreatBudget + extra, 1, maxThreatBudget);
         }
 
-        /// <summary>Number of scheduled glitches for a given night.</summary>
         public int GlitchCountFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
@@ -150,14 +138,12 @@ namespace GameLogic.Night
             return Mathf.Max(0, baseGlitchCount + extra);
         }
 
-        /// <summary>Fraction of the night's anomalies that must be handled, for a given night.</summary>
         public float WinRatioFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
             return tuning != null && tuning.winRatio > 0f ? tuning.winRatio : winRatio;
         }
 
-        /// <summary>Minimum gap the generator must leave between two anomalies, for a given night.</summary>
         public float MinimumSpacingFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
@@ -166,19 +152,12 @@ namespace GameLogic.Night
                 : minimumSpacingSeconds;
         }
 
-        /// <summary>
-        /// Real minutes this night should last, or 0 meaning "leave the scene's NightTimer alone".
-        /// A longer night is the lever that actually raises the anomaly ceiling: the generator can
-        /// only fit so many anomalies into a night at a fair spacing, so growing the budget alone
-        /// saturates once the clock is full.
-        /// </summary>
         public float NightDurationFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
             return tuning != null ? Mathf.Max(0f, tuning.nightDurationMinutes) : 0f;
         }
 
-        /// <summary>Anomalies spawned as the cost of one wrong Incident Report, for a given night.</summary>
         public int PenaltyAnomaliesFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
@@ -188,7 +167,6 @@ namespace GameLogic.Night
             return Mathf.Max(0, penaltyAnomaliesPerWrongReport);
         }
 
-        /// <summary>Score needed to survive a night with this many anomalies, at a given ratio.</summary>
         public int RequiredScoreFor(int anomalyCount, float ratio)
         {
             if (anomalyCount <= 0) return 0;
@@ -197,7 +175,29 @@ namespace GameLogic.Night
             return Mathf.Clamp(Mathf.CeilToInt(anomalyCount * ratio), 1, anomalyCount);
         }
 
-        /// <summary>Score needed to survive, using the shared ratio. Kept for callers with no night index.</summary>
         public int RequiredScoreFor(int anomalyCount) => RequiredScoreFor(anomalyCount, winRatio);
+
+        [GG.Button]
+        public void LogCampaignCurve()
+        {
+            int lastNight = Mathf.Max(Flow.NightResult.FinalNightIndex, nights != null ? nights.Count : 0);
+
+            var report = new System.Text.StringBuilder($"=== Campaign curve ({name}) ===\n");
+            report.AppendLine("  night  length  budget  win%   spacing  glitch  penalty  source");
+
+            for (int night = 1; night <= lastNight; night++)
+            {
+                float duration = NightDurationFor(night);
+                string durationLabel = duration > 0f ? $"{duration:0.#}m" : "scene";
+
+                report.AppendLine(
+                    $"  {night,5}  {durationLabel,6}  {ThreatBudgetFor(night),6}  " +
+                    $"{WinRatioFor(night) * 100f,4:0}%  {MinimumSpacingFor(night),7:0.#}s  " +
+                    $"{GlitchCountFor(night),6}  {PenaltyAnomaliesFor(night),7}  " +
+                    $"{(TuningFor(night) != null ? "table" : "formula")}");
+            }
+
+            Debug.Log(report.ToString(), this);
+        }
     }
 }

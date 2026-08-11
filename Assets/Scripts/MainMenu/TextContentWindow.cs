@@ -8,11 +8,6 @@ namespace MainMenu
     /// <summary>
     /// A read-only XP dialog whose entire content lives in serialized strings, so the copy can be
     /// rewritten in the Inspector without touching code. Four windows use it:
-    ///
-    ///   READ ME.txt - Notepad  (body = the night shift protocol)
-    ///   Recycle Bin             (body = "3 items.", footer = the deleted SEC-03 log)
-    ///   Log Off Windows         (body = "Cannot log off.", footer = "Shift is not complete.")
-    ///   Help and Support        (body = controls / credits / instructions)
     /// </summary>
     public class TextContentWindow : XPWindowController
     {

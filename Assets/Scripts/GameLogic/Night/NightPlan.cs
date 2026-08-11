@@ -11,16 +11,13 @@ namespace GameLogic.Night
         public AnomalyDefinition definition;
         public RoomDefinition room;
 
-        /// <summary>REAL minutes after the night starts - the same unit NightTimer.ElapsedMinutes uses.</summary>
         public float atMinute;
 
-        /// <summary>When this anomaly stops being the player's problem, in seconds from the night's start.</summary>
         public float DeadlineSeconds =>
             atMinute * 60f + (definition != null ? definition.threatTimeoutSeconds : 0f);
 
         public float AtSeconds => atMinute * 60f;
 
-        /// <summary>True when this anomaly can actually run the player out of time.</summary>
         public bool HasDeadline => definition != null && definition.threatTimeoutSeconds > 0f;
 
         public int ThreatCost => definition != null ? definition.threatCost : 0;
@@ -33,10 +30,8 @@ namespace GameLogic.Night
         public GlitchType type;
         public float atMinute;
 
-        /// <summary>Optional exact text; empty means the controller picks from its word list.</summary>
         public string overrideText;
 
-        /// <summary>Stagger so glitches scheduled close together don't all flash on one frame.</summary>
         public float fireDelay;
     }
 
@@ -53,10 +48,6 @@ namespace GameLogic.Night
     /// The complete script for one night, produced by <see cref="NightPlanGenerator"/> from a
     /// seed. Everything the schedulers need is here, which is the point: the number of anomalies
     /// and the score required to survive them are computed together and cannot drift apart.
-    ///
-    /// The old setup had the anomaly timeline in AnomalyScheduler's Inspector and the win
-    /// threshold in ScoreManager's - editing one and forgetting the other is exactly how the
-    /// game shipped needing 9 points from 8 anomalies.
     /// </summary>
     [System.Serializable]
     public class NightPlan
@@ -71,23 +62,12 @@ namespace GameLogic.Night
 
         public GlitchProfile glitchProfile;
 
-        /// <summary>
-        /// How many anomalies must be dealt with to survive. Derived from the plan, never typed
-        /// in by hand - this is the field that makes the win condition impossible to desync.
-        /// </summary>
         public int requiredScore;
 
-        /// <summary>
-        /// Extra anomalies spawned when an Incident Report comes back wrong. Carried on the plan
-        /// rather than read from the DifficultyProfile at spawn time so the whole night - including
-        /// what a mistake costs - is one reproducible object, and so a replayed seed punishes
-        /// mistakes exactly the way the original run did.
-        /// </summary>
         public int penaltyAnomaliesPerWrongReport = 1;
 
         public float DurationSeconds => durationMinutes * 60f;
 
-        /// <summary>Total threat cost spent on this night - a rough difficulty readout.</summary>
         public int TotalThreatCost
         {
             get
@@ -98,7 +78,6 @@ namespace GameLogic.Night
             }
         }
 
-        /// <summary>Sorts every timeline in place so the schedulers can walk them with one cursor.</summary>
         public void SortByTime()
         {
             anomalies.Sort((a, b) => a.atMinute.CompareTo(b.atMinute));

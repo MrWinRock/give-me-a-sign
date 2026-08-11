@@ -13,18 +13,6 @@ namespace Report
     /// mic's danger threshold and it eventually leaves; whispering (a soft but non-zero level)
     /// burns the same progress down faster, which is the "lean in and whisper" moment the
     /// mechanic is built around. Three sustained loud strikes end the night.
-    ///
-    /// Deliberately NOT tied to any anomaly prefab yet - Sprint 3's "Listener" content (a proper
-    /// sprite/animation) can attach to the same HauntBeat.room later without this class changing;
-    /// for now the encounter is a full-screen event, the same way DemonAnomaly's jumpscare is a
-    /// full-screen overlay rather than something the player has to be looking at a sprite for.
-    ///
-    /// No STT/keyword requirement in this version: reliably transcribing an actual whisper with a
-    /// small Whisper model is unproven, so the escape hatch is amplitude-only (see the whisper
-    /// band below) - fully robust, testable with pure math, no dependency on speech recognition
-    /// working at whisper volume. VoicePromptSystem is wired in for a later enhancement (grant an
-    /// instant pass if Whisper happens to catch the anomaly's keyword) once that is confirmed
-    /// reliable in playtesting; it is not required for the mechanic to function today.
     /// </summary>
     public class SilenceProtocolHaunt : MonoBehaviour, IHauntLoop
     {
@@ -203,11 +191,6 @@ namespace Report
             EndEncounter(caught: true);
         }
 
-        /// <summary>
-        /// Ends the current encounter. <paramref name="silent"/> is for teardown paths (object
-        /// disabled mid-encounter, e.g. scene unload) where nothing should fire - the outcome is
-        /// simply abandoned, not scored either way.
-        /// </summary>
         private void EndEncounter(bool caught, bool silent = false)
         {
             IsActive = false;

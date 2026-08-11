@@ -6,8 +6,6 @@ namespace Audio
     /// Marks this GameObject's AudioSource as belonging to a specific volume channel
     /// (e.g. Music for background/ambient loops). Without this component the AudioManager
     /// still picks the source up automatically - it just defaults to the SFX channel.
-    ///
-    /// Add it to any new looping music/ambience object so the Music slider controls it.
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class ManagedAudioSource : MonoBehaviour

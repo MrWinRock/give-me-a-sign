@@ -17,19 +17,8 @@ namespace Report
     {
         HauntLoopId LoopId { get; }
 
-        /// <summary>True while an encounter from this loop is in progress.</summary>
         bool IsActive { get; }
 
-        /// <summary>
-        /// True (the common case) means HauntDirector will not start a new beat of THIS loop, nor
-        /// let a new EXCLUSIVE loop start, while this one is active - the Sprint 4 rule.
-        ///
-        /// False opts a loop out of that rule entirely: it can always fire, even while an
-        /// exclusive loop (e.g. Silence Protocol) is active, and its own activity never blocks
-        /// anything else either. Sprint 5's Radio Check is the first user of this - the roadmap's
-        /// whole point for it is "the radio still calls while The Listener has you," a deliberate
-        /// dilemma, not a scheduling conflict to avoid.
-        /// </summary>
         bool IsExclusive { get; }
 
         void Trigger(HauntBeat beat);
@@ -38,13 +27,6 @@ namespace Report
     /// <summary>
     /// Fires ambient haunt loops at the minutes <see cref="NightPlanGenerator"/> scheduled them -
     /// the same minute-cursor pattern AnomalyScheduler and GlitchScheduler already use.
-    ///
-    /// HauntDirector only decides WHEN; each <see cref="IHauntLoop"/> decides WHAT HAPPENS. That
-    /// is the same split GlitchDirector (when) / FormGlitchController (how) already established,
-    /// carried over on purpose so a new haunt loop is a new component, not a change here.
-    ///
-    /// Self-bootstrapping like GameFlowManager - drop one in the scene to tune its Inspector
-    /// values, or don't; the first access creates one.
     /// </summary>
     public class HauntDirector : MonoBehaviour
     {
@@ -57,16 +39,6 @@ namespace Report
 
         private static HauntDirector _instance;
 
-        /// <summary>
-        /// The scene's instance, created on demand so nothing breaks if it was never placed.
-        /// Returns null outside Play mode rather than littering the scene with objects.
-        ///
-        /// Do NOT call this from OnDisable/OnDestroy - if the real instance already tore itself
-        /// down (its own OnDestroy runs before some other object's OnDisable, order is not
-        /// guaranteed), this would spawn a brand new GameObject in the middle of scene teardown
-        /// that Unity cannot account for, producing "Some objects were not cleaned up when
-        /// closing the scene". Use <see cref="ExistingInstance"/> from teardown code instead.
-        /// </summary>
         public static HauntDirector Instance
         {
             get
@@ -84,10 +56,6 @@ namespace Report
             }
         }
 
-        /// <summary>
-        /// The instance if one currently exists, otherwise null - never creates one. Safe to call
-        /// from OnDisable/OnDestroy, unlike <see cref="Instance"/>.
-        /// </summary>
         public static HauntDirector ExistingInstance => _instance;
 
         private readonly List<HauntBeat> _sorted = new List<HauntBeat>();
@@ -134,14 +102,12 @@ namespace Report
                 _instance = null;
         }
 
-        /// <summary>Called by an IHauntLoop's OnEnable. Registering twice for the same loop id just replaces the entry.</summary>
         public void Register(IHauntLoop loop)
         {
             if (loop == null) return;
             _loops[loop.LoopId] = loop;
         }
 
-        /// <summary>Called by an IHauntLoop's OnDisable. No-ops if a different instance already replaced this one.</summary>
         public void Unregister(IHauntLoop loop)
         {
             if (loop == null) return;
@@ -149,7 +115,6 @@ namespace Report
                 _loops.Remove(loop.LoopId);
         }
 
-        /// <summary>True while any registered loop is mid-encounter (exclusive or not).</summary>
         public bool IsAnyHauntActive
         {
             get
@@ -162,8 +127,6 @@ namespace Report
             }
         }
 
-        /// <summary>True while an EXCLUSIVE loop is mid-encounter - the thing new exclusive beats
-        /// have to wait out. Non-exclusive loops (Radio Check) never count here.</summary>
         private bool IsAnyExclusiveHauntActive
         {
             get
@@ -227,10 +190,8 @@ namespace Report
                 return;
             }
 
-            // Non-exclusive loops (Radio Check) always fire, even over an active exclusive loop -
-            // that overlap is the point (see IHauntLoop.IsExclusive). Exclusive loops still wait
-            // out whatever exclusive loop is currently running; an active non-exclusive loop never
-            // blocks them.
+            // Non-exclusive loops (Radio Check) fire over an active exclusive loop on purpose;
+            // only exclusive loops wait for each other.
             if (loop.IsExclusive && IsAnyExclusiveHauntActive)
             {
                 Debug.LogWarning($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - another exclusive haunt is already active.", this);

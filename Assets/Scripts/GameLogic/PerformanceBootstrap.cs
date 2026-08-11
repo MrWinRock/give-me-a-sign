@@ -4,13 +4,6 @@ namespace GameLogic
 {
     /// <summary>
     /// Runs once before the first scene loads (no scene setup needed).
-    ///
-    /// On low-spec machines the game competes with Whisper's speech-recognition threads
-    /// for CPU. Two cheap global wins:
-    ///   1. Cap the frame rate at 60 when vSync is off - otherwise Unity renders this 2D
-    ///      game as fast as the GPU allows, burning CPU/GPU that Whisper needs.
-    ///   2. In release builds, stop collecting stack traces for plain Debug.Log calls -
-    ///      trace capture is surprisingly expensive and worthless outside development.
     /// </summary>
     public static class PerformanceBootstrap
     {

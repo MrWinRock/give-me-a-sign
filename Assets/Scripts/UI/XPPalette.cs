@@ -10,13 +10,11 @@ namespace UI
     /// </summary>
     public static class XPPalette
     {
-        /// <summary>Parses "#RRGGBB" / "#RRGGBBAA". Returns magenta if the string is malformed.</summary>
         public static Color Hex(string hex)
         {
             return ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.magenta;
         }
 
-        /// <summary>Same as <see cref="Hex"/> but overrides the alpha (0-1).</summary>
         public static Color Hex(string hex, float alpha)
         {
             var c = Hex(hex);

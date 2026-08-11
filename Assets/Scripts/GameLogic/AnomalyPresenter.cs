@@ -6,9 +6,6 @@ namespace GameLogic
     /// How an anomaly looks and sounds: animator triggers and its two AudioSources.
     /// Split out of Anomaly so adding a new visual or audio beat never touches the code that
     /// tracks game state.
-    ///
-    /// Every method is a no-op when the matching reference is unassigned, which is what lets
-    /// the same component sit on a silent anomaly and a fully dressed one.
     /// </summary>
     public class AnomalyPresenter : MonoBehaviour
     {
@@ -32,10 +29,8 @@ namespace GameLogic
                 animator = GetComponent<Animator>();
         }
 
-        /// <summary>Plays the "coming for you" animation.</summary>
         public void PlayThreatening() => Trigger(moveTriggerName);
 
-        /// <summary>Plays the banished/idle animation.</summary>
         public void PlayResolved() => Trigger(idleTriggerName);
 
         public void PlayJumpScare()
@@ -63,11 +58,6 @@ namespace GameLogic
             animator.SetTrigger(triggerName);
         }
 
-        /// <summary>
-        /// Seeds this component from the legacy fields still on Anomaly. Called only when Anomaly
-        /// had to add the component itself at runtime, i.e. on a prefab that hasn't been through
-        /// 'Tools/Give Me A Sign/Setup/2. Migrate Anomaly Prefabs' yet.
-        /// </summary>
         public void ConfigureFromLegacy(Animator legacyAnimator, string moveTrigger, string idleTrigger,
                                         AudioSource jumpScare, AudioSource fight)
         {

@@ -6,10 +6,6 @@ namespace Score
     /// <summary>
     /// Switches sets of GameObjects on or off in the Result scene depending on whether the
     /// player was caught or the night simply ended.
-    ///
-    /// NOTE: this overlaps with <see cref="ResultDisplay"/>, which does the same job plus the
-    /// text. Both are wired to different objects in Result.unity, so they still coexist - worth
-    /// folding into one component when the Result scene is next reworked.
     /// </summary>
     public class SampleSceneManager : MonoBehaviour
     {

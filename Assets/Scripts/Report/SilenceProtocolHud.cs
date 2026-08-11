@@ -9,10 +9,6 @@ namespace Report
     /// line, and three strike pips. Built entirely from script - no scene wiring, no prefab -
     /// the same way DemonAnomaly builds its video overlay, so dropping SilenceProtocolHaunt into
     /// the scene just works.
-    ///
-    /// Deliberately plain "programmer art". This is a Sprint 4 systems deliverable, not a Sprint
-    /// 3 content one - restyle in-editor (or replace with a real prefab) once the mechanic is
-    /// confirmed fun in a playtest.
     /// </summary>
     public class SilenceProtocolHud
     {
@@ -78,10 +74,6 @@ namespace Report
             }
         }
 
-        /// <summary>
-        /// Scales the meter so the danger line always sits at a fixed screen position - the raw
-        /// number is meaningless to the player, only "how close to the red line" matters.
-        /// </summary>
         public void SetLevel(float level, float whisperCeiling, float dangerFloor)
         {
             if (_meterFill == null) return;

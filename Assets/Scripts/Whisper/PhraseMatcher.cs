@@ -7,20 +7,11 @@ namespace Whisper
     /// <summary>
     /// Shared fuzzy phrase matching used by both the prayer system (VoiceCommandRouter)
     /// and the sign request system (SignRequestSystem).
-    ///
-    /// A target phrase matches when at least <c>minimumWordsRequired</c> of its words are
-    /// found in the recognized text. A word counts as found on an exact match, a
-    /// substring match in either direction, or a Levenshtein similarity >= wordSimilarity.
     /// </summary>
     public static class PhraseMatcher
     {
         private static readonly char[] WordSeparators = { ' ', ',', '.', '!', '?' };
 
-        /// <summary>
-        /// Counts how many words of <paramref name="targetPhrase"/> appear in
-        /// <paramref name="recognizedText"/>. When <paramref name="foundWords"/> is non-null
-        /// the matched target words are added to it (used for debug logging only).
-        /// </summary>
         public static int CountMatchingWords(
             string recognizedText,
             string targetPhrase,
@@ -63,7 +54,6 @@ namespace Whisper
                    Similarity(recognizedWord, targetWord) >= similarityThreshold;
         }
 
-        /// <summary>Normalized similarity 0-1 based on Levenshtein distance.</summary>
         public static float Similarity(string a, string b)
         {
             if (a.Length == 0 && b.Length == 0) return 1f;

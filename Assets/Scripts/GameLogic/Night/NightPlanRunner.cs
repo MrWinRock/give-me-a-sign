@@ -9,12 +9,6 @@ namespace GameLogic.Night
     /// <summary>
     /// Generates the night's plan and publishes it. One of these in the gameplay scene is all the
     /// procedural system needs.
-    ///
-    /// It runs in Start, by which point every RoomAnchor has registered itself, so the plan can be
-    /// built against the rooms the camera can genuinely reach. The schedulers deliberately do NOT
-    /// read the plan in their own Start - they build their timelines on the night timer's first
-    /// tick, which is guaranteed to be after every Start in the scene. That removes the script
-    /// execution order question entirely instead of relying on getting it right.
     /// </summary>
     public class NightPlanRunner : MonoBehaviour
     {
@@ -36,7 +30,6 @@ namespace GameLogic.Night
         [Header("Debug")]
         [SerializeField] private bool logPlanOnStart = true;
 
-        /// <summary>PlayerPrefs key for how far the player has got. Progression is the only thing PlayerPrefs still tracks.</summary>
         public const string UnlockedNightKey = "UnlockedNight";
 
         public NightPlan Plan { get; private set; }
@@ -82,12 +75,6 @@ namespace GameLogic.Night
             return Mathf.Max(1, PlayerPrefs.GetInt(UnlockedNightKey, 1));
         }
 
-        /// <summary>
-        /// How long this night runs. The DifficultyProfile's per-night row wins when it specifies
-        /// a duration, and is pushed INTO the scene's NightTimer so the clock, the schedulers and
-        /// the plan all agree on one number. A night with no authored duration keeps whatever the
-        /// scene is set to, which is what makes this safe to add to an existing scene.
-        /// </summary>
         private float ResolveDurationMinutes(DifficultyProfile difficulty, int nightIndex)
         {
             var timer = FindFirstObjectByType<NightTimer>();
@@ -105,10 +92,6 @@ namespace GameLogic.Night
             return timer.NightDurationMinutes;
         }
 
-        /// <summary>
-        /// Scene anchors by default: a plan that places an anomaly in a room the camera can't reach
-        /// is a wasted anomaly. Falls back to the library when the scene has no anchors.
-        /// </summary>
         private List<RoomDefinition> ResolveRooms(NightContentLibrary resolved)
         {
             var rooms = new List<RoomDefinition>();
@@ -142,11 +125,8 @@ namespace GameLogic.Night
             if (resolved.glitch != null)
                 director.SetIntensity(resolved.glitch.intensity);
 
-            // Sprint 6, S-604: night 1 is the tutorial. GlitchDirector needs a matching
-            // "AlwaysWhenFlagSet" blackout entry (flagName "tutorial") in its own Inspector list to
-            // actually go quiet on this flag - add one by hand if the scene's GlitchDirector
-            // predates this. HauntDirector reads this same flag directly (see HauntDirector.Fire)
-            // to suppress every haunt beat on night 1 with no extra authoring needed there.
+            // Night 1 is the tutorial. GlitchDirector needs an "AlwaysWhenFlagSet" blackout entry
+            // for this flag to go quiet; HauntDirector reads the flag directly.
             director.SetFlag("tutorial", nightIndex == 1);
         }
 
@@ -164,7 +144,6 @@ namespace GameLogic.Night
             Debug.Log(Describe(Plan, "(dumped on request)"), this);
         }
 
-        /// <summary>Whole night as a readable table - the fast way to see what a seed produced.</summary>
         public static string Describe(NightPlan plan, string outcome = null)
         {
             if (plan == null) return "NightPlan: (null)";
@@ -218,10 +197,6 @@ namespace GameLogic.Night
             return NightTimer.FormatGameTime(hours, includeSeconds: false);
         }
 
-        /// <summary>
-        /// Marks each planned anomaly on its room's anchor in the Scene view, labelled with when it
-        /// arrives. Only possible during Play, since the rooms are chosen at runtime.
-        /// </summary>
         void OnDrawGizmosSelected()
         {
             if (Plan == null) return;

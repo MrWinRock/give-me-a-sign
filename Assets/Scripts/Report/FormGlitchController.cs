@@ -28,18 +28,6 @@ namespace Report
     /// <summary>
     /// "Form Betrayal" executor. Temporarily overrides the Incident Report window's *visuals*
     /// so the form itself feels untrustworthy, then always reverts.
-    ///
-    /// This is a pure executor - it never decides when to glitch (that is
-    /// <see cref="GlitchDirector"/>'s job) and it deliberately touches nothing that
-    /// IncidentReportUI / IncidentReportManager use for submission or validation:
-    ///
-    ///  - The dropdown's real option list and selected room are snapshotted and restored by TEXT,
-    ///    so a phantom entry can never change or clear what the player picked.
-    ///  - The recognized keyword the manager validates against lives in the manager's own private
-    ///    field. This script only ever writes to the input field's displayed text, so a false
-    ///    recognition is cosmetic by construction and cannot fail a valid submission.
-    ///  - Every glitch registers a revert action up-front; CancelAllGlitches() (called when the form
-    ///    closes) runs them all, so the UI can never be left permanently corrupted.
     /// </summary>
     public class FormGlitchController : MonoBehaviour
     {
@@ -215,13 +203,10 @@ namespace Report
 
         private bool _formOpen;
 
-        /// <summary>True between NotifyFormOpened() and NotifyFormClosed().</summary>
         public bool IsFormOpen => _formOpen;
 
-        /// <summary>True while at least one glitch is mid-flight.</summary>
         public bool IsGlitchActive => _running.Count > 0;
 
-        /// <summary>Case numbers seen so far this playthrough, oldest first. Used by Glitch C.</summary>
         public IReadOnlyList<string> CaseHistory => _caseHistory;
 
         void Awake()
@@ -258,10 +243,6 @@ namespace Report
         // Lifecycle - called by GlitchDirector
         // ---------------------------------------------------------------------------------------
 
-        /// <summary>
-        /// Call when the report window opens. Snapshots the session's real case number into history
-        /// so Glitch C can repeat it later, and clears any stale glitch state.
-        /// </summary>
         public void NotifyFormOpened()
         {
             CancelAllGlitches();
@@ -271,20 +252,12 @@ namespace Report
                 RegisterCaseNumber(caseValueText.text);
         }
 
-        /// <summary>
-        /// Call when the report window closes (submit, cancel, or Spacebar). Immediately kills every
-        /// running glitch coroutine and restores all cached values.
-        /// </summary>
         public void NotifyFormClosed()
         {
             _formOpen = false;
             CancelAllGlitches();
         }
 
-        /// <summary>
-        /// Optional: call the moment push-to-talk stops, to fire an armed False Recognition without
-        /// waiting for the settle timer. Safe to never call.
-        /// </summary>
         public void NotifyRecordingStopped()
         {
             _recordingStoppedSignal = true;
@@ -292,7 +265,6 @@ namespace Report
 
         private bool _recordingStoppedSignal;
 
-        /// <summary>Adds a case number to the repeat-corruption history.</summary>
         public void RegisterCaseNumber(string caseNumber)
         {
             if (string.IsNullOrWhiteSpace(caseNumber)) return;
@@ -307,13 +279,6 @@ namespace Report
         // Public entry point
         // ---------------------------------------------------------------------------------------
 
-        /// <summary>
-        /// Runs one glitch. <paramref name="overrideText"/> lets a scripted beat pin the exact
-        /// string used (phantom label / false word / corrupted case / status message / clock readout);
-        /// pass null or empty to pull randomly from the Inspector lists.
-        /// Returns false if the glitch could not start (missing widget reference, or that glitch
-        /// type is already running).
-        /// </summary>
         public bool PlayGlitch(GlitchType type, string overrideText = null)
         {
             if (_running.ContainsKey(type))
@@ -334,14 +299,6 @@ namespace Report
             }
         }
 
-        /// <summary>
-        /// Starts a glitch coroutine and records it as running.
-        ///
-        /// The slot is claimed BEFORE StartCoroutine, because StartCoroutine executes the routine
-        /// body synchronously up to its first yield. If that body ever ran to completion in one go,
-        /// its own "_running.Remove(type)" would fire before the handle could be stored - leaving a
-        /// stale entry that makes PlayGlitch() reject that glitch type for the rest of the session.
-        /// </summary>
         private void BeginTracked(GlitchType type, IEnumerator routine)
         {
             _running[type] = null;
@@ -352,7 +309,6 @@ namespace Report
                 _running[type] = handle;
         }
 
-        /// <summary>Stops one glitch early and restores its cached values.</summary>
         public void CancelGlitch(GlitchType type)
         {
             if (_running.TryGetValue(type, out var routine))
@@ -368,7 +324,6 @@ namespace Report
             }
         }
 
-        /// <summary>Stops every glitch and restores every cached value. Safe to call at any time.</summary>
         public void CancelAllGlitches()
         {
             // Copy the keys first - the revert actions mutate the dictionaries.
@@ -417,10 +372,6 @@ namespace Report
         // Glitch A - Phantom dropdown entry
         // =======================================================================================
 
-        /// <summary>
-        /// Injects one fake room into the dropdown. Selecting it does nothing: the selection snaps
-        /// back to whatever was picked before and the entry is removed once the list closes.
-        /// </summary>
         public bool TriggerPhantomDropdown(string overrideText = null)
         {
             if (locationDropdown == null)
@@ -543,7 +494,6 @@ namespace Report
             dd.RefreshShownValue();
         }
 
-        /// <summary>Recolours the phantom row inside the open dropdown list, if it can be found.</summary>
         private void TintPhantomLabel(TMP_Dropdown dd, string label)
         {
             var list = dd.transform.Find("Dropdown List");
@@ -561,11 +511,6 @@ namespace Report
         // Glitch B - False recognition
         // =======================================================================================
 
-        /// <summary>
-        /// Arms a display-only lie. Once the player stops speaking, the Recognized field briefly
-        /// shows a word they never said, then corrects itself. The manager's stored keyword - the
-        /// one actually validated - is never touched.
-        /// </summary>
         public bool TriggerFalseRecognition(string overrideText = null)
         {
             if (recognizedField == null)
@@ -662,7 +607,6 @@ namespace Report
         // Glitch C - Case number corruption
         // =======================================================================================
 
-        /// <summary>Briefly shows a wrong case number - all zeroes, a repeated digit, or a past case.</summary>
         public bool TriggerCaseCorruption(string overrideText = null)
         {
             if (caseValueText == null)
@@ -741,10 +685,6 @@ namespace Report
         // Glitch D - Status bar intrusion
         // =======================================================================================
 
-        /// <summary>
-        /// Flashes an unsettling line over the status bar, then restores whatever status and badge
-        /// state was live before - including an ALERT raised while the intrusion was on screen.
-        /// </summary>
         public bool TriggerStatusIntrusion(string overrideText = null)
         {
             if (statusText == null)
@@ -827,10 +767,6 @@ namespace Report
         // Glitch E - Clock desync
         // =======================================================================================
 
-        /// <summary>
-        /// Rewinds, freezes, or breaks the shift clock for a beat. IncidentReportUI's own
-        /// InvokeRepeating clock tick is never stopped, so the clock always resyncs on its own.
-        /// </summary>
         public bool TriggerClockDesync(string overrideText = null)
         {
             if (timeValueText == null)
@@ -919,7 +855,6 @@ namespace Report
             SafeInvoke(revert, GlitchType.ClockDesync);
         }
 
-        /// <summary>The true, un-glitched clock text right now - same source and format IncidentReportUI uses.</summary>
         private string FormatCurrentGameTime()
         {
             return nightTimer != null
@@ -927,7 +862,6 @@ namespace Report
                 : "--:--:--";
         }
 
-        /// <summary>The clock rewound by <paramref name="rewindSeconds"/> of IN-GAME time, clamped to 0:00 AM.</summary>
         private string FormatRewoundGameTime(float rewindSeconds)
         {
             if (nightTimer == null) return "--:--:--";
@@ -959,10 +893,6 @@ namespace Report
             return UnityEngine.Random.Range(min, max);
         }
 
-        /// <summary>
-        /// How long a timed glitch should hold. Honours debugDurationOverride so testing can stretch
-        /// every glitch to a length you can actually study, without editing five separate ranges.
-        /// </summary>
         private float ResolveDuration(Vector2 range)
         {
             return debugDurationOverride > 0f ? debugDurationOverride : RandomInRange(range);
@@ -980,11 +910,6 @@ namespace Report
                 Debug.Log($"[FormGlitch] FIRE {type} :: \"{detail}\"", this);
         }
 
-        /// <summary>
-        /// Proof-of-work log: shows the exact text that was on screen before the glitch, what it was
-        /// replaced with, and for how long. If this line appears but you saw nothing, the glitch DID
-        /// run and the problem is that it was too brief - raise debugDurationOverride.
-        /// </summary>
         private void LogApplied(GlitchType type, string widget, string before, string after, float seconds)
         {
             if (!verboseLogging) return;
@@ -1018,10 +943,6 @@ namespace Report
         [ContextMenu("Glitch/Cancel All")]
         private void DebugCancelAll() => CancelAllGlitches();
 
-        /// <summary>
-        /// Fires C -> D -> E one at a time, each held for 4 seconds, so the three "invisible" glitches
-        /// can be watched back to back. Play Mode only (it needs coroutines).
-        /// </summary>
         [ContextMenu("Glitch/RUN DEMO (C, D, E - 4s each)")]
         private void DebugRunDemo()
         {

@@ -12,13 +12,9 @@ namespace GameLogic
     /// <summary>Where an anomaly is in its life. Only ever moves forward.</summary>
     public enum AnomalyState
     {
-        /// <summary>Spawned but not in play yet - the demon sits here until the camera finds it.</summary>
         Hidden,
-        /// <summary>On screen and reportable, not yet coming for the player.</summary>
         Visible,
-        /// <summary>Escalated: moving in, prayer window open, threat timer running.</summary>
         Threatening,
-        /// <summary>Banished. Terminal.</summary>
         Resolved,
     }
 
@@ -27,11 +23,6 @@ namespace GameLogic
     /// owns identity, the state machine and the global registry, and delegates the actual doing
     /// to three siblings: <see cref="AnomalyMovement"/>, <see cref="AnomalyPresenter"/> and
     /// <see cref="AnomalyThreatTimer"/>.
-    ///
-    /// The rule that keeps it small: an anomaly reports WHAT HAPPENED, it never decides HOW THE
-    /// NIGHT ENDS. When its threat timer runs out it says so and hands the outcome to
-    /// <see cref="GameFlowManager"/>; it does not write save data or load scenes. That is what
-    /// lets new lose conditions be added without touching this file.
     /// </summary>
     [RequireComponent(typeof(AnomalyMovement))]
     [RequireComponent(typeof(AnomalyPresenter))]
@@ -45,28 +36,16 @@ namespace GameLogic
             MoveOnly                   // แค่เคลื่อนไปหา target ไม่หาย
         }
 
-        /// <summary>Delay between a failed report and the anomaly reacting to it.</summary>
-        private const float RespondDelay = 4f;
-        /// <summary>Pause after the banish animation starts before the object goes away.</summary>
-        private const float DespawnDelay = 0.6f;
+        private const float RespondDelay = 4f;   // beat between a failed report and reacting to it
+        private const float DespawnDelay = 0.6f; // lets the banish animation play before it vanishes
 
         // ── Static registry ──────────────────────────────────────────────────────────────
 
         private static readonly List<Anomaly> _activeAnomalies = new List<Anomaly>();
         public static IReadOnlyList<Anomaly> ActiveAnomalies => _activeAnomalies;
 
-        /// <summary>
-        /// Fired once per anomaly activation when it disappears/is banished, no matter how it
-        /// was spawned. ScoreManager listens here instead of hunting for instances with
-        /// FindObjectsOfType, so scoring works for scene-placed and runtime-spawned anomalies alike.
-        /// </summary>
         public static event System.Action<Anomaly> OnAnyAnomalyDisappeared;
 
-        /// <summary>
-        /// Fired when any anomaly's threat window closes without it being banished. Subscribe here
-        /// to react to the player being caught (Sprint 4's negligence strikes) without editing
-        /// this class.
-        /// </summary>
         public static event System.Action<Anomaly> OnAnyThreatExpired;
 
         // ── Identity ─────────────────────────────────────────────────────────────────────
@@ -79,16 +58,10 @@ namespace GameLogic
         [Tooltip("Destroy the GameObject after banishing instead of just deactivating it.")]
         [SerializeField] private bool destroyAfterDisappear;
 
-        /// <summary>The kind of anomaly this is, or null on a prefab that hasn't been migrated yet.</summary>
         public AnomalyDefinition Definition => definition;
 
-        /// <summary>
-        /// Which room it turned up in. Set when it spawns, NOT baked into the prefab - that is
-        /// what allows a night to place the same kind of anomaly in a different room each run.
-        /// </summary>
         public RoomDefinition AssignedRoom { get; private set; }
 
-        /// <summary>Called by whatever spawned this anomaly.</summary>
         public void AssignRoom(RoomDefinition room) => AssignedRoom = room;
 
         // ── State ────────────────────────────────────────────────────────────────────────
@@ -98,14 +71,11 @@ namespace GameLogic
         // the Anomaly component, so OnEnable simply never runs until the camera finds it.
         public AnomalyState State { get; private set; } = AnomalyState.Hidden;
 
-        /// <summary>Fired when this anomaly's threat window closes without it being banished.</summary>
         public System.Action<Anomaly> OnThreatExpired;
 
-        /// <summary>Fired when this anomaly is banished (for scoring).</summary>
         public System.Action<Anomaly> OnAnomalyDisappeared;
 
         private bool _isReported;
-        /// <summary>True once an Incident Report has been opened for this anomaly (prevents duplicate reports).</summary>
         public bool IsReported => _isReported;
 
         private bool _canPrayDisappear;  // the prayer window is open
@@ -117,7 +87,6 @@ namespace GameLogic
         private AnomalyThreatTimer _threatTimer;
         private PrayUiManager _prayManager;
 
-        /// <summary>Respond behaviour, always sourced from the Definition now that every prefab is migrated.</summary>
         public RespondType EffectiveRespondType => definition != null
             ? definition.respondType
             : RespondType.MoveToTargetThenDisappear;
@@ -188,20 +157,8 @@ namespace GameLogic
 
         // ── Escalation ───────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Called when a report comes back wrong (or the player clicked without reporting).
-        ///
-        /// Used to escalate into a jumpscare/chase (see git history for the old Threaten()/
-        /// Approach() coroutines) with a real chance of killing the player if the threat timer
-        /// ran out. That risk-of-instant-death reaction is gone: a wrong report now simply costs
-        /// the player pressure instead of a scare - this anomaly quietly disappears and a fresh
-        /// one spawns elsewhere via AnomalyScheduler.SpawnPenaltyAnomalies() - how many is
-        /// authored per night on the DifficultyProfile, and is 0 on the night-1 tutorial.
-        ///
-        /// The one exception is an anomaly with no move target assigned (the Demon, whose
-        /// RespondType is MoveOnly with an empty target on purpose) - it has nothing to escalate
-        /// into either way, so it is left completely alone and can simply be reported again.
-        /// </summary>
+        // Called when a report comes back wrong: this anomaly leaves without scoring and extra
+        // ones spawn as the penalty.
         public void Respond()
         {
             StartCoroutine(RespondAfterDelay());
@@ -213,19 +170,17 @@ namespace GameLogic
 
             if (EffectiveRespondType != RespondType.DisappearInstantly && !_movement.HasTarget)
             {
-                // e.g. the Demon: nothing to escalate into, so it survives the wrong report as-is.
+                // e.g. the Demon: nothing to escalate into, so it survives to be reported again.
                 yield break;
             }
 
-            // scores:false is the whole point - a wrong report must never pay out. HandleDisappear
-            // fires OnAnyAnomalyDisappeared, which ScoreManager treats as "one anomaly handled".
+            // scores:false - a wrong report must never pay out.
             HandleDisappear(scores: false);
             AnomalyScheduler.Instance?.SpawnPenaltyAnomalies();
         }
 
         // ── Resolution ───────────────────────────────────────────────────────────────────
 
-        /// <summary>Called by VoiceCommandRouter when the prayer is recognised.</summary>
         public void OnPrayerSuccessful()
         {
             if (!CanBePrayerBanished()) return;
@@ -238,16 +193,11 @@ namespace GameLogic
             HandleDisappear();
         }
 
-        /// <summary>Check if this anomaly can be banished by prayer.</summary>
         public bool CanBePrayerBanished()
         {
             return _canPrayDisappear && EffectiveRespondType == RespondType.MoveToTargetThenDisappear;
         }
 
-        /// <summary>
-        /// Called by IncidentReportManager when the submitted report correctly matches this anomaly.
-        /// Resolves it immediately, the same way a successful prayer banishment does.
-        /// </summary>
         public void ResolveByReport()
         {
             _canPrayDisappear = false;
@@ -255,13 +205,6 @@ namespace GameLogic
             HandleDisappear();
         }
 
-        /// <summary>
-        /// Takes this anomaly off the board.
-        ///
-        /// <paramref name="scores"/> is what separates "the player dealt with it" from "it left on
-        /// its own": the disappear events are what ScoreManager counts, so the wrong-report path
-        /// must pass false or a failed report would quietly pay out a point.
-        /// </summary>
         private void HandleDisappear(bool scores = true)
         {
             if (State == AnomalyState.Resolved) return;
@@ -291,10 +234,6 @@ namespace GameLogic
             gameObject.SetActive(false);
         }
 
-        /// <summary>
-        /// The threat window closed. Announce it and let GameFlowManager decide what it costs -
-        /// this class deliberately knows nothing about save data or scenes.
-        /// </summary>
         private void HandleThreatExpired()
         {
             if (!_canPrayDisappear || State == AnomalyState.Resolved) return;
@@ -312,7 +251,6 @@ namespace GameLogic
                 AssignedRoom != null ? AssignedRoom.roomId : null);
         }
 
-        /// <summary>Fires both disappear events, but only once per activation.</summary>
         private void RaiseDisappeared()
         {
             if (_disappearNotified) return;
@@ -322,10 +260,6 @@ namespace GameLogic
             OnAnyAnomalyDisappeared?.Invoke(this);
         }
 
-        /// <summary>
-        /// Stops this anomaly's own coroutines AND the movement component's - StopAllCoroutines
-        /// only reaches coroutines started by the MonoBehaviour that owns them.
-        /// </summary>
         private void StopEverything()
         {
             StopAllCoroutines();
@@ -335,16 +269,8 @@ namespace GameLogic
 
         // ── Report bookkeeping ───────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Called by IncidentReportManager as soon as the report form is opened for this anomaly,
-        /// so a second click can't open another report while one is pending or resolved.
-        /// </summary>
         public void MarkReported() => _isReported = true;
 
-        /// <summary>
-        /// Called by IncidentReportManager when a report is cancelled, so the anomaly can be
-        /// clicked and reported again later instead of being permanently un-clickable.
-        /// </summary>
         public void ClearReportedFlag() => _isReported = false;
 
         private void ClearAlert()

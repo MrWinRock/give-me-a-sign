@@ -8,14 +8,10 @@ namespace GameLogic.Night
     /// Everything the night generator is allowed to draw from, plus the profiles that shape it.
     /// One asset, so the generator has no dependency on the scene and can be run from an editor
     /// window to batch-test thousands of seeds.
-    ///
-    /// Lives in a Resources folder (like the AudioManager prefab) so <see cref="Load"/> works
-    /// without any scene wiring and survives into builds.
     /// </summary>
     [CreateAssetMenu(fileName = "NightContentLibrary", menuName = "Give Me A Sign/Night Content Library")]
     public class NightContentLibrary : ScriptableObject
     {
-        /// <summary>Asset name inside Resources. Kept in one place so the editor tools agree with runtime.</summary>
         public const string ResourceName = "NightContentLibrary";
 
         [Header("Content")]
@@ -33,7 +29,6 @@ namespace GameLogic.Night
 
         private static NightContentLibrary _cached;
 
-        /// <summary>The project's library, or null when it hasn't been created yet.</summary>
         public static NightContentLibrary Load()
         {
             if (_cached != null) return _cached;
@@ -48,7 +43,6 @@ namespace GameLogic.Night
             return _cached;
         }
 
-        /// <summary>Anomaly kinds unlocked by the given night, skipping blank and prefab-less entries.</summary>
         public List<AnomalyDefinition> AvailableOn(int nightIndex)
         {
             var pool = new List<AnomalyDefinition>();
@@ -64,7 +58,6 @@ namespace GameLogic.Night
             return pool;
         }
 
-        /// <summary>Rooms usable by a given anomaly kind (its allowedRooms filter, intersected with this library).</summary>
         public List<RoomDefinition> RoomsFor(AnomalyDefinition definition, IReadOnlyList<RoomDefinition> available)
         {
             var usable = new List<RoomDefinition>();
@@ -80,7 +73,6 @@ namespace GameLogic.Night
             return usable;
         }
 
-        /// <summary>Clears the cached lookup - used by the editor tools after (re)creating the asset.</summary>
         public static void ClearCache() => _cached = null;
     }
 }

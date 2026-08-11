@@ -9,15 +9,6 @@ namespace Score
 {
     /// <summary>
     /// Keeps the running score for the night and the bar it has to clear.
-    ///
-    /// Listens to the global Anomaly.OnAnyAnomalyDisappeared event, so every anomaly -
-    /// scene-placed or spawned at runtime by AnomalyScheduler - scores automatically with
-    /// no polling and no FindObjectsOfType scans.
-    ///
-    /// It deliberately does NOT decide whether the night was won, save anything, or load the
-    /// Result scene: <see cref="GameFlowManager"/> owns all of that. It used to do all three,
-    /// which is why it had to check an "AnomalyTimeout" PlayerPrefs flag to avoid overwriting a
-    /// result some other script had already written.
     /// </summary>
     public class ScoreManager : MonoBehaviour
     {
@@ -42,12 +33,6 @@ namespace Score
 
         public static ScoreManager Instance { get; private set; }
 
-        /// <summary>
-        /// Score needed to survive, taken straight from the night's plan. There is deliberately no
-        /// Inspector field for this: the plan computes it from the anomalies it actually placed, so
-        /// the bar and the content behind it cannot drift apart. That desync is what shipped a
-        /// build needing 9 points from 8 anomalies.
-        /// </summary>
         public int RequiredScore => NightPlanProvider.HasPlan ? NightPlanProvider.Current.requiredScore : 0;
 
         void Awake()
@@ -140,10 +125,6 @@ namespace Score
                 thresholdText.text = $"Goal: {RequiredScore}";
         }
 
-        /// <summary>
-        /// The clock reached 6:00 AM. Freeze the score so nothing lands after the fact, then let
-        /// GameFlowManager (called by NightTimer straight after this) read the final numbers.
-        /// </summary>
         private void OnNightEnded()
         {
             if (_scoringClosed) return;

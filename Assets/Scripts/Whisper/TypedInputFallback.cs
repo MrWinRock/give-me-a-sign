@@ -8,11 +8,6 @@ namespace Whisper
     /// WhisperMicInput's recognized-text queue. This gives players with no microphone - or one
     /// Windows won't grant permission for - a way to feed that same queue by typing instead, so the
     /// game stays completable rather than soft-locking on anyone without a working mic.
-    ///
-    /// IMGUI (OnGUI), not a Canvas/TMP_InputField: this project already has one proven, working
-    /// text-entry pattern for exactly this kind of debug/utility box - NightPlanHud's seed field -
-    /// and this reuses it rather than risking a hand-built TMP_InputField (viewport/caret/
-    /// placeholder wiring is easy to get subtly wrong with no way to visually verify it here).
     /// </summary>
     public class TypedInputFallback : MonoBehaviour
     {

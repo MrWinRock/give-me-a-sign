@@ -9,8 +9,6 @@ namespace GameLogic.Night
     /// On-screen readout of the night being played, toggled with a key. Exists so "what did that
     /// seed actually do?" is answerable while playing instead of only from the console afterwards -
     /// and so a night that felt wrong can be replayed exactly.
-    ///
-    /// Debug-only: leave it off the shipped scene, or leave <see cref="visibleByDefault"/> off.
     /// </summary>
     public class NightPlanHud : MonoBehaviour
     {
@@ -99,10 +97,6 @@ namespace GameLogic.Night
             RestartNight();
         }
 
-        /// <summary>
-        /// Reloads the gameplay scene through GameFlowManager, so plan and result are cleared the
-        /// same way the Play Again button does it rather than by a second copy of that logic.
-        /// </summary>
         private void RestartNight()
         {
             GameFlowManager.StartNewNight(SceneManager.GetActiveScene().name);

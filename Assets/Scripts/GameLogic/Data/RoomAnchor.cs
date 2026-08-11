@@ -5,10 +5,6 @@ namespace GameLogic.Data
     /// <summary>
     /// The bridge between a <see cref="RoomDefinition"/> asset and the actual scene: one of
     /// these per room, placed in the scene, holding the Transforms anomalies can spawn on.
-    ///
-    /// Why this exists at all: RoomDefinition is a ScriptableObject, and a ScriptableObject
-    /// cannot reference a scene Transform. So the asset owns the room's identity and camera
-    /// position, and this component owns its scene geometry.
     /// </summary>
     public class RoomAnchor : MonoBehaviour
     {
@@ -21,11 +17,6 @@ namespace GameLogic.Data
         public RoomDefinition Room => room;
         public int SpawnPointCount => spawnPoints != null ? spawnPoints.Length : 0;
 
-        /// <summary>
-        /// Picks a spawn point using the caller's own RNG. Takes System.Random rather than
-        /// using UnityEngine.Random on purpose: night plans must be reproducible from a seed,
-        /// and UnityEngine.Random is global state that any other system can advance.
-        /// </summary>
         public Transform GetSpawnPoint(System.Random rng)
         {
             if (spawnPoints == null || spawnPoints.Length == 0) return transform;

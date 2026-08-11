@@ -29,7 +29,6 @@ namespace Whisper
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
-        /// <summary>Fired on every prayer attempt: true = success, false = failed.</summary>
         public Action<bool> OnPrayerAttempted;
 
         public void Route(string recognizedText)

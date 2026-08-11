@@ -31,10 +31,6 @@ namespace Whisper
     /// <see cref="MicAmplitudeMonitor.CurrentLevel"/>, and writes the result to
     /// <see cref="MicCalibration.NoiseFloor"/> with a safety margin so normal room tone doesn't
     /// sit right on the "quiet enough" line.
-    ///
-    /// Deliberately just logic + progress state, no UI of its own - a haunt loop running its
-    /// first-ever encounter drives this inline (see SilenceProtocolHaunt), and a future Options
-    /// screen can drive the exact same runner from a button instead of duplicating the math.
     /// </summary>
     public class MicCalibrationRunner : MonoBehaviour
     {
@@ -45,10 +41,8 @@ namespace Whisper
         public bool IsRunning { get; private set; }
         public float Progress01 { get; private set; }
 
-        /// <summary>Fired once, payload = the newly stored noise floor.</summary>
         public System.Action<float> OnCompleted;
 
-        /// <summary>Starts measuring using the given monitor. Starts/stops it too, unless it was already running.</summary>
         public void Run(MicAmplitudeMonitor monitor)
         {
             if (IsRunning || monitor == null) return;

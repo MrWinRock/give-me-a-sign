@@ -16,11 +16,8 @@ namespace MainMenu
     {
         public enum SlotState
         {
-            /// <summary>A normal, openable save.</summary>
             Available,
-            /// <summary>Openable, but drawn greyed - the shift was never finished.</summary>
             Incomplete,
-            /// <summary>Cannot be selected at all.</summary>
             Corrupted
         }
 
@@ -62,10 +59,8 @@ namespace MainMenu
         private readonly List<GameObject> _rows = new List<GameObject>();
         private int _selectedIndex = -1;
 
-        /// <summary>Read-only view of the authored slots.</summary>
         public IReadOnlyList<SaveSlot> Slots => slots;
 
-        /// <summary>Replaces the slot list at runtime (for when real saves exist). Rebuilds the rows.</summary>
         public void SetSlots(List<SaveSlot> newSlots)
         {
             slots = newSlots ?? new List<SaveSlot>();

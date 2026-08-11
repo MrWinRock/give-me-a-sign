@@ -1,3 +1,4 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,8 @@ namespace GameLogic.Flow
         private readonly GameObject _root;
         private readonly Image _fade;
         private readonly TextMeshProUGUI _causeText;
+
+        private Sequence _sequence;
 
         public static DeathSequenceHud Create() => new DeathSequenceHud();
 
@@ -55,23 +58,35 @@ namespace GameLogic.Flow
             rect.anchoredPosition = Vector2.zero;
         }
 
-        public void SetFade(float alpha)
+        public Tween PlayFadeIn(string cause, float duration)
         {
-            if (_fade != null) _fade.color = new Color(0f, 0f, 0f, Mathf.Clamp01(alpha));
-        }
+            if (_causeText != null) _causeText.text = cause;
 
-        public void SetCause(string text, float textAlpha)
-        {
-            if (_causeText == null) return;
-            _causeText.text = text;
+            _sequence?.Kill();
+            _sequence = DOTween.Sequence().SetUpdate(true);
 
-            var c = _causeText.color;
-            c.a = Mathf.Clamp01(textAlpha);
-            _causeText.color = c;
+            if (_fade != null)
+                _sequence.Join(_fade.DOFade(1f, duration).SetEase(Ease.InQuad));
+
+            if (_causeText != null)
+            {
+                _sequence.Join(DOTween.To(
+                    () => _causeText.color.a,
+                    a => _causeText.color = new Color(_causeText.color.r, _causeText.color.g, _causeText.color.b, a),
+                    1f,
+                    duration).SetEase(Ease.InQuad));
+            }
+
+            return _sequence;
         }
 
         public void Destroy()
         {
+            // Killed first: a tween still writing into a destroyed Image/TMP is a null-ref waiting
+            // to happen, and DOTween has no way to know the objects went away.
+            _sequence?.Kill();
+            _sequence = null;
+
             if (_root != null) Object.Destroy(_root);
         }
 

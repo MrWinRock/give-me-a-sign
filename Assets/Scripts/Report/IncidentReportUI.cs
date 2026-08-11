@@ -1,5 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using GameLogic.SpawnAndTime;
 using TMPro;
 using UI;
@@ -13,9 +13,6 @@ namespace Report
     /// Windows-XP-styled Incident Report window. Owns all presentation state: titlebar
     /// min/max/close, live clock, the location dropdown, the Push-to-Talk recording flow,
     /// and the status bar (STANDBY / REC / READY / SENT / ERROR / ALERT).
-    ///
-    /// IncidentReportManager drives this via Show()/Hide()/ShowRecognizedKeyword()/
-    /// ShowResult()/SetAlertVisual(); this script never decides pass/fail itself.
     /// </summary>
     public class IncidentReportUI : MonoBehaviour
     {
@@ -89,9 +86,8 @@ namespace Report
         private bool _locked; // true while showing the SENT/ERROR result flash - ignores status/alert refresh
         private bool _isMinimized;
         private bool _isMaximized;
-        private Coroutine _pulseRoutine;
+        private Tween _pulseTween;
 
-        /// <summary>True while the SENT/ERROR result badge is showing (interactions ignored until Hide()).</summary>
         public bool IsLocked => _locked;
 
         void Awake()
@@ -199,7 +195,6 @@ namespace Report
             if (windowRoot != null) windowRoot.SetActive(false);
         }
 
-        /// <summary>Called by IncidentReportManager as speech is recognized while the PTT button is held.</summary>
         public void ShowRecognizedKeyword(string keyword)
         {
             if (recognizedField != null)
@@ -209,10 +204,6 @@ namespace Report
             UpdateSubmitInteractable();
         }
 
-        /// <summary>
-        /// Called by IncidentReportManager right after Submit is evaluated, to flash a SENT/ERROR
-        /// badge before the window actually closes.
-        /// </summary>
         public void ShowResult(bool success)
         {
             _locked = true;
@@ -228,7 +219,6 @@ namespace Report
                     : "Report rejected — details do not match.";
         }
 
-        /// <summary>Called externally (Anomaly) whenever an active jumpscare starts/ends.</summary>
         public void SetAlertVisual(bool active)
         {
             _isAlertActive = active;
@@ -335,27 +325,35 @@ namespace Report
             if (recStatusRow != null)
                 recStatusRow.SetActive(recording);
 
-            if (_pulseRoutine != null)
-            {
-                StopCoroutine(_pulseRoutine);
-                _pulseRoutine = null;
-            }
+            KillPulse();
 
             if (recording && recDotImage != null)
-                _pulseRoutine = StartCoroutine(PulseRecordingDot());
+                StartPulse();
         }
 
-        private IEnumerator PulseRecordingDot()
+        private void StartPulse()
         {
-            while (true)
-            {
-                float t = (Mathf.Sin(Time.unscaledTime * recordingDotPulseSpeed) + 1f) * 0.5f;
-                var c = recDotImage.color;
-                c.a = Mathf.Lerp(0.3f, 1f, t);
-                recDotImage.color = c;
-                yield return null;
-            }
+            // One full sine cycle was 2*PI/speed seconds; a yoyo half-cycle is half of that.
+            float halfCycle = Mathf.PI / Mathf.Max(0.01f, recordingDotPulseSpeed);
+
+            recDotImage.color = new Color(recDotImage.color.r, recDotImage.color.g, recDotImage.color.b, 0.3f);
+
+            _pulseTween = recDotImage.DOFade(1f, halfCycle)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetUpdate(true)
+                .SetTarget(this);
         }
+
+        private void KillPulse()
+        {
+            _pulseTween?.Kill();
+            _pulseTween = null;
+        }
+
+        // Hide() -> EndPushToTalk() -> ApplyPttVisual(false) already clears the pulse on the normal
+        // path; this covers scene unload, where nothing closes the form first.
+        void OnDestroy() => KillPulse();
 
         private void UpdateClock()
         {

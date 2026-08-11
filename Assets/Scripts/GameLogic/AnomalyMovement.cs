@@ -1,4 +1,5 @@
 using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
 namespace GameLogic
@@ -19,14 +20,14 @@ namespace GameLogic
         [SerializeField] private float scaleUpAmount = 1.5f;
         [SerializeField] private float scaleAnimationSpeed = 2f;
 
-        private const float ArrivalDistance = 0.05f;
+        private float ScaleDuration => 1f / Mathf.Max(0.01f, scaleAnimationSpeed);
 
         private Vector3 _originalScale;
+        private Tween _moveTween;
+        private Tween _scaleTween;
 
-        /// <summary>True while travelling toward the target.</summary>
         public bool IsMoving { get; private set; }
 
-        /// <summary>False when no target is assigned - the anomaly has nowhere to go.</summary>
         public bool HasTarget => moveTarget != null;
 
         void Awake()
@@ -35,10 +36,6 @@ namespace GameLogic
             _originalScale = transform.localScale;
         }
 
-        /// <summary>
-        /// Walks to the target, growing on the way. Completes when the target is reached; returns
-        /// immediately if there is no target.
-        /// </summary>
         public IEnumerator MoveToTarget()
         {
             if (moveTarget == null)
@@ -48,53 +45,41 @@ namespace GameLogic
             }
 
             IsMoving = true;
-            StartCoroutine(ScaleUp());
+            KillTweens();
 
-            while (moveTarget != null &&
-                   Vector3.Distance(transform.position, moveTarget.position) > ArrivalDistance)
-            {
-                transform.position = Vector3.MoveTowards(
-                    transform.position,
-                    moveTarget.position,
-                    moveSpeed * Time.deltaTime);
-                yield return null;
-            }
+            _scaleTween = transform.DOScale(_originalScale * scaleUpAmount, ScaleDuration)
+                .SetEase(Ease.OutSine)
+                .SetTarget(this);
+
+            _moveTween = transform.DOMove(moveTarget.position, moveSpeed)
+                .SetSpeedBased()
+                .SetEase(Ease.Linear)
+                .SetTarget(this);
+
+            yield return _moveTween.WaitForCompletion();
 
             IsMoving = false;
         }
 
-        private IEnumerator ScaleUp()
-        {
-            Vector3 targetScale = _originalScale * scaleUpAmount;
-
-            while (Vector3.Distance(transform.localScale, targetScale) > 0.01f)
-            {
-                transform.localScale = Vector3.Lerp(
-                    transform.localScale, targetScale, scaleAnimationSpeed * Time.deltaTime);
-                yield return null;
-            }
-
-            transform.localScale = targetScale;
-        }
-
-        /// <summary>Overrides the authored speed - used when an AnomalyDefinition supplies it.</summary>
         public void SetMoveSpeed(float speed) => moveSpeed = speed;
 
-        /// <summary>
-        /// Halts movement and the scale animation. Anomaly.StopAllCoroutines() can't reach these
-        /// because they belong to this component, so it calls this as well.
-        /// </summary>
         public void Stop()
         {
             StopAllCoroutines();
+            KillTweens();
             IsMoving = false;
         }
 
-        /// <summary>
-        /// Seeds this component from the legacy fields still on Anomaly. Called only when Anomaly
-        /// had to add the component itself at runtime, i.e. on a prefab that hasn't been through
-        /// 'Tools/Give Me A Sign/Setup/2. Migrate Anomaly Prefabs' yet.
-        /// </summary>
+        void OnDestroy() => KillTweens();
+
+        private void KillTweens()
+        {
+            _moveTween?.Kill();
+            _scaleTween?.Kill();
+            _moveTween = null;
+            _scaleTween = null;
+        }
+
         public void ConfigureFromLegacy(Transform target, float speed, float scaleAmount, float scaleSpeed)
         {
             moveTarget = target;

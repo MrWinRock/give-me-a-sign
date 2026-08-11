@@ -12,14 +12,6 @@ namespace MainMenu
     /// <summary>
     /// Start &gt; Control Panel, i.e. the settings screen. Three tabs (Audio / Display / Input),
     /// everything persisted to PlayerPrefs.
-    ///
-    /// Volume lives in <see cref="AudioManager"/> (which already owns Vol_Master / Vol_Music /
-    /// Vol_Sfx and saves them itself) so the sliders here bind straight to it - "Ambience" is the
-    /// Music channel. Only the settings AudioManager doesn't own get their own keys below.
-    ///
-    /// OK writes and applies. Cancel restores the values that were saved when the window opened.
-    /// <see cref="ApplySavedSettings"/> is called once on scene start by DesktopManager so the
-    /// saved resolution / fullscreen state apply even if the player never opens this window.
     /// </summary>
     public class ControlPanelWindow : XPWindowController
     {
@@ -33,7 +25,6 @@ namespace MainMenu
         public const string PushToTalkKeyKey = "Opt_PTTKey";
         public const string MicDeviceKey = "Opt_MicDevice";
 
-        /// <summary>Placeholder shown when no capture device exists. Never saved as a device name.</summary>
         private const string NoMicrophoneLabel = "No microphone detected";
 
         [Header("Tabs")]
@@ -86,7 +77,6 @@ namespace MainMenu
         public static bool ReduceFlashingEffects => PlayerPrefs.GetInt(ReduceFlashingKey, 0) == 1;
         public static string MicrophoneDevice => PlayerPrefs.GetString(MicDeviceKey, string.Empty);
 
-        /// <summary>The saved Push-to-Talk key, as an Input System <see cref="Key"/>. Defaults to Space.</summary>
         public static Key PushToTalkKey
         {
             get
@@ -96,11 +86,6 @@ namespace MainMenu
             }
         }
 
-        /// <summary>
-        /// Applies the saved display settings. Called once on scene start by DesktopManager.
-        /// Skipped in the Editor - forcing a resolution on the Game view every play is nothing
-        /// but a nuisance while iterating.
-        /// </summary>
         public static void ApplySavedSettings()
         {
 #if !UNITY_EDITOR
@@ -260,8 +245,6 @@ namespace MainMenu
             Hide();
         }
 
-        /// <summary>The titlebar X discards changes, exactly like Cancel - volume applies live,
-        /// so treating X as "apply" would silently keep a slider the player was only auditioning.</summary>
         protected override void OnCloseButtonClicked() => OnCancelClicked();
 
         private void OnCancelClicked()
