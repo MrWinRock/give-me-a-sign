@@ -2124,7 +2124,7 @@ MonoBehaviour:
   overlayText: {fileID: 1043852265}
   overlayBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
   skipBootSequence: 0
-  gameSceneName: GameManager
+  gameSceneName: GamePlay
   lineInterval: 0.8
   bootTextColor: {r: 0.2901961, g: 0.6039216, b: 0.2901961, a: 1}
   bootLines:
