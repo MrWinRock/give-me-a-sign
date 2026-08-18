@@ -177,12 +177,26 @@ namespace Score
             GameFlowManager.StartNewNight(gameSceneName);
         }
 
+        /// <summary>
+        /// The one "continue" button. Hands back to the day loop rather than reloading the scene
+        /// itself: a survived day goes on to the day-end event and the next day, a lost one
+        /// retries the same day with a fresh roll.
+        /// </summary>
         public void PlayAgain()
         {
-            if (showDebugInfo)
-                Debug.Log("Loading game scene...");
+            var flow = GameFlowManager.Instance;
+            if (flow == null)
+            {
+                // Result scene opened directly while testing - nothing to continue into.
+                Debug.LogWarning("ResultDisplay: no GameFlowManager - reloading the gameplay scene directly.", this);
+                GameFlowManager.StartNewNight(gameSceneName);
+                return;
+            }
 
-            GameFlowManager.StartNewNight(gameSceneName);
+            if (showDebugInfo)
+                Debug.Log("Continuing from result...");
+
+            flow.ContinueFromResult();
         }
 
         public void ReplaySeed()

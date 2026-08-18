@@ -1552,10 +1552,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20415cf471614ec7aadaa34085b1e146, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.TypedInputFallback
-  forceEnabled: 0
+  forceEnabled: 1
   whisperMicInput: {fileID: 0}
   boxWidth: 420
-  showDebugInfo: 0
+  showDebugInfo: 1
 --- !u!1 &357971564
 GameObject:
   m_ObjectHideFlags: 0

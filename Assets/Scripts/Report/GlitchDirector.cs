@@ -968,9 +968,21 @@ namespace Report
         [ContextMenu("Reset Fired Beats")]
         private void ResetFiredBeats()
         {
+            ResetForNewDay();
+            Debug.Log("[GlitchDirector] Fired-beat history cleared.", this);
+        }
+
+        /// <summary>
+        /// Wipes per-run glitch state so a retried day is genuinely a fresh roll rather than a
+        /// continuation of the attempt the player just lost. The ambient rolls use
+        /// UnityEngine.Random and need no reseeding; what does carry over is which one-shot beats
+        /// have already fired and the glitched-session streak.
+        /// </summary>
+        public void ResetForNewDay()
+        {
             _firedBeats.Clear();
             _hasSeenActiveAnomaly = false;
-            Debug.Log("[GlitchDirector] Fired-beat history cleared.", this);
+            _consecutiveGlitchedSessions = 0;
         }
     }
 }

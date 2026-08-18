@@ -41,6 +41,16 @@ namespace GameLogic.Night
 
         [Tooltip("Extra anomalies spawned as the penalty for one wrong Incident Report. -1 = use the shared default. 0 IS valid, meaning 'wrong reports cost nothing' (what night 1 wants).")]
         [Min(-1)] public int penaltyAnomaliesPerWrongReport = -1;
+
+        [Header("Lose conditions (0 = use the shared value)")]
+        [Tooltip("Seconds an unresolved Demon report may sit before the night is lost.")]
+        [Min(0f)] public float demonTimeoutSeconds;
+
+        [Tooltip("Unresolved anomalies allowed on screen at once. Going ABOVE this starts the overload timer.")]
+        [Min(0)] public int maxConcurrentAnomalies;
+
+        [Tooltip("Seconds the overload must be sustained before the night is lost.")]
+        [Min(0f)] public float overloadDurationSeconds;
     }
 
     /// <summary>
@@ -72,6 +82,16 @@ namespace GameLogic.Night
         [Header("Wrong Reports")]
         [Tooltip("Extra anomalies spawned when an Incident Report comes back wrong. Overridable per night. 0 = wrong reports cost nothing.")]
         [Min(0)] public int penaltyAnomaliesPerWrongReport = 1;
+
+        [Header("Lose Conditions")]
+        [Tooltip("Seconds an unresolved Demon report may sit before the night is lost. Overridable per night.")]
+        [Min(1f)] public float demonTimeoutSeconds = 30f;
+
+        [Tooltip("Unresolved anomalies allowed on screen at once. Going ABOVE this starts the overload timer.")]
+        [Min(1)] public int maxConcurrentAnomalies = 3;
+
+        [Tooltip("Seconds the overload must be SUSTAINED before the night is lost. Dropping back to the limit resets it.")]
+        [Min(1f)] public float overloadDurationSeconds = 120f;
 
         [Header("Anomaly Pacing")]
         [Tooltip("Nothing spawns before this minute - gives the player a moment to settle in.")]
@@ -158,6 +178,30 @@ namespace GameLogic.Night
             return tuning != null ? Mathf.Max(0f, tuning.nightDurationMinutes) : 0f;
         }
 
+        public float DemonTimeoutFor(int nightIndex)
+        {
+            var tuning = TuningFor(nightIndex);
+            return tuning != null && tuning.demonTimeoutSeconds > 0f
+                ? tuning.demonTimeoutSeconds
+                : demonTimeoutSeconds;
+        }
+
+        public int MaxConcurrentAnomaliesFor(int nightIndex)
+        {
+            var tuning = TuningFor(nightIndex);
+            return tuning != null && tuning.maxConcurrentAnomalies > 0
+                ? tuning.maxConcurrentAnomalies
+                : maxConcurrentAnomalies;
+        }
+
+        public float OverloadDurationFor(int nightIndex)
+        {
+            var tuning = TuningFor(nightIndex);
+            return tuning != null && tuning.overloadDurationSeconds > 0f
+                ? tuning.overloadDurationSeconds
+                : overloadDurationSeconds;
+        }
+
         public int PenaltyAnomaliesFor(int nightIndex)
         {
             var tuning = TuningFor(nightIndex);
@@ -183,7 +227,7 @@ namespace GameLogic.Night
             int lastNight = Mathf.Max(Flow.NightResult.FinalNightIndex, nights != null ? nights.Count : 0);
 
             var report = new System.Text.StringBuilder($"=== Campaign curve ({name}) ===\n");
-            report.AppendLine("  night  length  budget  win%   spacing  glitch  penalty  source");
+            report.AppendLine("  day  length  budget  win%   spacing  glitch  penalty  demon  maxAnom  overload  source");
 
             for (int night = 1; night <= lastNight; night++)
             {
@@ -191,9 +235,11 @@ namespace GameLogic.Night
                 string durationLabel = duration > 0f ? $"{duration:0.#}m" : "scene";
 
                 report.AppendLine(
-                    $"  {night,5}  {durationLabel,6}  {ThreatBudgetFor(night),6}  " +
+                    $"  {night,3}  {durationLabel,6}  {ThreatBudgetFor(night),6}  " +
                     $"{WinRatioFor(night) * 100f,4:0}%  {MinimumSpacingFor(night),7:0.#}s  " +
                     $"{GlitchCountFor(night),6}  {PenaltyAnomaliesFor(night),7}  " +
+                    $"{DemonTimeoutFor(night),5:0}s  {MaxConcurrentAnomaliesFor(night),7}  " +
+                    $"{OverloadDurationFor(night),7:0}s  " +
                     $"{(TuningFor(night) != null ? "table" : "formula")}");
             }
 

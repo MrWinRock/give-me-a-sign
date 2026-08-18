@@ -15,7 +15,7 @@ MonoBehaviour:
   anomalyId: anomaly3res1
   displayName: Shadow
   correctKeywords:
-  - GMS003
+  - Shadow
   prefab: {fileID: 7278711306125879349, guid: 7797a06ca3a1c134eb1c3a5a5c102a3c, type: 3}
   respondType: 0
   threatCost: 1

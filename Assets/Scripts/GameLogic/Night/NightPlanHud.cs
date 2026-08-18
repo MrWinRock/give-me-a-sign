@@ -2,6 +2,9 @@ using GameLogic.Flow;
 using GameLogic.SpawnAndTime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace GameLogic.Night
 {
@@ -29,7 +32,15 @@ namespace GameLogic.Night
 
         void Update()
         {
-            if (Input.GetKeyDown(toggleKey))
+            // Guarded: this project ships with the new Input System as the only handler, where
+            // legacy UnityEngine.Input throws instead of returning false.
+            bool togglePressed;
+#if ENABLE_INPUT_SYSTEM
+            togglePressed = Keyboard.current != null && Keyboard.current.f3Key.wasPressedThisFrame;
+#else
+            togglePressed = Input.GetKeyDown(toggleKey);
+#endif
+            if (togglePressed)
                 _visible = !_visible;
         }
 

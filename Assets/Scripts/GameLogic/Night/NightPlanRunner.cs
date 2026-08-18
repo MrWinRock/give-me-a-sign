@@ -30,6 +30,8 @@ namespace GameLogic.Night
         [Header("Debug")]
         [SerializeField] private bool logPlanOnStart = true;
 
+        // Legacy PlayerPrefs key. Progression now lives in the JSON save (SaveManager); this is
+        // kept only so an old install's leftover key can still be found and cleaned up.
         public const string UnlockedNightKey = "UnlockedNight";
 
         public NightPlan Plan { get; private set; }
@@ -58,8 +60,8 @@ namespace GameLogic.Night
 
             NightPlanProvider.Publish(Plan);
 
-            // Recorded on the night's result, so a bug report can name the exact night to replay.
-            GameFlowManager.CurrentNightIndex = nightIndex;
+            // Recorded on the night's result, so a bug report can name the exact seed to replay.
+            // The night index itself is not written back - it comes from the save via CurrentDay.
             GameFlowManager.CurrentSeed = seed;
 
             ApplyGlitchProfile(resolved, nightIndex);
@@ -68,11 +70,13 @@ namespace GameLogic.Night
                 Debug.Log(Describe(Plan, generator.LastOutcome), this);
         }
 
+        // The day the player is on IS the night to generate. Comes from the save file via
+        // GameFlowManager, so progression has one owner instead of a PlayerPrefs key read here.
         private int ResolveNightIndex()
         {
             if (nightIndexOverride > 0) return nightIndexOverride;
 
-            return Mathf.Max(1, PlayerPrefs.GetInt(UnlockedNightKey, 1));
+            return Mathf.Max(1, Flow.GameFlowManager.CurrentDay);
         }
 
         private float ResolveDurationMinutes(DifficultyProfile difficulty, int nightIndex)

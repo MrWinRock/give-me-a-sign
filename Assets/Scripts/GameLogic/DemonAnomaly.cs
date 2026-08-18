@@ -32,8 +32,11 @@ namespace GameLogic
         [SerializeField] private Material videoOverlayMaterial;
 
         [Header("Pressure")]
-        [Tooltip("Seconds the player has to file a correct report after the reveal before losing. 0 = no time limit.")]
+        [Tooltip("Fallback seconds to file a correct report before losing. 0 = no time limit. Overridden per night by the DifficultyProfile unless 'Use Per Night Timeout' is off.")]
         [SerializeField] private float timeLimitSeconds = 30f;
+
+        [Tooltip("Take the time limit from this night's DifficultyProfile instead of the value above.")]
+        [SerializeField] private bool usePerNightTimeout = true;
 
         [Header("Audio")]
         [Tooltip("Played once at the moment of the reveal.")]
@@ -88,6 +91,8 @@ namespace GameLogic
             _camera = Camera.main;
             _glitchDirector = FindFirstObjectByType<GlitchDirector>();
 
+            ApplyPerNightTimeout();
+
             // The demon's room is data now, not something inferred from its position by
             // scanning a hardcoded list of camera X values.
             _room = ResolveRoom();
@@ -105,6 +110,25 @@ namespace GameLogic
                     $"DemonAnomaly '{name}' has no RoomDefinition (neither the Room field nor a room " +
                     $"assigned at spawn). Falling back to its own X position ({_roomCameraX:0.##}).", this);
             }
+        }
+
+        // The window shrinks as the campaign goes on, so the number lives with the rest of the
+        // per-night tuning rather than being baked into the prefab.
+        private void ApplyPerNightTimeout()
+        {
+            if (!usePerNightTimeout) return;
+
+            var library = GameLogic.Night.NightContentLibrary.Load();
+            if (library == null || library.difficulty == null) return;
+
+            int night = GameLogic.Night.NightPlanProvider.HasPlan
+                ? GameLogic.Night.NightPlanProvider.Current.nightIndex
+                : Flow.GameFlowManager.CurrentDay;
+
+            timeLimitSeconds = library.difficulty.DemonTimeoutFor(night);
+
+            if (showDebugInfo)
+                Debug.Log($"DemonAnomaly: night {night} timeout = {timeLimitSeconds:0}s.", this);
         }
 
         private RoomDefinition ResolveRoom()

@@ -16,7 +16,7 @@ namespace GameLogic.Flow
     [System.Serializable]
     public class NightResult
     {
-        public const int FinalNightIndex = 5;
+        public const int FinalNightIndex = 7;
 
         public NightOutcome outcome;
         public int nightIndex = 1;

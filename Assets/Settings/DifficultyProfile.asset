@@ -21,6 +21,9 @@ MonoBehaviour:
     minimumSpacingSeconds: 35
     glitchCount: 0
     penaltyAnomaliesPerWrongReport: 0
+    demonTimeoutSeconds: 45
+    maxConcurrentAnomalies: 4
+    overloadDurationSeconds: 180
   - nightIndex: 2
     notes: Real shift begins - normal length, glitches start, mistakes start costing.
     nightDurationMinutes: 5
@@ -29,6 +32,9 @@ MonoBehaviour:
     minimumSpacingSeconds: 30
     glitchCount: 2
     penaltyAnomaliesPerWrongReport: 1
+    demonTimeoutSeconds: 40
+    maxConcurrentAnomalies: 4
+    overloadDurationSeconds: 150
   - nightIndex: 3
     notes: Longer shift, tighter pace, the Demon is unlocked from here.
     nightDurationMinutes: 6
@@ -37,6 +43,9 @@ MonoBehaviour:
     minimumSpacingSeconds: 26
     glitchCount: 4
     penaltyAnomaliesPerWrongReport: 1
+    demonTimeoutSeconds: 35
+    maxConcurrentAnomalies: 3
+    overloadDurationSeconds: 130
   - nightIndex: 4
     notes: Busy shift - the form lies often and a mistake costs two anomalies.
     nightDurationMinutes: 7
@@ -45,19 +54,50 @@ MonoBehaviour:
     minimumSpacingSeconds: 23
     glitchCount: 6
     penaltyAnomaliesPerWrongReport: 2
+    demonTimeoutSeconds: 32
+    maxConcurrentAnomalies: 3
+    overloadDurationSeconds: 120
   - nightIndex: 5
-    notes: FINAL - longest shift, relentless pace, almost everything must be reported.
+    notes: Relentless pace, almost everything must be reported.
     nightDurationMinutes: 8
     threatBudget: 18
     winRatio: 0.75
     minimumSpacingSeconds: 20
     glitchCount: 8
     penaltyAnomaliesPerWrongReport: 2
+    demonTimeoutSeconds: 30
+    maxConcurrentAnomalies: 3
+    overloadDurationSeconds: 110
+  - nightIndex: 6
+    notes: Barely survivable - overload window is short and the demon barely waits.
+    nightDurationMinutes: 9
+    threatBudget: 21
+    winRatio: 0.78
+    minimumSpacingSeconds: 18
+    glitchCount: 10
+    penaltyAnomaliesPerWrongReport: 2
+    demonTimeoutSeconds: 26
+    maxConcurrentAnomalies: 3
+    overloadDurationSeconds: 95
+  - nightIndex: 7
+    notes: FINAL - longest shift, maximum pressure, then the ending.
+    nightDurationMinutes: 10
+    threatBudget: 24
+    winRatio: 0.8
+    minimumSpacingSeconds: 16
+    glitchCount: 12
+    penaltyAnomaliesPerWrongReport: 3
+    demonTimeoutSeconds: 22
+    maxConcurrentAnomalies: 3
+    overloadDurationSeconds: 80
   baseThreatBudget: 8
   budgetGrowthPerNight: 2
   maxThreatBudget: 24
   winRatio: 0.7
   penaltyAnomaliesPerWrongReport: 1
+  demonTimeoutSeconds: 30
+  maxConcurrentAnomalies: 3
+  overloadDurationSeconds: 120
   firstSpawnMinute: 0.25
   lastSpawnFraction: 0.9
   minimumSpacingSeconds: 25

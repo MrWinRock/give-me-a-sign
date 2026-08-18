@@ -1,32 +1,77 @@
 using System.Collections;
 using DG.Tweening;
+using GameLogic.Data;
 using GameLogic.Night;
+using GameLogic.Save;
 using GameLogic.SpawnAndTime;
 using Report;
 using Score;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace GameLogic.Flow
 {
     /// <summary>
-    /// The single owner of "the night is over". Anomalies, the demon and the clock all just
-    /// report what happened; this decides the outcome, records it, and moves to the Result
-    /// scene.
+    /// Owns the whole campaign loop: which day it is, when a day ends, what happens between
+    /// days, and when the run is over.
+    ///
+    /// Anomalies, the demon and the clock only report what happened - this decides the outcome,
+    /// records it, and drives the state machine
+    /// MainMenu -> DayGameplay -> DayEndEvent -> MainMenu(next day) -> ... -> Ending -> reset.
     /// </summary>
     public class GameFlowManager : MonoBehaviour
     {
-        [Header("Result Scene")]
+        [Header("Scenes")]
         [Tooltip("Scene loaded when the night ends. Must be in Build Settings.")]
         [SerializeField] private string resultSceneName = "Result";
         [Tooltip("Fallback build index used if the scene name can't be loaded.")]
-        [SerializeField] private int resultSceneIndex = 2;
+        [SerializeField] private int resultSceneIndex = 3;
+        [Tooltip("The XP desktop / main menu scene, returned to between days.")]
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [Tooltip("The Incident Report gameplay scene.")]
+        [SerializeField] private string gameplaySceneName = "GamePlay";
+
+        [Header("Campaign")]
+        [Tooltip("How many days a full run lasts.")]
+        [Min(1)] [SerializeField] private int finalDay = NightResult.FinalNightIndex;
+
+        [Tooltip("Survive scene loads. Needed because the day-end event and ending run as coroutines that outlive a scene. Put this component on its own GameObject if enabled.")]
+        [SerializeField] private bool persistAcrossScenes = true;
+
+        [Header("Day-End Event")]
+        [Tooltip("Rolls the optional Short VDO / Minigame. Auto-found if left empty; no event plays without one.")]
+        [SerializeField] private RandomEventDirector randomEventDirector;
+
+        [Tooltip("Plays the rolled Short VDO fullscreen. Auto-found if left empty; VDOs are skipped without one.")]
+        [SerializeField] private DayEventPlayer dayEventPlayer;
+
+        [Header("Ending")]
+        [Tooltip("Plays the Day 7 ending. Auto-found if left empty; the ending is skipped without one.")]
+        [SerializeField] private EndingSequenceController endingSequence;
 
         [Header("Pacing")]
         [Tooltip("Pause after surviving to 6:00 AM before the Result scene loads.")]
         [SerializeField] private float delayAfterSurviving = 1f;
         [Tooltip("Total time the death sequence (fade + cause-of-death line, see DeathSequenceHud) holds before the Result scene loads.")]
         [SerializeField] private float delayAfterDeath = 2.5f;
+
+        // Concrete subclass, not UnityEvent<int> directly: Unity only serializes a generic
+        // UnityEvent through a named [Serializable] type, and without it these would compile but
+        // never appear in the Inspector.
+        [System.Serializable] public class DayEvent : UnityEvent<int> { }
+
+        [Header("Transition Events")]
+        [Tooltip("Fired with the day number whenever a day's gameplay begins (including a retry).")]
+        public DayEvent OnDayStarted = new DayEvent();
+        [Tooltip("Fired with the day number when a day is survived.")]
+        public DayEvent OnDayEnded = new DayEvent();
+        [Tooltip("Fired with the day number when a day is lost, just before it restarts.")]
+        public DayEvent OnDayLost = new DayEvent();
+        [Tooltip("Fired when the final day is cleared, before the ending plays.")]
+        public UnityEvent OnDay7Complete = new UnityEvent();
+        [Tooltip("Fired as the ending begins.")]
+        public UnityEvent OnGameWon = new UnityEvent();
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
@@ -52,22 +97,265 @@ namespace GameLogic.Flow
 
         public static NightResult LastResult { get; private set; }
 
-        public static int CurrentNightIndex { get; set; } = 1;
+        /// <summary>
+        /// Which day of the run is being played (1..finalDay). Read-only to the outside world -
+        /// only AdvanceDay and the save file move it. Backed by the save so it survives a quit.
+        /// </summary>
+        public static int CurrentDay => Mathf.Max(1, SaveManager.Current.currentDay);
+
+        /// <summary>Kept as the name the night-generation systems already use. Same number as CurrentDay.</summary>
+        public static int CurrentNightIndex => CurrentDay;
 
         public static int CurrentSeed { get; set; }
 
+        public static GameFlowState State { get; private set; } = GameFlowState.MainMenu;
+
+        /// <summary>Day the run ends on. Static mirror of the serialized field, for callers with no instance.</summary>
+        public static int FinalDay { get; private set; } = NightResult.FinalNightIndex;
+
         private bool _ending;
+
+        // ── Day loop ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Called by the Result screen once the player has read their score. This is the bridge
+        /// between the existing per-night summary and the campaign loop: EndNight still records
+        /// the night and shows the Result scene, and this resumes the day machine afterwards.
+        /// </summary>
+        public void ContinueFromResult()
+        {
+            bool survived = LastResult != null && LastResult.Won;
+            EndDayGameplay(survived);
+        }
+
+        /// <summary>Enters the gameplay scene for CurrentDay.</summary>
+        public void StartDayGameplay()
+        {
+            State = GameFlowState.DayGameplay;
+            _ending = false; // the guard is per-day; a persistent instance would keep the last day's
+            ClearLastResult();
+
+            // A fresh plan for every attempt - see RestartCurrentDay for why this matters.
+            NightPlanProvider.Clear();
+
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: starting day {CurrentDay}.", this);
+
+            OnDayStarted?.Invoke(CurrentDay);
+            LoadSceneByName(gameplaySceneName, "gameplay");
+        }
+
+        /// <summary>
+        /// Called by the anomaly/incident systems when a day finishes. Survived days go to the
+        /// day-end event; lost days restart the same day without advancing.
+        /// </summary>
+        public void EndDayGameplay(bool survived)
+        {
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: day {CurrentDay} ended, survived={survived}.", this);
+
+            if (!survived)
+            {
+                OnDayLost?.Invoke(CurrentDay);
+                RestartCurrentDay();
+                return;
+            }
+
+            OnDayEnded?.Invoke(CurrentDay);
+            StartCoroutine(RunDayEndEvent());
+        }
+
+        /// <summary>
+        /// Replays the current day with everything re-rolled. The day counter does NOT move.
+        ///
+        /// Clearing ForcedSeed is the part that actually matters: without it a night replayed
+        /// after using "Replay this seed" would deal the player the identical anomaly and glitch
+        /// sequence they just lost to.
+        /// </summary>
+        public void RestartCurrentDay()
+        {
+            _ending = false;
+            NightPlanProvider.Clear();
+            NightPlanProvider.ForcedSeed = null;
+
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: restarting day {CurrentDay} with a fresh roll.", this);
+
+            State = GameFlowState.DayGameplay;
+            OnDayStarted?.Invoke(CurrentDay);
+            LoadSceneByName(gameplaySceneName, "gameplay");
+        }
+
+        /// <summary>
+        /// Moves to the next day, checkpoints the save, and returns to the menu. On the final day
+        /// this hands over to the ending instead.
+        /// </summary>
+        public void AdvanceDay()
+        {
+            if (CurrentDay >= FinalDay)
+            {
+                OnDay7Complete?.Invoke();
+                StartCoroutine(RunEnding());
+                return;
+            }
+
+            SaveManager.Current.currentDay = CurrentDay + 1;
+            SaveManager.Save();
+
+            State = GameFlowState.MainMenu;
+
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: advanced to day {CurrentDay} (checkpointed).", this);
+
+            LoadSceneByName(mainMenuSceneName, "main menu");
+        }
+
+        /// <summary>
+        /// DayEndEvent state: roll for a VDO/Minigame, play it, mark it consumed, then advance.
+        /// An empty or exhausted pool simply advances immediately - that is the designed
+        /// behaviour, not an error.
+        /// </summary>
+        private IEnumerator RunDayEndEvent()
+        {
+            State = GameFlowState.DayEndEvent;
+
+            var director = ResolveEventDirector();
+            if (director != null &&
+                director.TryGetDayEndEvent(CurrentDay, out DayEventType type, out DayEventData data))
+            {
+                yield return PlayDayEndEvent(type, data);
+
+                // Only consumed once it has actually finished, so quitting mid-event doesn't burn it.
+                director.MarkConsumed(data);
+            }
+
+            AdvanceDay();
+        }
+
+        /// <summary>
+        /// Runs the rolled event and waits for it to finish. Short VDOs play through
+        /// DayEventPlayer; minigames are still a hook, since none exist yet.
+        /// </summary>
+        private IEnumerator PlayDayEndEvent(DayEventType type, DayEventData data)
+        {
+            if (type == DayEventType.ShortVDO && data is ShortVDOData vdo)
+            {
+                var player = ResolveEventPlayer();
+                if (player == null)
+                {
+                    Debug.LogWarning($"GameFlowManager: no DayEventPlayer in the scene - skipping '{vdo.Label}'.", this);
+                    yield break;
+                }
+
+                bool done = false;
+                player.Play(vdo, () => done = true);
+                while (!done) yield return null;
+                yield break;
+            }
+
+            if (type == DayEventType.Minigame)
+            {
+                // No minigames authored yet. When they are, load/instantiate here and yield until
+                // the minigame reports back, exactly like the VDO branch above.
+                Debug.Log($"GameFlowManager: minigame '{data.Label}' rolled, but minigame playback is not implemented yet - skipping.", this);
+                yield break;
+            }
+        }
+
+        private DayEventPlayer ResolveEventPlayer()
+        {
+            if (dayEventPlayer == null)
+                dayEventPlayer = FindFirstObjectByType<DayEventPlayer>();
+
+            return dayEventPlayer;
+        }
+
+        private IEnumerator RunEnding()
+        {
+            State = GameFlowState.Ending;
+            OnGameWon?.Invoke();
+
+            if (showDebugInfo)
+                Debug.Log("GameFlowManager: run complete - playing ending.", this);
+
+            var ending = ResolveEndingSequence();
+            if (ending != null)
+            {
+                bool done = false;
+                ending.PlayEnding(() => done = true);
+                while (!done) yield return null;
+            }
+
+            // A finished run is a finished run: wipe everything so the next launch is New Game.
+            ResetAllSaveData();
+
+            State = GameFlowState.MainMenu;
+            LoadSceneByName(mainMenuSceneName, "main menu");
+        }
+
+        /// <summary>Full wipe - day progress, consumed event pools, email flags. Same as New Game.</summary>
+        public static void ResetAllSaveData()
+        {
+            SaveManager.ResetAll();
+            NightPlanProvider.Clear();
+            NightPlanProvider.ForcedSeed = null;
+            ClearLastResult();
+        }
+
+        private RandomEventDirector ResolveEventDirector()
+        {
+            if (randomEventDirector == null)
+                randomEventDirector = FindFirstObjectByType<RandomEventDirector>();
+
+            if (randomEventDirector == null && showDebugInfo)
+                Debug.Log("GameFlowManager: no RandomEventDirector in the scene - no day-end event.", this);
+
+            return randomEventDirector;
+        }
+
+        private EndingSequenceController ResolveEndingSequence()
+        {
+            if (endingSequence == null)
+                endingSequence = FindFirstObjectByType<EndingSequenceController>();
+
+            if (endingSequence == null)
+                Debug.LogWarning("GameFlowManager: no EndingSequenceController found - skipping the ending.", this);
+
+            return endingSequence;
+        }
+
+        private void LoadSceneByName(string sceneName, string label)
+        {
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                Debug.LogError($"GameFlowManager: no {label} scene name configured.", this);
+                return;
+            }
+
+            if (!Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                Debug.LogError($"GameFlowManager: {label} scene '{sceneName}' is not in Build Settings.", this);
+                return;
+            }
+
+            SceneManager.LoadScene(sceneName);
+        }
 
         void Awake()
         {
             if (_instance != null && _instance != this)
             {
-                Debug.LogWarning("Multiple GameFlowManager instances found! Destroying duplicate.", this);
-                Destroy(this);
+                // A scene copy showing up after a persistent one already exists is normal, not a
+                // misconfiguration - the surviving instance keeps the run's state.
+                Destroy(persistAcrossScenes ? gameObject : (Object)this);
                 return;
             }
 
             _instance = this;
+            FinalDay = Mathf.Max(1, finalDay);
+
+            if (persistAcrossScenes)
+                DontDestroyOnLoad(gameObject);
         }
 
         void OnDestroy()
@@ -87,9 +375,6 @@ namespace GameLogic.Flow
                 reportManager.CancelReport();
 
             LastResult = BuildResult(outcome, causeAnomalyId, causeRoomId);
-
-            if (LastResult.Won)
-                AdvanceProgression(LastResult.nightIndex);
 
             if (showDebugInfo)
             {
@@ -169,10 +454,11 @@ namespace GameLogic.Flow
                     return "THE DEMON FOUND YOU.";
 
                 case NightOutcome.Negligence:
-                    // Only SilenceProtocolHaunt raises this outcome today, always with this cause id.
-                    return LastResult != null && LastResult.killedByAnomalyId == "silence_protocol"
-                        ? "IT HEARD YOU."
-                        : "NEGLIGENCE.";
+                    if (LastResult == null) return "NEGLIGENCE.";
+                    if (LastResult.killedByAnomalyId == "silence_protocol") return "IT HEARD YOU.";
+                    if (LastResult.killedByAnomalyId == AnomalyOverloadWatcher.OverloadCauseId)
+                        return "YOU LET TOO MANY IN.";
+                    return "NEGLIGENCE.";
 
                 case NightOutcome.KilledByAnomaly:
                     return LastResult != null && !string.IsNullOrEmpty(LastResult.killedInRoomId)
@@ -209,25 +495,16 @@ namespace GameLogic.Flow
 
         public static void ClearLastResult() => LastResult = null;
 
-        public static int UnlockedNightIndex =>
-            Mathf.Max(1, PlayerPrefs.GetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1));
+        /// <summary>The day a returning player resumes on.</summary>
+        public static int UnlockedNightIndex => CurrentDay;
 
-        private static void AdvanceProgression(int completedNightIndex)
-        {
-            int nextNight = Mathf.Min(completedNightIndex + 1, NightResult.FinalNightIndex);
-            int unlocked = PlayerPrefs.GetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1);
-            if (nextNight <= unlocked) return;
+        /// <summary>Back to day 1 with everything re-locked. Used by New Game.</summary>
+        public static void ResetProgression() => ResetAllSaveData();
 
-            PlayerPrefs.SetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, nextNight);
-            PlayerPrefs.Save();
-        }
-
-        public static void ResetProgression()
-        {
-            PlayerPrefs.SetInt(GameLogic.Night.NightPlanRunner.UnlockedNightKey, 1);
-            PlayerPrefs.Save();
-        }
-
+        /// <summary>
+        /// Reloads the gameplay scene with a fresh roll. Kept for the Result screen's Play Again,
+        /// which is a retry of the current day rather than a new day.
+        /// </summary>
         public static void StartNewNight(string gameplaySceneName)
         {
             ClearLastResult();
@@ -244,5 +521,6 @@ namespace GameLogic.Flow
 
             SceneManager.LoadScene(gameplaySceneName);
         }
+
     }
 }

@@ -21,7 +21,11 @@ namespace MainMenu
         OpenNotepad,
         OpenRecycleBin,
         LogOff,
-        TurnOffComputer
+        TurnOffComputer,
+
+        // Appended, never inserted: these values are serialized as ints in MainMenu.unity, so
+        // inserting anywhere above would silently repoint every existing menu item.
+        NewGame
     }
 
     /// <summary>Named audio cues; each maps to a serialized AudioClip on the DesktopManager.</summary>
@@ -193,6 +197,7 @@ namespace MainMenu
             switch (action)
             {
                 case DesktopAction.StartShift: StartShift(); break;
+                case DesktopAction.NewGame: NewGame(); break;
                 case DesktopAction.OpenMyReports: OpenWindowPrefab(myReportsWindowPrefab); break;
                 case DesktopAction.OpenControlPanel: OpenWindowPrefab(controlPanelWindowPrefab); break;
                 case DesktopAction.OpenHelp: OpenWindowPrefab(helpWindowPrefab); break;
@@ -204,6 +209,11 @@ namespace MainMenu
             }
         }
 
+        /// <summary>
+        /// Continues the saved run - the boot sequence loads the gameplay scene, which generates
+        /// whatever day the save is on. With no save file that is day 1, so this doubles as
+        /// "start playing" on a fresh install.
+        /// </summary>
         public void StartShift()
         {
             CloseOpenWindow();
@@ -213,6 +223,16 @@ namespace MainMenu
                 shutdownSequence.PlayBootSequence();
             else
                 Debug.LogError("DesktopManager: no ShutdownSequence assigned - cannot start the shift.", this);
+        }
+
+        /// <summary>
+        /// Wipes the save and starts over at day 1. Overwriting is the whole point, so this must
+        /// only be reachable behind a confirmation in the UI.
+        /// </summary>
+        public void NewGame()
+        {
+            GameLogic.Flow.GameFlowManager.ResetAllSaveData();
+            StartShift();
         }
 
         public void QuitGame()
