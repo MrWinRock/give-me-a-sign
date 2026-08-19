@@ -51,6 +51,12 @@ namespace Report
         private float _frozenElapsed;
         private float _elapsed;
 
+        // Caches of what the labels currently show, so Update() only touches the TMP text (a
+        // real layout/mesh rebuild, not a cheap field write) when the visible value actually
+        // changes - same fix NightTimer already applies to its own clock, see CLAUDE.md.
+        private int _lastDisplayedSecond = -1;
+        private string _lastDisplayedLabel;
+
         void Awake()
         {
             if (_instance != null && _instance != this)
@@ -82,34 +88,54 @@ namespace Report
             UpdateLabelText();
         }
 
+        /// <summary>
+        /// The displayed clock only shows whole seconds, so only rebuild the TMP string (and
+        /// re-layout its mesh) when the shown second actually changes instead of every frame.
+        /// </summary>
         private void UpdateClockText()
         {
             if (_clockText == null) return;
 
             float shown = _timestampFrozen ? _frozenElapsed : _elapsed;
-            int h = Mathf.FloorToInt(shown / 3600f);
-            int m = Mathf.FloorToInt((shown % 3600f) / 60f);
-            int s = Mathf.FloorToInt(shown % 60f);
+            int totalSeconds = Mathf.FloorToInt(shown);
+
+            if (totalSeconds == _lastDisplayedSecond) return;
+            _lastDisplayedSecond = totalSeconds;
+
+            int h = totalSeconds / 3600;
+            int m = (totalSeconds % 3600) / 60;
+            int s = totalSeconds % 60;
             _clockText.text = $"{h:00}:{m:00}:{s:00}";
         }
 
+        /// <summary>
+        /// The label only changes on an override or a room switch (both rare), so only rebuild
+        /// the TMP string when the computed label actually differs from what is already shown -
+        /// same reasoning as UpdateClockText.
+        /// </summary>
         private void UpdateLabelText()
         {
             if (_labelText == null) return;
 
+            string label;
             if (!string.IsNullOrEmpty(_labelOverride))
             {
-                _labelText.text = _labelOverride;
-                return;
+                label = _labelOverride;
+            }
+            else
+            {
+                var room = _gameManager != null ? _gameManager.CurrentRoom : null;
+                // Prefer the room's own cameraOrder (its real position in the Next/Previous cycle)
+                // over the manually-set _camIndex fallback, so the number on screen always matches
+                // which room is actually showing without needing anyone to keep it in sync by hand.
+                int camIndex = room != null ? room.cameraOrder + 1 : _camIndex;
+                string roomLabel = room != null ? room.Label.ToUpperInvariant() : "NO SIGNAL";
+                label = $"CAM 0{camIndex} — {roomLabel}";
             }
 
-            var room = _gameManager != null ? _gameManager.CurrentRoom : null;
-            // Prefer the room's own cameraOrder (its real position in the Next/Previous cycle)
-            // over the manually-set _camIndex fallback, so the number on screen always matches
-            // which room is actually showing without needing anyone to keep it in sync by hand.
-            int camIndex = room != null ? room.cameraOrder + 1 : _camIndex;
-            string roomLabel = room != null ? room.Label.ToUpperInvariant() : "NO SIGNAL";
-            _labelText.text = $"CAM 0{camIndex} — {roomLabel}";
+            if (label == _lastDisplayedLabel) return;
+            _lastDisplayedLabel = label;
+            _labelText.text = label;
         }
 
         // ── public API used by CameraFeedController ─────────────────────────────────────────

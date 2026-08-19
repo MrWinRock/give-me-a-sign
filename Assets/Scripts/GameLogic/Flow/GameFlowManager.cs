@@ -23,10 +23,6 @@ namespace GameLogic.Flow
     public class GameFlowManager : MonoBehaviour
     {
         [Header("Scenes")]
-        [Tooltip("Scene loaded when the night ends. Must be in Build Settings.")]
-        [SerializeField] private string resultSceneName = "Result";
-        [Tooltip("Fallback build index used if the scene name can't be loaded.")]
-        [SerializeField] private int resultSceneIndex = 3;
         [Tooltip("The XP desktop / main menu scene, returned to between days.")]
         [SerializeField] private string mainMenuSceneName = "MainMenu";
         [Tooltip("The Incident Report gameplay scene.")]
@@ -51,9 +47,9 @@ namespace GameLogic.Flow
         [SerializeField] private EndingSequenceController endingSequence;
 
         [Header("Pacing")]
-        [Tooltip("Pause after surviving to 6:00 AM before the Result scene loads.")]
+        [Tooltip("Pause after surviving to 6:00 AM before moving on to the day-end event.")]
         [SerializeField] private float delayAfterSurviving = 1f;
-        [Tooltip("Total time the death sequence (fade + cause-of-death line, see DeathSequenceHud) holds before the Result scene loads.")]
+        [Tooltip("Total time the death sequence (fade + cause-of-death line, see DeathSequenceHud) holds before the day restarts.")]
         [SerializeField] private float delayAfterDeath = 2.5f;
 
         // Concrete subclass, not UnityEvent<int> directly: Unity only serializes a generic
@@ -118,9 +114,9 @@ namespace GameLogic.Flow
         // ── Day loop ─────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Called by the Result screen once the player has read their score. This is the bridge
-        /// between the existing per-night summary and the campaign loop: EndNight still records
-        /// the night and shows the Result scene, and this resumes the day machine afterwards.
+        /// Not part of the automatic flow (EndNight -> FinishDayFromOutcome already calls
+        /// EndDayGameplay directly). Kept for the Result scene as a manual/debug entry point -
+        /// opening it directly and pressing Play Again resumes the day loop instead of hanging.
         /// </summary>
         public void ContinueFromResult()
         {
@@ -384,7 +380,7 @@ namespace GameLogic.Flow
                     $"cause='{causeAnomalyId ?? "-"}' in room '{causeRoomId ?? "-"}'.", this);
             }
 
-            StartCoroutine(PlayEndingThenLoad(outcome));
+            StartCoroutine(FinishDayFromOutcome(outcome));
         }
 
         private NightResult BuildResult(NightOutcome outcome, string causeAnomalyId, string causeRoomId)
@@ -417,7 +413,16 @@ namespace GameLogic.Flow
             };
         }
 
-        private IEnumerator PlayEndingThenLoad(NightOutcome outcome)
+        /// <summary>
+        /// Plays the in-place feedback for how the day ended (a short pause on a win, the death
+        /// fade + cause line on a loss), then feeds the result straight into EndDayGameplay -
+        /// there is no Result-scene detour, so a win goes on to the day-end event and a loss
+        /// restarts immediately, exactly per the day-loop state machine.
+        ///
+        /// LastResult.Won (not just outcome == Survived) decides survived: reaching 6:00 AM
+        /// without the required score is still a loss that retries the same day.
+        /// </summary>
+        private IEnumerator FinishDayFromOutcome(NightOutcome outcome)
         {
             if (outcome == NightOutcome.Survived)
             {
@@ -429,7 +434,7 @@ namespace GameLogic.Flow
                 yield return PlayDeathSequence(outcome);
             }
 
-            LoadResultScene();
+            EndDayGameplay(LastResult != null && LastResult.Won);
         }
 
         private IEnumerator PlayDeathSequence(NightOutcome outcome)
@@ -468,29 +473,6 @@ namespace GameLogic.Flow
                 default:
                     return "YOU DID NOT SURVIVE.";
             }
-        }
-
-        private void LoadResultScene()
-        {
-            if (!string.IsNullOrWhiteSpace(resultSceneName) &&
-                Application.CanStreamedLevelBeLoaded(resultSceneName))
-            {
-                SceneManager.LoadScene(resultSceneName);
-                return;
-            }
-
-            if (resultSceneIndex >= 0 && resultSceneIndex < SceneManager.sceneCountInBuildSettings)
-            {
-                Debug.LogWarning(
-                    $"GameFlowManager: scene '{resultSceneName}' is not in Build Settings - " +
-                    $"falling back to build index {resultSceneIndex}.", this);
-                SceneManager.LoadScene(resultSceneIndex);
-                return;
-            }
-
-            Debug.LogError(
-                $"GameFlowManager: cannot load the Result scene. '{resultSceneName}' is not in " +
-                $"Build Settings and index {resultSceneIndex} is out of range.", this);
         }
 
         public static void ClearLastResult() => LastResult = null;

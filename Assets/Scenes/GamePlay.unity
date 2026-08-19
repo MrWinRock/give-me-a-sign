@@ -573,6 +573,7 @@ MonoBehaviour:
   noFade: 0
   deactivateDelay: 2
   fadeDuration: 1
+  fadeEase: 1
 --- !u!114 &115135442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1049,6 +1050,7 @@ MonoBehaviour:
   noFade: 0
   deactivateDelay: 0.2
   fadeDuration: 0.2
+  fadeEase: 1
 --- !u!1 &234311630
 GameObject:
   m_ObjectHideFlags: 0
@@ -1552,7 +1554,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20415cf471614ec7aadaa34085b1e146, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.TypedInputFallback
-  forceEnabled: 1
+  forceEnabled: 0
   whisperMicInput: {fileID: 0}
   boxWidth: 420
   showDebugInfo: 1
@@ -2595,6 +2597,56 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &811400001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 811400002}
+  - component: {fileID: 811400003}
+  m_Layer: 0
+  m_Name: DebugMasterPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &811400002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811400001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &811400003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811400001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f1e6a9c3d8b47f2ae0c9e5d21b7f6a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.DebugTools.DebugMasterPanel
+  toggleKey: 0
+  persistAcrossScenes: 1
+  whisperMicInput: {fileID: 1349133150}
+  panelSize: {x: 560, y: 760}
+  canvasSortOrder: 1200
+  showDebugInfo: 0
 --- !u!1 &817291829
 GameObject:
   m_ObjectHideFlags: 0
@@ -2996,6 +3048,7 @@ MonoBehaviour:
   noFade: 0
   deactivateDelay: 4
   fadeDuration: 0.5
+  fadeEase: 1
 --- !u!1 &869909825
 GameObject:
   m_ObjectHideFlags: 0
@@ -4045,7 +4098,7 @@ MonoBehaviour:
   m_NormalMapDistance: 3
   m_NormalMapQuality: 2
   m_UseNormalMap: 0
-  m_ShadowsEnabled: 1
+  m_ShadowsEnabled: 0
   m_ShadowIntensity: 0.75
   m_ShadowSoftness: 0.3
   m_ShadowSoftnessFalloffIntensity: 0.5
@@ -5864,7 +5917,7 @@ MonoBehaviour:
   m_NormalMapDistance: 3
   m_NormalMapQuality: 2
   m_UseNormalMap: 0
-  m_ShadowsEnabled: 1
+  m_ShadowsEnabled: 0
   m_ShadowIntensity: 0.75
   m_ShadowSoftness: 0.3
   m_ShadowSoftnessFalloffIntensity: 0.5
@@ -5933,7 +5986,7 @@ MonoBehaviour:
   m_NormalMapDistance: 3
   m_NormalMapQuality: 2
   m_UseNormalMap: 0
-  m_ShadowsEnabled: 1
+  m_ShadowsEnabled: 0
   m_ShadowIntensity: 0.75
   m_ShadowSoftness: 0.3
   m_ShadowSoftnessFalloffIntensity: 0.5
@@ -6898,7 +6951,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -498.2, y: -475.2}
+  m_AnchoredPosition: {x: -498.1999, y: -475.2}
   m_SizeDelta: {x: 1406.39, y: 743.3701}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1734658304
@@ -8405,6 +8458,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2092055623}
   - component: {fileID: 2092055624}
+  - component: {fileID: 2092055625}
   m_Layer: 17
   m_Name: VideoPlayerTransition
   m_TagString: Cancel
@@ -8459,12 +8513,27 @@ VideoPlayer:
   m_EnabledAudioTracks: 
   m_DirectAudioMutes: 
   m_ControlledAudioTrackCount: 0
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_SkipOnDrop: 1
   m_Looping: 1
   m_WaitForFirstFrame: 1
   m_FrameReadyEventEnabled: 0
   m_VideoShaders: []
+--- !u!114 &2092055625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2092055622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c4e17a3b8d2f0a4d91b6e5c7a02f483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.VideoPlaybackGate
+  displayObject: {fileID: 230240513}
+  restartOnShow: 1
+  showDebugInfo: 0
 --- !u!1 &2110690119
 GameObject:
   m_ObjectHideFlags: 0
@@ -17105,3 +17174,4 @@ SceneRoots:
   - {fileID: 1127674139}
   - {fileID: 477437160}
   - {fileID: 198060738}
+  - {fileID: 811400002}

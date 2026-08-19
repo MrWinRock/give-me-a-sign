@@ -25,9 +25,18 @@ namespace GameLogic.Night
         private bool _visible;
         private string _seedInput = "";
 
+        // Cached so OnGUI (which runs every single frame, visible or not) doesn't allocate a
+        // new string/GUIStyle/component-search every tick - that was showing up in the Profiler
+        // as constant GC churn even while this HUD was fully collapsed.
+        private string _collapsedLabel;
+        private GUIStyle _richLabelStyle;
+        private NightTimer _cachedTimer;
+        private AnomalyScheduler _cachedScheduler;
+
         void Awake()
         {
             _visible = visibleByDefault;
+            _collapsedLabel = $"[{toggleKey}] night plan";
         }
 
         void Update()
@@ -48,7 +57,7 @@ namespace GameLogic.Night
         {
             if (!_visible)
             {
-                GUI.Label(new Rect(10f, 10f, 300f, 20f), $"[{toggleKey}] night plan");
+                GUI.Label(new Rect(10f, 10f, 300f, 20f), _collapsedLabel);
                 return;
             }
 
@@ -113,12 +122,15 @@ namespace GameLogic.Night
             GameFlowManager.StartNewNight(SceneManager.GetActiveScene().name);
         }
 
-        private static string NextSpawnLabel(NightPlan plan)
+        private string NextSpawnLabel(NightPlan plan)
         {
-            var timer = FindFirstObjectByType<NightTimer>();
-            if (timer == null) return "?";
+            // Cached instead of FindFirstObjectByType every OnGUI frame while the panel is open -
+            // a scene search is not something you want to pay for 60+ times a second.
+            if (_cachedTimer == null)
+                _cachedTimer = FindFirstObjectByType<NightTimer>();
+            if (_cachedTimer == null) return "?";
 
-            float elapsed = timer.ElapsedMinutes;
+            float elapsed = _cachedTimer.ElapsedMinutes;
             foreach (var placement in plan.anomalies)
             {
                 if (placement.atMinute < elapsed) continue;
@@ -130,10 +142,11 @@ namespace GameLogic.Night
             return "none left";
         }
 
-        private static int Spawned()
+        private int Spawned()
         {
-            var scheduler = FindFirstObjectByType<AnomalyScheduler>();
-            return scheduler != null ? scheduler.TotalSpawned : 0;
+            if (_cachedScheduler == null)
+                _cachedScheduler = FindFirstObjectByType<AnomalyScheduler>();
+            return _cachedScheduler != null ? _cachedScheduler.TotalSpawned : 0;
         }
 
         private static int CurrentScore()
@@ -142,10 +155,11 @@ namespace GameLogic.Night
             return score != null ? score.GetCurrentScore() : 0;
         }
 
-        private static GUIStyle RichLabel()
+        private GUIStyle RichLabel()
         {
-            var style = new GUIStyle(GUI.skin.label) { richText = true };
-            return style;
+            // Was `new GUIStyle(...)` every frame the panel was open - a real per-frame GC
+            // allocation for no reason, since the style itself never changes.
+            return _richLabelStyle ??= new GUIStyle(GUI.skin.label) { richText = true };
         }
     }
 }

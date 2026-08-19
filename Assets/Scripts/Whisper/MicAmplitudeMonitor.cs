@@ -21,6 +21,11 @@ namespace Whisper
         private string _device;
         private float[] _samples;
 
+        // PlayerPrefs is registry-backed on Windows; reading it every frame (as this used to)
+        // is a needless per-frame syscall. The Control Panel that writes MicGain only opens from
+        // the main menu, never mid-monitoring, so caching it once per session is exact, not stale.
+        private float _cachedMicGain = 1f;
+
         public float CurrentLevel { get; private set; }
 
         public bool IsAvailable { get; private set; }
@@ -42,6 +47,7 @@ namespace Whisper
             IsAvailable = true;
             _device = ResolveDevice();
             _samples = new float[Mathf.Max(64, Mathf.RoundToInt(frequency * sampleWindowSeconds))];
+            _cachedMicGain = Mathf.Max(0.01f, ControlPanelWindow.MicGain);
 
             // A 1-second looping buffer is plenty - only the last sampleWindowSeconds are ever read.
             _clip = Microphone.Start(_device, true, 1, frequency);
@@ -83,7 +89,7 @@ namespace Whisper
                 sumSquares += _samples[i] * _samples[i];
 
             float rms = Mathf.Sqrt(sumSquares / _samples.Length);
-            float gained = rms * Mathf.Max(0.01f, ControlPanelWindow.MicGain);
+            float gained = rms * _cachedMicGain;
 
             CurrentLevel = Mathf.Lerp(CurrentLevel, gained, smoothing);
         }
