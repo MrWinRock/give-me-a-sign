@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.ShortVDOData
   eventId: vdo_003
   displayName: Short VDO 003
-  clip: {fileID: 32900000, guid: 18c5e76fadab6404a87bcb4e1f2790d0, type: 3}
+  clip: {fileID: 32900000, guid: e882ee6db03d31a4db36ef7406f49b3e, type: 3}
   skippableAfterSeconds: 3

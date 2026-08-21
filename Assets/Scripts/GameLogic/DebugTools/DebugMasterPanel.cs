@@ -350,7 +350,10 @@ namespace GameLogic.DebugTools
                 18f, TextAlignmentOptions.MidlineLeft, new Color(0.6f, 1f, 0.6f));
             SetTopStretch(title.rectTransform, topOffset, 26f, left: 16f, right: 92f);
 
-            var closeButton = CreateButton(parent, "CloseButton", "✕", Close);
+            // Plain ASCII, not "✕"/Unicode symbols: LiberationSans SDF (the TMP default font
+            // asset this panel uses) has no glyph for them, which spams a missing-character
+            // warning every frame the panel is open (TMP falls back to a "missing glyph" box).
+            var closeButton = CreateButton(parent, "CloseButton", "X", Close);
             var closeRect = (RectTransform)closeButton.transform;
             closeRect.anchorMin = new Vector2(1f, 1f);
             closeRect.anchorMax = new Vector2(1f, 1f);
@@ -358,7 +361,7 @@ namespace GameLogic.DebugTools
             closeRect.sizeDelta = new Vector2(64f, 26f);
             closeRect.anchoredPosition = new Vector2(-12f, -topOffset);
 
-            var refreshButton = CreateButton(parent, "RefreshButton", "↻ Refresh", RefreshActions);
+            var refreshButton = CreateButton(parent, "RefreshButton", "Refresh", RefreshActions);
             var refreshRect = (RectTransform)refreshButton.transform;
             refreshRect.anchorMin = new Vector2(1f, 1f);
             refreshRect.anchorMax = new Vector2(1f, 1f);
