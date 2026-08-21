@@ -36,6 +36,9 @@ namespace GameLogic.Flow
         [SerializeField] private bool persistAcrossScenes = true;
 
         [Header("Day-End Event")]
+        [Tooltip("Plays a brief glitch/static clip (e.g. Overlay.mp4) before the day-end roll, every day. Auto-found if left empty; skipped without one.")]
+        [SerializeField] private DayEndTransitionOverlay dayEndOverlay;
+
         [Tooltip("Rolls the optional Short VDO / Minigame. Auto-found if left empty; no event plays without one.")]
         [SerializeField] private RandomEventDirector randomEventDirector;
 
@@ -68,6 +71,43 @@ namespace GameLogic.Flow
         public UnityEvent OnDay7Complete = new UnityEvent();
         [Tooltip("Fired as the ending begins.")]
         public UnityEvent OnGameWon = new UnityEvent();
+
+        /// <summary>Score Debug Skip Night applies before ending the night.</summary>
+        public enum DebugSkipScoreMode
+        {
+            /// <summary>Force score = the night's requirement. Guaranteed win.</summary>
+            Full,
+            /// <summary>Leave score exactly as already earned - may still lose.</summary>
+            CurrentScore
+        }
+
+        /// <summary>What Debug Skip Night does with today's documents.</summary>
+        public enum DebugSkipMailMode
+        {
+            /// <summary>Force-collect every MailPickup scheduled for today.</summary>
+            Collect,
+            /// <summary>Don't touch mail at all.</summary>
+            Leave
+        }
+
+        /// <summary>What Debug Skip Night does with the day-end event roll. Only matters if the night is actually survived.</summary>
+        public enum DebugSkipDayEndMode
+        {
+            /// <summary>The real RandomEventDirector roll, same as normal play.</summary>
+            RollNormally,
+            /// <summary>Always plays an unconsumed Short VDO, ignoring the day-chance roll.</summary>
+            ForceShortVDO,
+            /// <summary>Always skips straight to the next day.</summary>
+            ForceNone
+        }
+
+        [Header("Debug - Skip Night Checklist")]
+        [Tooltip("Score used when Debug Skip Night runs.")]
+        [SerializeField] private DebugSkipScoreMode debugSkipScore = DebugSkipScoreMode.Full;
+        [Tooltip("What happens to today's documents when Debug Skip Night runs.")]
+        [SerializeField] private DebugSkipMailMode debugSkipMail = DebugSkipMailMode.Collect;
+        [Tooltip("What the day-end event does when Debug Skip Night runs.")]
+        [SerializeField] private DebugSkipDayEndMode debugSkipDayEndEvent = DebugSkipDayEndMode.RollNormally;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
@@ -111,6 +151,10 @@ namespace GameLogic.Flow
 
         private bool _ending;
 
+        // Set by DebugSkipNight right before it forces the night to end, consumed (and cleared)
+        // the moment RunDayEndEvent reads it - a real day's roll must never inherit a stale override.
+        private DebugSkipDayEndMode? _debugDayEndOverride;
+
         // ── Day loop ─────────────────────────────────────────────────────────────────────
 
         /// <summary>
@@ -127,6 +171,17 @@ namespace GameLogic.Flow
         /// <summary>Enters the gameplay scene for CurrentDay.</summary>
         public void StartDayGameplay()
         {
+            PrepareForDayGameplay();
+            LoadSceneByName(gameplaySceneName, "gameplay");
+        }
+
+        /// <summary>
+        /// Everything a fresh day's gameplay needs reset before it begins, short of the scene
+        /// load itself - shared by StartDayGameplay and the OnSceneLoaded safety net above, so
+        /// both paths agree regardless of which one actually triggered the load.
+        /// </summary>
+        private void PrepareForDayGameplay()
+        {
             State = GameFlowState.DayGameplay;
             _ending = false; // the guard is per-day; a persistent instance would keep the last day's
             ClearLastResult();
@@ -138,7 +193,6 @@ namespace GameLogic.Flow
                 Debug.Log($"GameFlowManager: starting day {CurrentDay}.", this);
 
             OnDayStarted?.Invoke(CurrentDay);
-            LoadSceneByName(gameplaySceneName, "gameplay");
         }
 
         /// <summary>
@@ -207,17 +261,39 @@ namespace GameLogic.Flow
         }
 
         /// <summary>
-        /// DayEndEvent state: roll for a VDO/Minigame, play it, mark it consumed, then advance.
-        /// An empty or exhausted pool simply advances immediately - that is the designed
-        /// behaviour, not an error.
+        /// DayEndEvent state: a brief glitch cut, then roll for a VDO/Minigame, play it, mark it
+        /// consumed, then advance. An empty or exhausted pool simply advances immediately after
+        /// the cut - that is the designed behaviour, not an error.
         /// </summary>
         private IEnumerator RunDayEndEvent()
         {
             State = GameFlowState.DayEndEvent;
 
+            yield return PlayDayEndOverlay();
+
+            // One-shot: read and clear immediately, so a real day's roll afterward never inherits it.
+            DebugSkipDayEndMode? debugOverride = _debugDayEndOverride;
+            _debugDayEndOverride = null;
+
+            if (debugOverride == DebugSkipDayEndMode.ForceNone)
+            {
+                AdvanceDay();
+                yield break;
+            }
+
             var director = ResolveEventDirector();
-            if (director != null &&
-                director.TryGetDayEndEvent(CurrentDay, out DayEventType type, out DayEventData data))
+            var type = DayEventType.None;
+            DayEventData data = null;
+            bool rolled = false;
+
+            if (director != null)
+            {
+                rolled = debugOverride == DebugSkipDayEndMode.ForceShortVDO
+                    ? director.TryForceShortVDO(out type, out data)
+                    : director.TryGetDayEndEvent(CurrentDay, out type, out data);
+            }
+
+            if (rolled)
             {
                 yield return PlayDayEndEvent(type, data);
 
@@ -226,6 +302,17 @@ namespace GameLogic.Flow
             }
 
             AdvanceDay();
+        }
+
+        /// <summary>Plays the glitch/static cut ahead of the roll. Skipped without an overlay or clip.</summary>
+        private IEnumerator PlayDayEndOverlay()
+        {
+            var overlay = ResolveDayEndOverlay();
+            if (overlay == null) yield break;
+
+            bool done = false;
+            overlay.Play(() => done = true);
+            while (!done) yield return null;
         }
 
         /// <summary>
@@ -264,6 +351,14 @@ namespace GameLogic.Flow
                 dayEventPlayer = FindFirstObjectByType<DayEventPlayer>();
 
             return dayEventPlayer;
+        }
+
+        private DayEndTransitionOverlay ResolveDayEndOverlay()
+        {
+            if (dayEndOverlay == null)
+                dayEndOverlay = FindFirstObjectByType<DayEndTransitionOverlay>();
+
+            return dayEndOverlay;
         }
 
         private IEnumerator RunEnding()
@@ -352,11 +447,30 @@ namespace GameLogic.Flow
 
             if (persistAcrossScenes)
                 DontDestroyOnLoad(gameObject);
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         void OnDestroy()
         {
             if (_instance == this) _instance = null;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        /// <summary>
+        /// Safety net for the gameplay scene loading through a path that never calls
+        /// StartDayGameplay/RestartCurrentDay directly - e.g. ShutdownSequence's boot animation
+        /// loads it with its own SceneManager call. Without this, _ending (and OnDayStarted,
+        /// ClearLastResult, NightPlanProvider.Clear) only ever ran once per persistent instance:
+        /// EndNight's "if (_ending) return;" guard would silently swallow every night-end call
+        /// from day 2 onward, in real play as much as from a debug skip.
+        /// </summary>
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name != gameplaySceneName) return;
+            if (State == GameFlowState.DayGameplay) return; // already prepped before this load
+
+            PrepareForDayGameplay();
         }
 
         public void EndNight(NightOutcome outcome, string causeAnomalyId = null, string causeRoomId = null)
@@ -504,5 +618,44 @@ namespace GameLogic.Flow
             SceneManager.LoadScene(gameplaySceneName);
         }
 
+        // ── Debug: skip the night ───────────────────────────────────────────────────────────
+        // One action, driven by the three checklist fields above (score / mail / day-end event)
+        // so any combination can be tested freely - e.g. current score (maybe a loss), mail
+        // collected, day-end event forced to a Short VDO - without touching code.
+
+        [ContextMenu("Debug/Skip Night (Use Checklist Above)")]
+        private void DebugSkipNight()
+        {
+            var scoreManager = ScoreManager.Instance;
+            if (scoreManager == null)
+            {
+                Debug.LogWarning("GameFlowManager: no ScoreManager in the scene - can't skip the night.", this);
+                return;
+            }
+
+            if (debugSkipScore == DebugSkipScoreMode.Full)
+                scoreManager.TestWinCondition(); // score = the night's requirement
+            // else CurrentScore: leave it exactly as already earned - may still lose.
+
+            if (debugSkipMail == DebugSkipMailMode.Collect)
+                DebugCollectTodaysMail();
+
+            // Read by RunDayEndEvent once, then cleared - only applies to THIS skip.
+            _debugDayEndOverride = debugSkipDayEndEvent;
+
+            scoreManager.ForceEndNight(); // closes scoring, then calls EndNight(Survived/whatever the score earns)
+
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: debug-skipped day {CurrentDay} " +
+                          $"(score={debugSkipScore}, mail={debugSkipMail}, dayEnd={debugSkipDayEndEvent}).", this);
+        }
+
+        /// <summary>Force-collects every MailPickup scheduled for today, wherever it sits in the scene.</summary>
+        private void DebugCollectTodaysMail()
+        {
+            var pickups = FindObjectsByType<MailPickup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var pickup in pickups)
+                pickup.ForceCollect();
+        }
     }
 }

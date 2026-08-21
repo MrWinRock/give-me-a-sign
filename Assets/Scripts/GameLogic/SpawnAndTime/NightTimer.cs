@@ -149,11 +149,5 @@ namespace GameLogic.SpawnAndTime
         {
             return _totalNightDuration - _currentTime;
         }
-
-        [ContextMenu("End Night Now")]
-        public void ForceEndNight()
-        {
-            EndNight();
-        }
     }
 }

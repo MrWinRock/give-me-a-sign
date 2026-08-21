@@ -56,7 +56,6 @@ namespace MainMenu
         // Boot
         // =======================================================================================
 
-        [ContextMenu("Play Boot Sequence")]
         public void PlayBootSequence()
         {
             if (IsPlaying) return;
@@ -114,7 +113,6 @@ namespace MainMenu
         // Shutdown
         // =======================================================================================
 
-        [ContextMenu("Play Shutdown Sequence")]
         public void PlayShutdownSequence()
         {
             if (IsPlaying) return;

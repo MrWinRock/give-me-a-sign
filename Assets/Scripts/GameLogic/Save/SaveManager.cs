@@ -49,6 +49,7 @@ namespace GameLogic.Save
                 // JsonUtility leaves lists null when the field was absent in an older file.
                 if (_current.consumedEventIds == null) _current.consumedEventIds = new System.Collections.Generic.List<string>();
                 if (_current.readEmailIds == null) _current.readEmailIds = new System.Collections.Generic.List<string>();
+                if (_current.foundMailIds == null) _current.foundMailIds = new System.Collections.Generic.List<string>();
             }
             catch (System.Exception e)
             {
@@ -78,8 +79,8 @@ namespace GameLogic.Save
         }
 
         /// <summary>
-        /// Full wipe - day progress, consumed event pools and email flags. Used by New Game and
-        /// by the post-ending reset, which are the same operation by design.
+        /// Full wipe - day progress, consumed event pools, and email/document flags. Used by New
+        /// Game and by the post-ending reset, which are the same operation by design.
         /// </summary>
         public static void ResetAll()
         {

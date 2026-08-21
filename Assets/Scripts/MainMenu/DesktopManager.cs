@@ -25,7 +25,8 @@ namespace MainMenu
 
         // Appended, never inserted: these values are serialized as ints in MainMenu.unity, so
         // inserting anywhere above would silently repoint every existing menu item.
-        NewGame
+        NewGame,
+        OpenMail
     }
 
     /// <summary>Named audio cues; each maps to a serialized AudioClip on the DesktopManager.</summary>
@@ -71,6 +72,7 @@ namespace MainMenu
         [SerializeField] private XPWindowController turnOffWindowPrefab;
         [SerializeField] private XPWindowController controlPanelWindowPrefab;
         [SerializeField] private XPWindowController myReportsWindowPrefab;
+        [SerializeField] private XPWindowController mailWindowPrefab;
         [SerializeField] private XPWindowController notepadWindowPrefab;
         [SerializeField] private XPWindowController recycleBinWindowPrefab;
         [SerializeField] private XPWindowController logOffWindowPrefab;
@@ -199,6 +201,7 @@ namespace MainMenu
                 case DesktopAction.StartShift: StartShift(); break;
                 case DesktopAction.NewGame: NewGame(); break;
                 case DesktopAction.OpenMyReports: OpenWindowPrefab(myReportsWindowPrefab); break;
+                case DesktopAction.OpenMail: OpenWindowPrefab(mailWindowPrefab); break;
                 case DesktopAction.OpenControlPanel: OpenWindowPrefab(controlPanelWindowPrefab); break;
                 case DesktopAction.OpenHelp: OpenWindowPrefab(helpWindowPrefab); break;
                 case DesktopAction.OpenNotepad: OpenWindowPrefab(notepadWindowPrefab); break;
@@ -340,34 +343,6 @@ namespace MainMenu
             if (clip != null)
                 uiAudioSource.PlayOneShot(clip);
         }
-
-        // =======================================================================================
-        // Debug
-        // =======================================================================================
-
-        [ContextMenu("Debug/Open Turn Off Computer")]
-        private void DebugOpenTurnOff() => OpenWindowPrefab(turnOffWindowPrefab);
-
-        [ContextMenu("Debug/Open Control Panel")]
-        private void DebugOpenControlPanel() => OpenWindowPrefab(controlPanelWindowPrefab);
-
-        [ContextMenu("Debug/Open My Reports")]
-        private void DebugOpenMyReports() => OpenWindowPrefab(myReportsWindowPrefab);
-
-        [ContextMenu("Debug/Open Notepad")]
-        private void DebugOpenNotepad() => OpenWindowPrefab(notepadWindowPrefab);
-
-        [ContextMenu("Debug/Open Recycle Bin")]
-        private void DebugOpenRecycleBin() => OpenWindowPrefab(recycleBinWindowPrefab);
-
-        [ContextMenu("Debug/Open Log Off")]
-        private void DebugOpenLogOff() => OpenWindowPrefab(logOffWindowPrefab);
-
-        [ContextMenu("Debug/Open Help and Support")]
-        private void DebugOpenHelp() => OpenWindowPrefab(helpWindowPrefab);
-
-        [ContextMenu("Debug/Start Shift")]
-        private void DebugStartShift() => StartShift();
 
 #if UNITY_EDITOR
         void OnValidate()

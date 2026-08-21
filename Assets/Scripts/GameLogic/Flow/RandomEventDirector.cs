@@ -88,6 +88,28 @@ namespace GameLogic.Flow
         }
 
         /// <summary>
+        /// Debug-only bypass (see GameFlowManager's Skip Night checklist): skips both the
+        /// stage-1 chance roll and the stage-2 VDO/Minigame weight and returns any unconsumed
+        /// Short VDO directly. False (type None) if the pool is empty or fully consumed - same
+        /// "no forced fallback" rule as the real roll.
+        /// </summary>
+        public bool TryForceShortVDO(out DayEventType type, out DayEventData eventData)
+        {
+            type = DayEventType.None;
+            eventData = PickUnconsumed(wantVdo: true);
+
+            if (eventData == null)
+            {
+                Log("debug force: Short VDO pool is empty or fully consumed - nothing plays.");
+                return false;
+            }
+
+            type = DayEventType.ShortVDO;
+            Log($"debug force: -> '{eventData.Label}'.");
+            return true;
+        }
+
+        /// <summary>
         /// Uniform pick from whatever is left in the pool. Builds the candidate list fresh each
         /// time rather than walking an index, so selection order across days is genuinely random
         /// instead of marching through the list.

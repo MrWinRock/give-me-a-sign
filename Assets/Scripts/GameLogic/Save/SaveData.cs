@@ -21,6 +21,11 @@ namespace GameLogic.Save
 
         public List<string> readEmailIds = new List<string>();
 
+        // Separate from readEmailIds: found = the player clicked the pickup in the world,
+        // read = the player has opened it in the Mail window. A found-but-unread document
+        // still shows up bold in the inbox.
+        public List<string> foundMailIds = new List<string>();
+
         public bool IsConsumed(string eventId) =>
             !string.IsNullOrEmpty(eventId) && consumedEventIds.Contains(eventId);
 
@@ -37,6 +42,15 @@ namespace GameLogic.Save
         {
             if (string.IsNullOrEmpty(emailId) || readEmailIds.Contains(emailId)) return;
             readEmailIds.Add(emailId);
+        }
+
+        public bool IsMailFound(string emailId) =>
+            !string.IsNullOrEmpty(emailId) && foundMailIds.Contains(emailId);
+
+        public void MarkMailFound(string emailId)
+        {
+            if (string.IsNullOrEmpty(emailId) || foundMailIds.Contains(emailId)) return;
+            foundMailIds.Add(emailId);
         }
     }
 }

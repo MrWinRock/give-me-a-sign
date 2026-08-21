@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46316807ba22196a2fd0a8be3e3c949a, type: 3}
+  m_Name: Mail_001_Welcome
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.MailData
+  emailId: mail_001
+  unlockDay: 1
+  sender: HR - Threshold Security Co.
+  subject: Welcome to your first shift
+  dateLabel:
+  body: "To the new security guard,\n\nWelcome to the mansion. Tonight is your first
+    shift.\n\nYour main duty is to watch every camera closely from midnight until
+    6 AM. If you notice anything unusual - a shadow that moves, an object that has
+    shifted position, or something that simply shouldn't be there - hold the spacebar
+    and report it by voice immediately. Don't let even one slip by.\n\nA requirement
+    from the homeowner:\nNever turn off your flashlight.\nNo matter what you hear.\n\nGood
+    luck tonight.\n\nHR\nThreshold Security Co."
+  attachment: {fileID: 0}
