@@ -685,81 +685,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 138205417}
   m_CullTransparentMesh: 1
---- !u!1 &146929163
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 146929164}
-  - component: {fileID: 146929166}
-  - component: {fileID: 146929165}
-  m_Layer: 0
-  m_Name: SpeakerIcon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &146929164
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 146929163}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 334587654}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 7, y: 0}
-  m_SizeDelta: {x: 12, y: 12}
-  m_Pivot: {x: 0, y: 0.5}
---- !u!114 &146929165
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 146929163}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &146929166
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 146929163}
-  m_CullTransparentMesh: 1
 --- !u!1 &157637007
 GameObject:
   m_ObjectHideFlags: 0
@@ -1034,8 +959,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 146929164}
-  - {fileID: 778813315}
   - {fileID: 1298478431}
   m_Father: {fileID: 463015992}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2598,81 +2521,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 766956461}
   m_CullTransparentMesh: 1
---- !u!1 &778813314
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 778813315}
-  - component: {fileID: 778813317}
-  - component: {fileID: 778813316}
-  m_Layer: 0
-  m_Name: MicrophoneIcon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &778813315
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 778813314}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 334587654}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 24, y: 0}
-  m_SizeDelta: {x: 12, y: 12}
-  m_Pivot: {x: 0, y: 0.5}
---- !u!114 &778813316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 778813314}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &778813317
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 778813314}
-  m_CullTransparentMesh: 1
 --- !u!1 &790204046
 GameObject:
   m_ObjectHideFlags: 0
@@ -3309,7 +3157,6 @@ GameObject:
   - component: {fileID: 811300002}
   - component: {fileID: 811300003}
   - component: {fileID: 811300004}
-  - component: {fileID: 811300005}
   - component: {fileID: 811300006}
   - component: {fileID: 9300000000000001}
   m_Layer: 0
@@ -3352,7 +3199,8 @@ MonoBehaviour:
   persistAcrossScenes: 1
   dayEndOverlay: {fileID: 9300000000000001}
   randomEventDirector: {fileID: 811300004}
-  dayEventPlayer: {fileID: 811300005}
+  shortVdoSceneName: ShortVDO
+  dayEventPlayer: {fileID: 0}
   endingSequence: {fileID: 811300006}
   delayAfterSurviving: 1
   delayAfterDeath: 2.5
@@ -3373,7 +3221,7 @@ MonoBehaviour:
       m_Calls: []
   debugSkipScore: 0
   debugSkipMail: 0
-  debugSkipDayEndEvent: 0
+  debugSkipDayEndEvent: 1
   showDebugInfo: 1
 --- !u!114 &811300004
 MonoBehaviour:
@@ -3403,33 +3251,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a1c4e9b20f3d64a9c5e81b3f0a6d214, type: 2}
   minigamePool: []
   alwaysRollEvent: 0
-  showDebugInfo: 1
---- !u!114 &811300005
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 811300001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fe4bf307c6289e4fa1e8e0703d8e171, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Flow.DayEventPlayer
-  canvasSortOrder: 900
-  backgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  videoResolution: {x: 1920, y: 1080}
-  preserveAspectRatio: 1
-  fadeInSeconds: 0.4
-  fadeOutSeconds: 0.6
-  skipKey: 0
-  skipPromptFormat: Press {key} to skip
-  promptFont: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
-  skipPromptFontSize: 22
-  skipPromptColor: {r: 1, g: 1, b: 1, a: 0.55}
-  skipPromptMargin: {x: 48, y: 36}
-  applySfxVolume: 1
-  maxPlaybackSeconds: 300
   showDebugInfo: 1
 --- !u!114 &811300006
 MonoBehaviour:

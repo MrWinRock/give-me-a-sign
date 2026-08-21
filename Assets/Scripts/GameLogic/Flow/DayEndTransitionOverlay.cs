@@ -11,6 +11,13 @@ namespace GameLogic.Flow
     /// before the day-end event decision - a jarring VHS-style splice, not a cross-fade. The
     /// screen is built at runtime, same approach as DayEventPlayer, so dropping this on any
     /// GameObject is all the setup it needs.
+    ///
+    /// The video stops at holdSeconds, but the solid black cover behind it does NOT tear down on
+    /// its own - Play's onComplete fires with the cover still up, and stays up (surviving a scene
+    /// load, since this component lives on the persistent GameFlowManager object) until the
+    /// caller explicitly calls CloseCover(). That's what hides the GamePlay-scene-to-ShortVDO-
+    /// scene load: without it, the cover would vanish the instant the video stops, exposing
+    /// whatever's still loaded underneath for however long the scene load actually takes.
     /// </summary>
     public class DayEndTransitionOverlay : MonoBehaviour
     {
@@ -42,14 +49,21 @@ namespace GameLogic.Flow
         private VideoPlayer _videoPlayer;
         private RenderTexture _renderTexture;
         private Coroutine _routine;
+        private bool _coverUp;
 
-        /// <summary>True while the overlay is on screen.</summary>
+        /// <summary>True while the clip itself is actively playing (before holdSeconds elapses).</summary>
         public bool IsPlaying => _routine != null;
+
+        /// <summary>True from the moment the screen appears until CloseCover() tears it down -
+        /// stays true past the clip finishing, and across a scene load. Callers use this to know
+        /// there's still a black cover to explicitly close.</summary>
+        public bool IsCoverUp => _coverUp;
 
         /// <summary>
         /// Plays the overlay, then invokes <paramref name="onComplete"/> exactly once - after
-        /// holdSeconds, or immediately if no clip is assigned. GameFlowManager's day-end
-        /// coroutine waits on this callback before rolling the day-end event.
+        /// holdSeconds, or immediately if no clip is assigned. The black cover is still up when
+        /// onComplete fires; call CloseCover() once it's safe to reveal whatever comes next.
+        /// GameFlowManager's day-end coroutine waits on this callback before rolling the event.
         /// </summary>
         public void Play(Action onComplete)
         {
@@ -59,9 +73,9 @@ namespace GameLogic.Flow
                 return;
             }
 
-            if (IsPlaying)
+            if (IsPlaying || _coverUp)
             {
-                Debug.LogWarning("DayEndTransitionOverlay: already playing - ignoring the new request.", this);
+                Debug.LogWarning("DayEndTransitionOverlay: already playing/covering - ignoring the new request.", this);
                 return;
             }
 
@@ -74,15 +88,51 @@ namespace GameLogic.Flow
                 Debug.Log($"DayEndTransitionOverlay: playing '{overlayClip.name}' for {holdSeconds:0.##}s.", this);
 
             BuildScreen();
+            _coverUp = true;
             StartClip();
             PlayStartupSound();
 
             // Realtime, not WaitForSeconds: the day loop must not be at the mercy of Time.timeScale.
             yield return new WaitForSecondsRealtime(holdSeconds);
 
-            DestroyScreen();
+            StopClipKeepCover();
             _routine = null;
             onComplete?.Invoke();
+        }
+
+        /// <summary>Stops the video/audio and frees their resources, but leaves the solid black
+        /// background (the actual cover) up - see CloseCover().</summary>
+        private void StopClipKeepCover()
+        {
+            if (_videoPlayer != null)
+            {
+                _videoPlayer.Stop();
+                Destroy(_videoPlayer);
+                _videoPlayer = null;
+            }
+
+            if (_renderTexture != null)
+            {
+                _renderTexture.Release();
+                Destroy(_renderTexture);
+                _renderTexture = null;
+            }
+
+            if (_videoImage != null)
+                _videoImage.texture = null;
+        }
+
+        /// <summary>
+        /// Tears down the lingering black cover left behind by Play(). Safe to call any time,
+        /// including when nothing is up. Call this the instant whatever comes next is ready to be
+        /// seen - a fresh scene whose own content is about to render, or immediately if nothing
+        /// follows at all.
+        /// </summary>
+        public void CloseCover()
+        {
+            if (!_coverUp) return;
+            _coverUp = false;
+            DestroyScreen();
         }
 
         private void StartClip()
@@ -176,6 +226,7 @@ namespace GameLogic.Flow
                 StopCoroutine(_routine);
 
             DestroyScreen();
+            _coverUp = false;
         }
     }
 }

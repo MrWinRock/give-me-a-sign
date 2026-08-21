@@ -42,7 +42,10 @@ namespace GameLogic.Flow
         [Tooltip("Rolls the optional Short VDO / Minigame. Auto-found if left empty; no event plays without one.")]
         [SerializeField] private RandomEventDirector randomEventDirector;
 
-        [Tooltip("Plays the rolled Short VDO fullscreen. Auto-found if left empty; VDOs are skipped without one.")]
+        [Tooltip("Dedicated scene a rolled Short VDO plays in - loaded after the day-end overlay, unloaded again the moment AdvanceDay moves on to MainMenu. Must be in Build Settings. Only loaded when a VDO actually rolls.")]
+        [SerializeField] private string shortVdoSceneName = "ShortVDO";
+
+        [Tooltip("Plays the rolled Short VDO fullscreen. Lives in the Short VDO scene above, not on this persistent object - auto-found there once that scene loads.")]
         [SerializeField] private DayEventPlayer dayEventPlayer;
 
         [Header("Ending")]
@@ -270,6 +273,10 @@ namespace GameLogic.Flow
             State = GameFlowState.DayEndEvent;
 
             yield return PlayDayEndOverlay();
+            // The overlay's black cover is still up here on purpose - it stays up (surviving the
+            // scene load below) until PlayDayEndEvent explicitly drops it once the Short VDO's own
+            // screen is ready to take over, or the fallback CloseDayEndOverlayCover() below does it
+            // for every path that never gets that far.
 
             // One-shot: read and clear immediately, so a real day's roll afterward never inherits it.
             DebugSkipDayEndMode? debugOverride = _debugDayEndOverride;
@@ -277,6 +284,7 @@ namespace GameLogic.Flow
 
             if (debugOverride == DebugSkipDayEndMode.ForceNone)
             {
+                CloseDayEndOverlayCover();
                 AdvanceDay();
                 yield break;
             }
@@ -301,6 +309,7 @@ namespace GameLogic.Flow
                 director.MarkConsumed(data);
             }
 
+            CloseDayEndOverlayCover(); // no-op if PlayDayEndEvent already dropped it
             AdvanceDay();
         }
 
@@ -315,23 +324,38 @@ namespace GameLogic.Flow
             while (!done) yield return null;
         }
 
+        /// <summary>Tears down the overlay's lingering black cover, if one is still up. Safe to call
+        /// unconditionally - a no-op once CloseCover has already run.</summary>
+        private void CloseDayEndOverlayCover() => ResolveDayEndOverlay()?.CloseCover();
+
         /// <summary>
-        /// Runs the rolled event and waits for it to finish. Short VDOs play through
-        /// DayEventPlayer; minigames are still a hook, since none exist yet.
+        /// Runs the rolled event and waits for it to finish. Short VDOs load the dedicated
+        /// shortVdoSceneName scene and play through whatever DayEventPlayer lives there; minigames
+        /// are still a hook, since none exist yet.
         /// </summary>
         private IEnumerator PlayDayEndEvent(DayEventType type, DayEventData data)
         {
             if (type == DayEventType.ShortVDO && data is ShortVDOData vdo)
             {
+                yield return LoadShortVdoSceneAsync();
+
+                if (SceneManager.GetActiveScene().name != shortVdoSceneName)
+                    yield break; // already logged why - cover stays up, RunDayEndEvent's fallback drops it
+
                 var player = ResolveEventPlayer();
                 if (player == null)
                 {
-                    Debug.LogWarning($"GameFlowManager: no DayEventPlayer in the scene - skipping '{vdo.Label}'.", this);
+                    Debug.LogWarning($"GameFlowManager: no DayEventPlayer in '{shortVdoSceneName}' - skipping '{vdo.Label}'.", this);
                     yield break;
                 }
 
                 bool done = false;
                 player.Play(vdo, () => done = true);
+
+                // The Short VDO's own screen starts fading in from black right now - safe to drop
+                // the transition cover on top of it this instant, since both are solid black.
+                CloseDayEndOverlayCover();
+
                 while (!done) yield return null;
                 yield break;
             }
@@ -343,6 +367,32 @@ namespace GameLogic.Flow
                 Debug.Log($"GameFlowManager: minigame '{data.Label}' rolled, but minigame playback is not implemented yet - skipping.", this);
                 yield break;
             }
+        }
+
+        /// <summary>
+        /// Loads shortVdoSceneName and waits for AsyncOperation.isDone, rather than trusting the
+        /// synchronous LoadScene to have every object queryable the instant it returns - that
+        /// assumption was the actual cause of "no DayEventPlayer in 'ShortVDO'": the scene loaded,
+        /// but FindFirstObjectByType ran before its objects were reliably registered.
+        /// </summary>
+        private IEnumerator LoadShortVdoSceneAsync()
+        {
+            if (string.IsNullOrWhiteSpace(shortVdoSceneName))
+            {
+                Debug.LogError("GameFlowManager: no short vdo scene name configured.", this);
+                yield break;
+            }
+
+            if (!Application.CanStreamedLevelBeLoaded(shortVdoSceneName))
+            {
+                Debug.LogError($"GameFlowManager: short vdo scene '{shortVdoSceneName}' is not in Build Settings.", this);
+                yield break;
+            }
+
+            var op = SceneManager.LoadSceneAsync(shortVdoSceneName);
+            if (op == null) yield break;
+
+            while (!op.isDone) yield return null;
         }
 
         private DayEventPlayer ResolveEventPlayer()
@@ -415,21 +465,24 @@ namespace GameLogic.Flow
             return endingSequence;
         }
 
-        private void LoadSceneByName(string sceneName, string label)
+        /// <summary>Returns false (after logging why) instead of loading, so callers that need to
+        /// know can skip whatever depended on the scene rather than pressing on blindly.</summary>
+        private bool LoadSceneByName(string sceneName, string label)
         {
             if (string.IsNullOrWhiteSpace(sceneName))
             {
                 Debug.LogError($"GameFlowManager: no {label} scene name configured.", this);
-                return;
+                return false;
             }
 
             if (!Application.CanStreamedLevelBeLoaded(sceneName))
             {
                 Debug.LogError($"GameFlowManager: {label} scene '{sceneName}' is not in Build Settings.", this);
-                return;
+                return false;
             }
 
             SceneManager.LoadScene(sceneName);
+            return true;
         }
 
         void Awake()
