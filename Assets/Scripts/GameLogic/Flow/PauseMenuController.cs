@@ -46,6 +46,10 @@ namespace GameLogic.Flow
 
         public void Toggle()
         {
+            // Story cinematics also bind Escape (skip) - don't open the pause menu under one,
+            // and don't let a pause opened before the cinematic corrupt its timeScale restore.
+            if (GameLogic.Story.CinematicPlayer.IsAnyPlaying) return;
+
             if (IsPaused) Resume();
             else Pause();
         }

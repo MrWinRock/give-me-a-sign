@@ -7049,7 +7049,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -498.1999, y: -475.2}
+  m_AnchoredPosition: {x: -498.19992, y: -475.2}
   m_SizeDelta: {x: 1406.39, y: 743.3701}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1734658304
@@ -8984,6 +8984,80 @@ Transform:
   - {fileID: 92389891}
   m_Father: {fileID: 1958714910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8000000000000002}
+  - component: {fileID: 8000000000000003}
+  - component: {fileID: 8000000000000004}
+  m_Layer: 0
+  m_Name: StoryCinematics
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9beedbb442327f48bd6e0850247d60f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.StoryCinematicController
+  OpeningCutscene: {fileID: 11400000, guid: f115bd23eeda87d45809228fd0c733ad, type: 2}
+  ActTransitions:
+  - startsOnNight: 3
+    cinematic: {fileID: 11400000, guid: b49ba85e37aea8f4c81d87f0d790bbfa, type: 2}
+  - startsOnNight: 6
+    cinematic: {fileID: 11400000, guid: 4a19f76bf3bd5974f898d06bf7ee224c, type: 2}
+  TrainingBeats:
+  - nightIndex: 2
+    cinematic: {fileID: 11400000, guid: 3cc32e1a9cfbc054bbfa240a787002aa, type: 2}
+  - nightIndex: 3
+    cinematic: {fileID: 11400000, guid: 0024fbf4bd344184689968a20f072f99, type: 2}
+  - nightIndex: 4
+    cinematic: {fileID: 11400000, guid: bd6807cd7f2a8dc4e92f3c5ea2d50358, type: 2}
+  - nightIndex: 5
+    cinematic: {fileID: 11400000, guid: 71522a5c2179b2943b6de4ec23efa92b, type: 2}
+  pauseDuringCinematic: 1
+  showDebugInfo: 0
+--- !u!114 &8000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c0f6bccd832aec47892fab096cfa8ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.CinematicPlayer
 --- !u!222 &35873944815318703
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -17273,3 +17347,4 @@ SceneRoots:
   - {fileID: 477437160}
   - {fileID: 198060738}
   - {fileID: 811400002}
+  - {fileID: 8000000000000002}

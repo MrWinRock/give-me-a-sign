@@ -26,6 +26,9 @@ namespace GameLogic.Save
         // still shows up bold in the inbox.
         public List<string> foundMailIds = new List<string>();
 
+        // Cinematics already played this playthrough - gates the once-only story beats.
+        public List<string> playedCinematics = new List<string>();
+
         public bool IsConsumed(string eventId) =>
             !string.IsNullOrEmpty(eventId) && consumedEventIds.Contains(eventId);
 
@@ -51,6 +54,15 @@ namespace GameLogic.Save
         {
             if (string.IsNullOrEmpty(emailId) || foundMailIds.Contains(emailId)) return;
             foundMailIds.Add(emailId);
+        }
+
+        public bool IsCinematicPlayed(string cinematicId) =>
+            !string.IsNullOrEmpty(cinematicId) && playedCinematics.Contains(cinematicId);
+
+        public void MarkCinematicPlayed(string cinematicId)
+        {
+            if (string.IsNullOrEmpty(cinematicId) || playedCinematics.Contains(cinematicId)) return;
+            playedCinematics.Add(cinematicId);
         }
     }
 }

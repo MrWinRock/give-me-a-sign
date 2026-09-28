@@ -47,9 +47,10 @@ namespace GameLogic.Save
                 _current = JsonUtility.FromJson<SaveData>(json) ?? new SaveData();
 
                 // JsonUtility leaves lists null when the field was absent in an older file.
-                if (_current.consumedEventIds == null) _current.consumedEventIds = new System.Collections.Generic.List<string>();
-                if (_current.readEmailIds == null) _current.readEmailIds = new System.Collections.Generic.List<string>();
-                if (_current.foundMailIds == null) _current.foundMailIds = new System.Collections.Generic.List<string>();
+                                if (_current.consumedEventIds == null) _current.consumedEventIds = new System.Collections.Generic.List<string>();
+                                if (_current.readEmailIds == null) _current.readEmailIds = new System.Collections.Generic.List<string>();
+                                if (_current.foundMailIds == null) _current.foundMailIds = new System.Collections.Generic.List<string>();
+                                if (_current.playedCinematics == null) _current.playedCinematics = new System.Collections.Generic.List<string>();
             }
             catch (System.Exception e)
             {

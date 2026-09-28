@@ -1529,7 +1529,7 @@ MonoBehaviour:
   loseColor: {r: 0, g: 0.16862746, b: 1, a: 1}
   playAgainButton: {fileID: 1573754165}
   quitButton: {fileID: 515659377}
-  gameSceneName: GameManager
+  gameSceneName: GamePlay
   anomalyDefeatObjects: []
   normalResultObjects: []
   showDebugInfo: 0

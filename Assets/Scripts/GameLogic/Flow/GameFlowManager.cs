@@ -18,7 +18,8 @@ namespace GameLogic.Flow
     ///
     /// Anomalies, the demon and the clock only report what happened - this decides the outcome,
     /// records it, and drives the state machine
-    /// MainMenu -> DayGameplay -> DayEndEvent -> MainMenu(next day) -> ... -> Ending -> reset.
+    /// MainMenu -> DayGameplay -> DayEndEvent -> MainMenu(next day) -> ... -> Ending -> reset,
+    /// with a loss detouring through the Result scene before the same day restarts.
     /// </summary>
     public class GameFlowManager : MonoBehaviour
     {
@@ -27,6 +28,8 @@ namespace GameLogic.Flow
         [SerializeField] private string mainMenuSceneName = "MainMenu";
         [Tooltip("The Incident Report gameplay scene.")]
         [SerializeField] private string gameplaySceneName = "GamePlay";
+        [Tooltip("Shown after a loss, before the day restarts - death cause, score vs required, seed, retry button.")]
+        [SerializeField] private string resultSceneName = "Result";
 
         [Header("Campaign")]
         [Tooltip("How many days a full run lasts.")]
@@ -161,9 +164,9 @@ namespace GameLogic.Flow
         // ── Day loop ─────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Not part of the automatic flow (EndNight -> FinishDayFromOutcome already calls
-        /// EndDayGameplay directly). Kept for the Result scene as a manual/debug entry point -
-        /// opening it directly and pressing Play Again resumes the day loop instead of hanging.
+        /// Called by the Result screen's Play Again button. On a loss this restarts the same
+        /// day (RestartCurrentDay); a win (only reachable if the Result scene was opened
+        /// directly, e.g. debugging) advances into the day-end event instead.
         /// </summary>
         public void ContinueFromResult()
         {
@@ -582,12 +585,13 @@ namespace GameLogic.Flow
 
         /// <summary>
         /// Plays the in-place feedback for how the day ended (a short pause on a win, the death
-        /// fade + cause line on a loss), then feeds the result straight into EndDayGameplay -
-        /// there is no Result-scene detour, so a win goes on to the day-end event and a loss
-        /// restarts immediately, exactly per the day-loop state machine.
+        /// fade + cause line on a loss), then routes onward: a win feeds EndDayGameplay(true)
+        /// straight into the day-end event, a loss goes to the Result scene instead of
+        /// restarting immediately - the Result screen's Play Again is what actually calls back
+        /// into EndDayGameplay(false) -> RestartCurrentDay.
         ///
         /// LastResult.Won (not just outcome == Survived) decides survived: reaching 6:00 AM
-        /// without the required score is still a loss that retries the same day.
+        /// without the required score is still a loss.
         /// </summary>
         private IEnumerator FinishDayFromOutcome(NightOutcome outcome)
         {
@@ -601,7 +605,13 @@ namespace GameLogic.Flow
                 yield return PlayDeathSequence(outcome);
             }
 
-            EndDayGameplay(LastResult != null && LastResult.Won);
+            if (LastResult != null && LastResult.Won)
+            {
+                EndDayGameplay(true);
+                yield break;
+            }
+
+            LoadSceneByName(resultSceneName, "result");
         }
 
         private IEnumerator PlayDeathSequence(NightOutcome outcome)
