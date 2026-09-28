@@ -87,7 +87,7 @@ namespace Score
                     status: "YOU LOSE!",
                     statusColor: loseColor,
                     score: "You were consumed by the darkness...",
-                    threshold: "?????????????????????????");
+                    threshold: "");
 
                 SetActiveAll(anomalyDefeatObjects, true);
                 SetActiveAll(normalResultObjects, false);
@@ -99,8 +99,8 @@ namespace Score
                 SetTexts(
                     status: "YOU SURVIVED THE WEEK",
                     statusColor: winColor,
-                    score: $"Final Score: {result.score}",
-                    threshold: "Thank you for playing.");
+                    score: "Thank you for playing.",
+                    threshold: "");
 
                 SetActiveAll(normalResultObjects, true);
                 SetActiveAll(anomalyDefeatObjects, false);
@@ -110,8 +110,8 @@ namespace Score
                 SetTexts(
                     status: result.Won ? "YOU WIN!" : "YOU LOSE!",
                     statusColor: result.Won ? winColor : loseColor,
-                    score: $"Final Score: {result.score}",
-                    threshold: $"(Need {result.requiredScore} points to win)");
+                    score: "",
+                    threshold: "");
 
                 SetActiveAll(normalResultObjects, true);
                 SetActiveAll(anomalyDefeatObjects, false);
