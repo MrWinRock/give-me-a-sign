@@ -9,9 +9,9 @@ using UnityEngine.InputSystem;
 namespace Report
 {
     /// <summary>
-    /// Drives the Incident Report gameplay loop: opens the report window when an anomaly
-    /// is clicked, validates the submitted location and spoken anomaly type, then resolves
-    /// or escalates the anomaly based on the result.
+    /// Drives the Incident Report gameplay loop: opens the report window, matches what the player
+    /// said they saw (and optionally the room) against every active anomaly, then resolves or
+    /// escalates based on the result.
     /// </summary>
     public class IncidentReportManager : MonoBehaviour
     {
@@ -25,9 +25,8 @@ namespace Report
         [SerializeField] private bool autoFindReferences = true;
 
         [Header("Matching Settings")]
-        [Tooltip("If true, the selected LOCATION must also match the anomaly's actual room for the report to succeed. If false, only the spoken anomaly type is checked.")]
+        [Tooltip("If true, the selected LOCATION must also match the anomaly's actual room for the report to succeed. If false, only what the player said they saw is checked.")]
         [SerializeField] private bool requireCorrectLocation;
-        [Range(0.5f, 1f)] [SerializeField] private float matchThreshold = 0.65f;
 
         [Header("Result Feedback")]
         [Tooltip("How long the SENT/ERROR badge is shown before the window closes and the anomaly is resolved/escalated.")]
@@ -212,17 +211,23 @@ namespace Report
         {
             if (!IsReportOpen) return;
 
-            // A blank report (opened via Spacebar with no anomaly active) has nothing to confirm
-            // against, so it always comes back as an error rather than throwing on a null anomaly.
-            bool success = _currentAnomaly != null
-                && MatchesSpokenType(_currentAnomaly)
-                && MatchesLocation(_currentAnomaly, selectedRoom);
+            // The report describes what the player saw, so it can match ANY active anomaly -
+            // not just the one the form happened to open on.
+            var matched = FindReportedAnomaly(selectedRoom);
+            bool success = matched != null;
+
+            if (matched != null && matched != _currentAnomaly)
+            {
+                _currentAnomaly?.ClearReportedFlag();
+                matched.MarkReported();
+                _currentAnomaly = matched;
+            }
 
             if (showDebugInfo)
             {
                 string outcome = success ? "SUCCESS" : "FAILED";
                 string target = _currentAnomaly != null ? $"'{_currentAnomaly.name}'" : "(no anomaly attached)";
-                Debug.Log($"IncidentReportManager: Report {outcome} for {target}. Spoken: '{_recognizedKeyword}', Expected: [{ExpectedKeywordsLabel(_currentAnomaly)}].");
+                Debug.Log($"IncidentReportManager: Report {outcome} for {target}. Spoken: '{_recognizedKeyword}', Room: '{selectedRoom}', Expected: [{ExpectedKeywordsLabel(_currentAnomaly)}].");
             }
 
             // The case number only advances once a report has actually been filed - cancelling
@@ -264,7 +269,28 @@ namespace Report
                 gameManager.inputLocked = false;
         }
 
-        private bool MatchesSpokenType(Anomaly anomaly)
+        // The anomaly the form opened on wins if it fits; otherwise the first active one that does.
+        private Anomaly FindReportedAnomaly(string selectedRoom)
+        {
+            if (string.IsNullOrWhiteSpace(_recognizedKeyword)) return null;
+
+            if (IsReportable(_currentAnomaly, selectedRoom)) return _currentAnomaly;
+
+            foreach (var anomaly in Anomaly.ActiveAnomalies)
+            {
+                if (anomaly != _currentAnomaly && !anomaly.IsReported && IsReportable(anomaly, selectedRoom))
+                    return anomaly;
+            }
+            return null;
+        }
+
+        private bool IsReportable(Anomaly anomaly, string selectedRoom)
+        {
+            if (anomaly == null || !anomaly.isActiveAndEnabled || anomaly.State == AnomalyState.Resolved) return false;
+            return MatchesObservation(anomaly) && MatchesLocation(anomaly, selectedRoom);
+        }
+
+        private bool MatchesObservation(Anomaly anomaly)
         {
             var definition = anomaly.Definition;
 
@@ -276,16 +302,14 @@ namespace Report
                 return false;
             }
 
-            var keywords = definition.correctKeywords;
-            if (keywords == null || keywords.Length == 0)
-            {
-                Debug.LogWarning($"AnomalyDefinition '{definition.name}' has no correctKeywords - it can never be reported correctly.", definition);
-                return false;
-            }
+            var vocabulary = ObservationVocabulary.Load();
+            if (vocabulary.Mentions(_recognizedKeyword, definition.observation)) return true;
 
-            foreach (var keyword in keywords)
+            if (definition.correctKeywords == null) return false;
+
+            foreach (var keyword in definition.correctKeywords)
             {
-                if (IsKeywordMatch(_recognizedKeyword, keyword)) return true;
+                if (vocabulary.PhraseHeard(_recognizedKeyword, keyword)) return true;
             }
             return false;
         }
@@ -306,62 +330,13 @@ namespace Report
 
         private static string ExpectedKeywordsLabel(Anomaly anomaly)
         {
-            if (anomaly == null) return "no anomaly";
+            var definition = anomaly != null ? anomaly.Definition : null;
+            if (definition == null) return anomaly == null ? "no anomaly" : "(no definition)";
 
-            var definition = anomaly.Definition;
-            if (definition?.correctKeywords != null && definition.correctKeywords.Length > 0)
-                return string.Join(" | ", definition.correctKeywords);
-
-            return "(no definition)";
-        }
-
-        private bool IsKeywordMatch(string spoken, string correct)
-        {
-            if (string.IsNullOrWhiteSpace(spoken) || string.IsNullOrWhiteSpace(correct))
-                return false;
-
-            var a = spoken.Trim().ToLowerInvariant();
-            var b = correct.Trim().ToLowerInvariant();
-
-            if (a.Contains(b) || b.Contains(a))
-                return true;
-
-            return Similarity(a, b) >= matchThreshold;
-        }
-
-        private static float Similarity(string a, string b)
-        {
-            if (a.Length == 0 && b.Length == 0) return 1f;
-            var dist = Levenshtein(a, b);
-            var maxLen = Mathf.Max(a.Length, b.Length);
-            return 1f - (float)dist / maxLen;
-        }
-
-        // Optimized Levenshtein distance (uses two 1D rows)
-        private static int Levenshtein(string s, string t)
-        {
-            int n = s.Length, m = t.Length;
-            if (n == 0) return m; if (m == 0) return n;
-
-            var prev = new int[m + 1];
-            var curr = new int[m + 1];
-            for (int j = 0; j <= m; j++) prev[j] = j;
-
-            for (int i = 1; i <= n; i++)
-            {
-                curr[0] = i;
-                var si = s[i - 1];
-                for (int j = 1; j <= m; j++)
-                {
-                    var cost = (si == t[j - 1]) ? 0 : 1;
-                    var del = prev[j] + 1;
-                    var ins = curr[j - 1] + 1;
-                    var sub = prev[j - 1] + cost;
-                    curr[j] = Mathf.Min(del, Mathf.Min(ins, sub));
-                }
-                var tmp = prev; prev = curr; curr = tmp;
-            }
-            return prev[m];
+            string label = ObservationVocabulary.Load().LabelFor(definition.observation);
+            return definition.correctKeywords != null && definition.correctKeywords.Length > 0
+                ? $"{label} | {string.Join(" | ", definition.correctKeywords)}"
+                : label;
         }
 
         void OnDestroy()

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Anomaly_Anomaly3Res1
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: anomaly3res1
-  displayName: Shadow
-  correctKeywords:
-  - Shadow
+  displayName: Moved Furniture
+  observation: 2
+  correctKeywords: []
   prefab: {fileID: 7278711306125879349, guid: 7797a06ca3a1c134eb1c3a5a5c102a3c, type: 3}
   respondType: 0
   threatCost: 1
@@ -23,7 +23,7 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 3
   threatTimeoutSeconds: 0
-  manualImage: {fileID: 0}
+  manualImage: {fileID: 21300000, guid: 91f72e34b9f54ab47a904859e15e6477, type: 3}
   manualDescription: 
-  howToSpot: 
+  howToSpot: A chair or cushion sitting somewhere it doesn't belong.
   linkedHaunt: 0

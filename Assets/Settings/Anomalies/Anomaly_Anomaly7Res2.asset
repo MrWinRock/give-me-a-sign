@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Anomaly_Anomaly7Res2
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: anomaly7res2
-  displayName: Shadow
+  displayName: Hanging Figure
+  observation: 0
   correctKeywords:
-  - Shadow
+  - hanging
+  - ceiling
   prefab: {fileID: 5868571294791676303, guid: 9116439d33df5494eb1a9fe9ac2e3f16, type: 3}
   respondType: 1
   threatCost: 3
@@ -23,7 +25,7 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 30
   threatTimeoutSeconds: 0
-  manualImage: {fileID: 0}
+  manualImage: {fileID: 3808112225376172561, guid: 8f5468326755fef4d9f8050649beff3b, type: 3}
   manualDescription: 
-  howToSpot: 
+  howToSpot: A limp figure hanging from the ceiling.
   linkedHaunt: 0

@@ -170,9 +170,19 @@ namespace Report
                 LogSchedule();
         }
 
-        private void Fire(HauntBeat beat)
+        public bool IsLoopActive(HauntLoopId loopId) =>
+            _loops.TryGetValue(loopId, out var loop) && loop != null && loop.IsActive;
+
+        // Unscheduled beat (e.g. NoiseMeter filling up). Same tutorial/exclusivity rules as the schedule.
+        public bool TriggerNow(HauntLoopId loopId, RoomDefinition room = null)
         {
-            if (beat.loop == HauntLoopId.None) return;
+            float minute = nightTimer != null ? nightTimer.ElapsedMinutes : 0f;
+            return Fire(new HauntBeat { loop = loopId, room = room, atMinute = minute });
+        }
+
+        private bool Fire(HauntBeat beat)
+        {
+            if (beat.loop == HauntLoopId.None) return false;
 
             // Sprint 6, S-604: night 1 is the tutorial - NightPlanRunner sets this flag on
             // GlitchDirector for night 1 only. Checked here (not in NightPlanGenerator) so no
@@ -181,13 +191,13 @@ namespace Report
             {
                 if (showDebugInfo)
                     Debug.Log($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - tutorial night.", this);
-                return;
+                return false;
             }
 
             if (!_loops.TryGetValue(beat.loop, out var loop) || loop == null)
             {
                 Debug.LogWarning($"HauntDirector: no IHauntLoop registered for {beat.loop} - is its component in the scene?", this);
-                return;
+                return false;
             }
 
             // Non-exclusive loops (Radio Check) fire over an active exclusive loop on purpose;
@@ -195,13 +205,14 @@ namespace Report
             if (loop.IsExclusive && IsAnyExclusiveHauntActive)
             {
                 Debug.LogWarning($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - another exclusive haunt is already active.", this);
-                return;
+                return false;
             }
 
             loop.Trigger(beat);
 
             if (showDebugInfo)
                 Debug.Log($"HauntDirector: fired {beat.loop} at {beat.atMinute:0.##}m.", this);
+            return true;
         }
 
         private void LogSchedule()

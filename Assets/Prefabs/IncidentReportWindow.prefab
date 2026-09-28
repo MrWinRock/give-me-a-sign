@@ -4619,7 +4619,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Anomaly type (verbal report):'
+  m_text: 'What changed? (verbal report):'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
@@ -5212,7 +5212,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Recognized keyword will appear here...
+  m_text: 'Say what you see, e.g. "person", "door open"...'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}

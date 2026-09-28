@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4415dd319bff846bac17a8bfa4262b, type: 3}
+  m_Name: XPTheme
+  m_EditorClassIdentifier: Assembly-CSharp::UI.XPTheme
+  font: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
+  titlebarTop: {r: 0.16862746, g: 0.43137255, b: 0.87058824, a: 1}
+  titlebarBottom: {r: 0.09411765, g: 0.32941177, b: 0.74509805, a: 1}
+  titlebarText: {r: 1, g: 1, b: 1, a: 1}
+  titlebarHeight: 24
+  border: {r: 0, g: 0.23529412, b: 0.45490196, a: 1}
+  body: {r: 0.9254902, g: 0.9137255, b: 0.84705883, a: 1}
+  dim: {r: 0, g: 0, b: 0, a: 0.55}
+  bodyText: {r: 0, g: 0, b: 0, a: 1}
+  mutedText: {r: 0.3529412, g: 0.3529412, b: 0.3529412, a: 1}
+  accentText: {r: 0.039215688, g: 0.14117648, b: 0.41568628, a: 1}
+  closeTop: {r: 0.9098039, g: 0.47843137, b: 0.47843137, a: 1}
+  closeBottom: {r: 0.6901961, g: 0.1254902, b: 0.1254902, a: 1}
+  tabActive: {r: 0.9254902, g: 0.9137255, b: 0.84705883, a: 1}
+  tabInactive: {r: 0.78431374, g: 0.76862746, b: 0.72156864, a: 1}
+  tabActiveText: {r: 0, g: 0, b: 0, a: 1}
+  tabInactiveText: {r: 0.3529412, g: 0.3529412, b: 0.3529412, a: 1}

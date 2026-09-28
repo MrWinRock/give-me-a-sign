@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Anomaly_Anomaly5Res1
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: anomaly5res1
-  displayName: Shadow
-  correctKeywords:
-  - Shadow
+  displayName: Extra Wardrobe
+  observation: 3
+  correctKeywords: []
   prefab: {fileID: 6929262860782181014, guid: 11f7200adcada704e9ffabdf5cce93b2, type: 3}
   respondType: 0
   threatCost: 1
@@ -23,7 +23,7 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 3
   threatTimeoutSeconds: 0
-  manualImage: {fileID: 0}
+  manualImage: {fileID: 61322693350914173, guid: af214cbc23addc94a9bbf61eb2180d00, type: 3}
   manualDescription: 
-  howToSpot: 
+  howToSpot: A dark cabinet or wardrobe that wasn't in the room on your last pass.
   linkedHaunt: 0

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Anomaly_Anomaly6Res2
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: anomaly6res2
-  displayName: Shadow
-  correctKeywords:
-  - Shadow
+  displayName: Standing Figure
+  observation: 0
+  correctKeywords: []
   prefab: {fileID: 6497321372195617453, guid: cad8235f9d8e9414d8273f746bc15a9a, type: 3}
   respondType: 1
   threatCost: 2
@@ -23,7 +23,7 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 10
   threatTimeoutSeconds: 0
-  manualImage: {fileID: 0}
+  manualImage: {fileID: -4056284103440860474, guid: bd90df143602b734db6d9dac1fa2415d, type: 3}
   manualDescription: 
-  howToSpot: 
+  howToSpot: A full silhouette standing perfectly still in the middle of the room.
   linkedHaunt: 0

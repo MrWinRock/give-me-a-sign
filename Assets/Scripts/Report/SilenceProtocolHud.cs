@@ -1,4 +1,5 @@
 using TMPro;
+using UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,10 +9,12 @@ namespace Report
     /// Minimal runtime-built HUD for Silence Protocol: a screen dim, a VU meter with a danger
     /// line, and three strike pips. Built entirely from script - no scene wiring, no prefab -
     /// the same way DemonAnomaly builds its video overlay, so dropping SilenceProtocolHaunt into
-    /// the scene just works.
+    /// the scene just works. Tahoma + scanlines via XPTheme so it reads as the same monitor feed
+    /// as every other gameplay-scene window - no titlebar though, this can't be dismissed.
     /// </summary>
     public class SilenceProtocolHud
     {
+        private readonly XPTheme _theme;
         private readonly GameObject _root;
         private readonly Image _dim;
         private readonly Image _meterFill;
@@ -22,6 +25,8 @@ namespace Report
 
         private SilenceProtocolHud()
         {
+            _theme = XPTheme.Load();
+
             // Deliberately NOT DontDestroyOnLoad: a normal scene object dies automatically if the
             // gameplay scene unloads before EndEncounter's explicit Destroy() runs (e.g. an
             // exception mid-encounter), instead of leaking a HUD into whatever loads next.
@@ -72,6 +77,9 @@ namespace Report
                 _strikePips[i] = CreateImage(_root.transform, $"Pip{i}", new Color(1f, 1f, 1f, 0.25f),
                     Anchored(new Vector2(x, 0.105f), new Vector2(14f, 14f)));
             }
+
+            _instructionText.font = _theme.ResolvedFont;
+            XPWindowBuilder.AddScanlineOverlay(_root.transform, _theme);
         }
 
         public void SetLevel(float level, float whisperCeiling, float dangerFloor)

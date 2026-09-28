@@ -22,9 +22,13 @@ namespace GameLogic.Data
         [Tooltip("Name shown in the field manual and debug output.")]
         public string displayName = "Shadow Figure";
 
-        [GG.Required]
-        [Tooltip("คำที่นับว่าถูกทั้งหมด รวมคำที่ผู้เล่นน่าจะพูดพลาด. ANY of these spoken into the mic counts as a correct report - list the likely mishearings too.")]
-        public string[] correctKeywords = { "Shadow", "Shadow Figure" };
+        [Header("Report")]
+        [GG.InfoBox("The player reports WHAT CHANGED, not a name. The words for each observation live in Resources/ObservationVocabulary.")]
+        [Tooltip("สิ่งที่ผู้เล่นเห็นว่าเปลี่ยนไป. What the player has to say they saw for the report to count.")]
+        public ObservationType observation = ObservationType.Intruder;
+
+        [Tooltip("Optional extra words also accepted for THIS anomaly only (e.g. 'hanging' for a figure on the ceiling).")]
+        public string[] correctKeywords = System.Array.Empty<string>();
 
         [Header("Spawning")]
         [GG.Required]

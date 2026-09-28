@@ -96,6 +96,23 @@ namespace Report
                 nightTimer = FindObjectOfType<NightTimer>();
 
             InvokeRepeating(nameof(UpdateClock), 0f, 1f);
+
+            ApplyXpCctvTheme();
+        }
+
+        // Additive-only pass so the hand-authored prefab (already XP-coloured) doesn't need
+        // restructuring: swaps every label onto the shared Tahoma font. No scanline overlay here -
+        // this window lives on the Screen Space - Camera "=== UI === > Canvas", rendered THROUGH
+        // Main Camera, so it already gets the scene's real CCTV/VHS post-processing (Global
+        // Volume) for free. Adding a second scanline RawImage doubled the effect and only showed
+        // up in Play mode (Awake() never runs in the Editor's own view), which read as "broken,
+        // but only when I press Play."
+        private void ApplyXpCctvTheme()
+        {
+            var theme = XPTheme.Load();
+
+            foreach (var label in GetComponentsInChildren<TextMeshProUGUI>(true))
+                label.font = theme.ResolvedFont;
         }
 
         public void Initialize(IncidentReportManager manager, List<string> roomNames)
@@ -384,11 +401,11 @@ namespace Report
                     break;
                 case FormStatus.Recording:
                     ApplyBadge("REC", recordingColor);
-                    if (statusText != null) statusText.text = "Listening... speak the anomaly type.";
+                    if (statusText != null) statusText.text = "Listening... say what changed.";
                     break;
                 case FormStatus.Ready:
                     ApplyBadge("READY", readyColor);
-                    if (statusText != null) statusText.text = "Keyword captured. Review and submit.";
+                    if (statusText != null) statusText.text = "Observation captured. Review and submit.";
                     break;
             }
         }

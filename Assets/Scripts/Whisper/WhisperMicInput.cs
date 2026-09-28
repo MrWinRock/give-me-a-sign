@@ -44,10 +44,15 @@ namespace Whisper
         [Tooltip("Debounce for early (partial) recognition updates, so the routers aren't spammed.")]
         [SerializeField] private float dispatchCooldownSec = 0.7f;
 
+        // RMS level and duration (seconds) of each chunk heard while push-to-talk is live. NoiseMeter listens.
+        public static event Action<float, float> OnSpeechChunk;
+
         private WhisperStream _stream;
         private readonly ConcurrentQueue<string> _pendingRoutes = new ConcurrentQueue<string>();
         private bool _createdWhisperManager;
         private bool _createdMicrophone;
+        private bool _chunkHooked;
+        private float _micGain = 1f; // PlayerPrefs-backed, so read once per push-to-talk, not per chunk
         private bool _isListening;
         private string _lastQueuedText;
         private float _nextDispatchTime;
@@ -163,6 +168,24 @@ namespace Whisper
             microphone.maxLengthSec = 60;
             microphone.loop = true;
             microphone.echo = false;
+
+            if (!_chunkHooked)
+            {
+                microphone.OnChunkReady += OnMicChunk;
+                _chunkHooked = true;
+            }
+        }
+
+        private void OnMicChunk(AudioChunk chunk)
+        {
+            if (!_isListening || chunk.Data == null || chunk.Data.Length == 0) return;
+
+            float sumSquares = 0f;
+            for (int i = 0; i < chunk.Data.Length; i++)
+                sumSquares += chunk.Data[i] * chunk.Data[i];
+
+            float rms = Mathf.Sqrt(sumSquares / chunk.Data.Length) * _micGain;
+            OnSpeechChunk?.Invoke(rms, chunk.Length);
         }
 
         public void BeginPushToTalk() => StartListening();
@@ -198,6 +221,7 @@ namespace Whisper
             }
 
             ConfigureMicrophoneIfNeeded();
+            _micGain = Mathf.Max(0.01f, MainMenu.ControlPanelWindow.MicGain);
             if (!microphone.IsRecording) microphone.StartRecord();
 
             if (_stream == null)
@@ -340,6 +364,9 @@ namespace Whisper
 
                 if (microphone != null && microphone.IsRecording)
                     microphone.StopRecord();
+
+                if (_chunkHooked && microphone != null)
+                    microphone.OnChunkReady -= OnMicChunk;
 
                 if (_createdMicrophone && microphone != null)
                     Destroy(microphone.gameObject);

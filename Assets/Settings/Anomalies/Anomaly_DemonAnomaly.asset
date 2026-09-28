@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: demonanomaly
   displayName: Demon
-  correctKeywords:
-  - Demon
+  observation: 8
+  correctKeywords: []
   prefab: {fileID: 1000000000000000001, guid: 3d7e9f2b8c1a4e6f9b0d5c3a7e1f8b2d, type: 3}
   respondType: 2
   threatCost: 4
@@ -26,5 +26,6 @@ MonoBehaviour:
   threatTimeoutSeconds: 30
   manualImage: {fileID: 0}
   manualDescription: 
-  howToSpot: 
+  howToSpot: You will know. The screen goes black and something screams - say "Demon"
+    the moment the report opens. No time limit warnings, act fast.
   linkedHaunt: 0

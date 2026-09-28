@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd78d21cb7daa2845b5ad714a54d5288, type: 3}
+  m_Name: ObservationVocabulary
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.ObservationVocabulary
+  minFuzzyWordLength: 4
+  wordSimilarity: 0.75
+  entries:
+  - type: 0
+    label: Intruder
+    phrases:
+    - person
+    - someone
+    - somebody
+    - figure
+    - intruder
+    - man
+    - woman
+    - people
+    - body
+    - guy
+    - stranger
+  - type: 1
+    label: Shadow
+    phrases:
+    - shadow
+    - shape
+    - blob
+    - darkness
+    - dark shape
+    - silhouette
+  - type: 2
+    label: Object moved
+    phrases:
+    - moved
+    - chair
+    - furniture
+    - misplaced
+    - fallen
+    - knocked
+    - displaced
+    - out of place
+    - pillow
+    - cushion
+  - type: 3
+    label: Extra object
+    phrases:
+    - extra
+    - appeared
+    - new object
+    - wardrobe
+    - cabinet
+    - closet
+    - something new
+    - wasn't there
+  - type: 4
+    label: Missing object
+    phrases:
+    - missing
+    - gone
+    - disappeared
+    - vanished
+    - removed
+    - taken
+  - type: 5
+    label: Door
+    phrases:
+    - door
+    - doorway
+    - opened
+    - open door
+  - type: 6
+    label: Light
+    phrases:
+    - light
+    - lights
+    - lamp
+    - bulb
+    - flicker
+    - flickering
+  - type: 7
+    label: Picture
+    phrases:
+    - picture
+    - painting
+    - photo
+    - portrait
+    - frame
+  - type: 8
+    label: Demon
+    phrases:
+    - demon
+    - devil
+    - monster
+    - creature
