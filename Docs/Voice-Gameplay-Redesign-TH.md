@@ -269,7 +269,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 - ฟอร์ม Incident Report ปิดไว้ด้วย `reportFormEnabled = false` (Spacebar ไม่เปิดฟอร์มแล้ว) โค้ดฟอร์มยังอยู่ เปิดกลับได้ที่ Inspector
 - ยังไม่ได้ทดสอบกับเสียงพูดจริง / anomaly จริงที่ active
 
-- ที่ยังไม่ได้แก้จากหัวข้อ 7: `PhraseMatcher.WordsMatch` ที่หลวมเกินไปสำหรับ Radio Check
+- `PhraseMatcher.WordsMatch` แก้แล้ว: คำละตินสั้นกว่า 4 ตัวอักษรต้องตรงเป๊ะ (ภาษาไทยยังใช้ Contains เหมือนเดิม)
 
 ---
 
@@ -288,7 +288,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 | Phase | งาน | สถานะ |
 |---|---|---|
 | 1 | Observation Report (#1) + Noise Meter + HUD | 🟡 กำลังทำ |
-| 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | 🟡 V ทำแล้ว รอทดสอบจริง / `PhraseMatcher` ยังไม่แก้ |
+| 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | ✅ ใช้งานได้จริง + แก้ `PhraseMatcher` แล้ว |
 | 3 | #2 Voice Response + #4 Voice Mimic | ⬜ |
 | 4 | #3 Give Me A Sign investigation | ⬜ |
 | — | Content: art ของ anomaly ให้ "สิ่งที่เปลี่ยน" เห็นชัดในแต่ละห้อง | ⬜ |

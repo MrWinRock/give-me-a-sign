@@ -46,12 +46,31 @@ namespace Whisper
             return phrase.ToLowerInvariant().Split(WordSeparators, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        // Below this length a Latin word must match exactly, or "a"/"in" Contains-match nearly every target.
+        private const int MinFuzzyLength = 4;
+
         private static bool WordsMatch(string recognizedWord, string targetWord, float similarityThreshold)
         {
-            return recognizedWord == targetWord ||
+            if (recognizedWord == targetWord) return true;
+
+            // Thai has no spaces between words, so short Thai fragments legitimately need Contains().
+            if (IsLatin(recognizedWord) && IsLatin(targetWord) &&
+                Mathf.Min(recognizedWord.Length, targetWord.Length) < MinFuzzyLength)
+                return false;
+
+            return
                    recognizedWord.Contains(targetWord) ||
                    targetWord.Contains(recognizedWord) ||
                    Similarity(recognizedWord, targetWord) >= similarityThreshold;
+        }
+
+        private static bool IsLatin(string word)
+        {
+            foreach (char c in word)
+            {
+                if (c > 0x024F) return false;
+            }
+            return true;
         }
 
         public static float Similarity(string a, string b)
