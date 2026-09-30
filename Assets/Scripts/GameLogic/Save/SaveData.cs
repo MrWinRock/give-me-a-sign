@@ -29,6 +29,20 @@ namespace GameLogic.Save
         // Cinematics already played this playthrough - gates the once-only story beats.
         public List<string> playedCinematics = new List<string>();
 
+        // anomalyIds the player has actually had appear on screen - unlocks their Field Manual pages.
+        public List<string> seenAnomalyIds = new List<string>();
+
+        public bool IsAnomalySeen(string anomalyId) =>
+            !string.IsNullOrEmpty(anomalyId) && seenAnomalyIds.Contains(anomalyId);
+
+        // True only the first time, so the caller knows whether a save is worth writing.
+        public bool MarkAnomalySeen(string anomalyId)
+        {
+            if (string.IsNullOrEmpty(anomalyId) || seenAnomalyIds.Contains(anomalyId)) return false;
+            seenAnomalyIds.Add(anomalyId);
+            return true;
+        }
+
         public bool IsConsumed(string eventId) =>
             !string.IsNullOrEmpty(eventId) && consumedEventIds.Contains(eventId);
 

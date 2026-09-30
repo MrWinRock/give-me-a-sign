@@ -219,8 +219,7 @@ report ต่อได้ปกติ (ยืนยัน hard requirement "no U
 **Assumptions ที่ต้องแฟลกให้เจรู้:**
 1. **Min/Max ปุ่ม** — มีแค่ภาพ ไม่มีพฤติกรรมจริง เพราะ `XPWindowController` (base class ที่ reuse) รองรับแค่ Close
    ถ้าต้องการ minimize/maximize จริงต้องขยาย base class ก่อน (กระทบ MailWindow/TextContentWindow ด้วย)
-2. **`useLockedEntries`** — ปิดไว้ (false) และ `IsDiscovered()` return true เสมอ (stub) เพราะ `SaveData` ยังไม่มี
-   field เก็บว่า anomaly ไหนเคยเจอมาก่อน — ตรงตาม spec ที่บอกให้ stub ถ้ายังไม่มี save record
+2. **`useLockedEntries`** — ✅ ทำแล้ว: `SaveData.seenAnomalyIds` บันทึกเมื่อ anomaly โผล่ (`Anomaly.OnEnable`; Demon นับตอน reveal) หน้าที่ยังไม่เคยเจอขึ้น `???` ทั้งใน sidebar และ detail, รีเฟรชทุกครั้งที่เปิด, New Game ล้างรายการ (เปิดใช้ใน prefab + ซีน GamePlay แล้ว)
 3. **Desktop icon "Field Manual.exe" บน MainMenu + Help item เปิด Field Manual** — ✅ ทำแล้ว:
    `DesktopAction.OpenFieldManual` + ช่อง `fieldManualWindowPrefab` ใน `DesktopManager`, ไอคอนใหม่ `Icon_FieldManual`
    (ใช้รูปเดียวกับ Mail ชั่วคราว ต้องเปลี่ยนเป็นรูปจริง), `HelpItem` ใน Incident Report มี `OpenFieldManualOnClick`

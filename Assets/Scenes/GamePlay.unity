@@ -15013,7 +15013,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 138c32c8ffacbc242a0104aa0a476362, type: 2}
   - {fileID: 11400000, guid: fc64216772d959742b4165541d77ffbb, type: 2}
   - {fileID: 11400000, guid: 1519542e461f78f4fb7c334c775b23ce, type: 2}
-  useLockedEntries: 0
+  useLockedEntries: 1
   sidebarContainer: {fileID: 8714005064366666126}
   entryButtonPrefab: {fileID: 7811887551547228355, guid: 5727c01f939b6b046b6d668cea0ea772, type: 3}
   previewImage: {fileID: 4383909011283821380}

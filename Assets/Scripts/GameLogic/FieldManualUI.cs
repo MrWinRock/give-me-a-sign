@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using GameLogic.Data;
 using GameLogic.Night;
+using GameLogic.Save;
 using MainMenu;
 using TMPro;
 using UI;
@@ -31,8 +32,7 @@ namespace GameLogic
         [Tooltip("Left empty, auto-fills from NightContentLibrary (the same pool the night generator draws from) the first time this opens.")]
         [SerializeField] private List<AnomalyDefinition> entries = new List<AnomalyDefinition>();
 
-        [Tooltip("Not yet wired to a save record of which anomalies have actually been encountered - " +
-                 "SaveData has no such field today. Leave off. See Docs/Voice-Gameplay-Redesign-TH.md.")]
+        [Tooltip("On = a page stays '???' until the player has seen that anomaly appear (SaveData.seenAnomalyIds).")]
         [SerializeField] private bool useLockedEntries;
 
         [Header("Sidebar")]
@@ -79,6 +79,7 @@ namespace GameLogic
         {
             EnsureEntries();
             EnsureRows();
+            RefreshLocks();
             RefreshStatusBar();
 
             int jump = Mathf.Clamp(_selectedIndex, 0, Mathf.Max(0, entries.Count - 1));
@@ -171,6 +172,15 @@ namespace GameLogic
             LayoutRebuilder.ForceRebuildLayoutImmediate(sidebarContainer);
         }
 
+        // Discovery can change between two openings, so labels are re-derived every time the window opens.
+        private void RefreshLocks()
+        {
+            for (int i = 0; i < _rows.Count && i < entries.Count; i++)
+                _rows[i].SetLocked(IsLocked(entries[i]));
+        }
+
+        private bool IsLocked(AnomalyDefinition def) => useLockedEntries && !IsDiscovered(def);
+
         private void Select(int index)
         {
             if (entries.Count == 0) { _selectedIndex = -1; return; }
@@ -188,7 +198,7 @@ namespace GameLogic
         {
             if (def == null) return;
 
-            bool locked = useLockedEntries && !IsDiscovered(def);
+            bool locked = IsLocked(def);
 
             if (detailTitleText != null) detailTitleText.text = locked ? "???" : def.Label;
 
@@ -206,7 +216,7 @@ namespace GameLogic
                 reportAsText.text = locked ? "REPORT AS: ???" : $"REPORT AS: <b><color=#0A246A>{category}</color></b>";
 
             if (spotBodyText != null)
-                spotBodyText.text = locked ? "Not yet encountered this shift." :
+                spotBodyText.text = locked ? "Not yet encountered." :
                     (!string.IsNullOrWhiteSpace(def.howToSpot) ? def.howToSpot : "(not yet documented)");
 
             if (keywordsText != null)
@@ -241,9 +251,8 @@ namespace GameLogic
             return (words.Count > 0 ? $"\"{string.Join("\", \"", words)}\"" : "(no words configured)") + volume;
         }
 
-        // Stub: SaveData has no "anomalies encountered" record today. useLockedEntries defaults
-        // off, so this path isn't reachable yet - flagged in the handoff doc as an assumption.
-        private static bool IsDiscovered(AnomalyDefinition def) => true;
+        private static bool IsDiscovered(AnomalyDefinition def) =>
+            def != null && SaveManager.Current.IsAnomalySeen(def.anomalyId);
 
         private void RefreshStatusBar()
         {

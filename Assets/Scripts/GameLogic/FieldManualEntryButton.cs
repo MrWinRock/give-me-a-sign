@@ -60,6 +60,11 @@ namespace GameLogic
             SetSelected(false);
         }
 
+        public void SetLocked(bool locked)
+        {
+            if (label != null) label.text = locked || Entry == null ? "???" : Entry.Label;
+        }
+
         public void SetSelected(bool selected)
         {
             _selected = selected;

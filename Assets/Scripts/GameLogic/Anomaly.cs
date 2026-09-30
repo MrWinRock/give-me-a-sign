@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GameLogic.Data;
 using GameLogic.Flow;
+using GameLogic.Save;
 using GameLogic.SpawnAndTime;
 using Pray;
 using Report;
@@ -131,6 +132,9 @@ namespace GameLogic
 
             if (State == AnomalyState.Hidden)
                 State = AnomalyState.Visible;
+
+            if (definition != null && Application.isPlaying && SaveManager.Current.MarkAnomalySeen(definition.anomalyId))
+                SaveManager.Save();
         }
 
         void OnDisable()
