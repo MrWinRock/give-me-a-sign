@@ -94,7 +94,7 @@
 - ระดับเสียงวัดจากค่าเฉลี่ย RMS ของ chunk ที่เป็นเสียงพูดตลอดการกด V เทียบกับ `MicCalibration.NoiseFloor` ผ่าน
   `NoiseMeter.Classify()` (ใช้ช่วง whisper ×3 / shout ×8 ชุดเดียวกับ Noise Meter)
 - Whisper/Shout: พูดถูกคำแต่ผิดระดับ = `STATIC - TOO LOUD` / `STATIC - SPEAK UP` ไม่ยื่นรายงาน ไม่ลงโทษ (ลองใหม่ได้)
-- Silence: เรียกทางวอไม่ได้ ต้องไม่กด V พูด (`QuietResponse`) เงียบต่อเนื่อง 8 วิ → anomaly หายไปและได้คะแนนเหมือนรายงานถูก
+- Silence (Hooded Figure): เกม**บังคับเปิดไมค์ค้าง**ทันทีที่มันโผล่ (V ถูกเมิน, HUD `MIC LIVE - DON'T MAKE A SOUND... n`) ผู้เล่นต้องเงียบ 8 วิ → มันหายไปและได้คะแนน; มีเสียงเกิน 0.3 วิ (เกินระดับ ×2.5 ของ noise floor, หลังผ่อนผัน 1 วิแรก) = jumpscare เต็มจอ + แพ้คืนนั้น (`KilledByAnomaly`). ค่าปรับได้ที่ `QuietResponse` ใน Inspector
   พูดระหว่างนั้นจะรีเซ็ตเวลา HUD ขึ้น `STAY QUIET... n`
 - HUD ขณะกด V แสดงระดับเสียงสด (`REC WHISPER/NORMAL/SHOUT`); Field Manual เพิ่มบรรทัดบอกวิธีรับมือของแต่ละ anomaly
 - ข้อควรรู้: ฟอร์ม Incident Report ปิดอยู่ ดังนั้น Demon ต้อง**ตะโกน** "demon" ทางวอเท่านั้น

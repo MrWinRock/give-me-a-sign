@@ -30,6 +30,7 @@ namespace Whisper
 
         private PushToTalkHud _hud;
         private bool _talking;
+        private bool _forcedOpen;
         private float _fileAt = -1f;
         private readonly StringBuilder _transmission = new StringBuilder();
         private float _rmsSum;
@@ -61,6 +62,12 @@ namespace Whisper
         {
             if (mic == null) return;
 
+            if (_forcedOpen)
+            {
+                if (!_talking) StartTalking();
+                return;
+            }
+
             if (_talking && (!IsKeyHeld() || IsBlocked()))
             {
                 StopTalking(playClick: true);
@@ -75,6 +82,19 @@ namespace Whisper
         }
 
         public void ShowHint(string text) => _hud?.SetHint(text);
+
+        // The game holds the mic open (V is ignored) and never files what was said as a report.
+        public void SetForcedOpen(bool forced)
+        {
+            if (_forcedOpen == forced) return;
+            _forcedOpen = forced;
+
+            if (forced) return; // Update() opens the mic on the next frame
+
+            StopTalking(playClick: true);
+            _fileAt = -1f;
+            _transmission.Clear();
+        }
 
         // Average of the chunks that are actually speech, so pauses between words don't drag a shout down.
         private void HandleSpeechChunk(float rms, float seconds)
