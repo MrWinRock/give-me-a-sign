@@ -103,9 +103,17 @@
 ทุกครั้งที่ถาม → noise +20 และ glitch intensity ขึ้น
 ต้องทำ: ต่อ `SignRequestSystem` เข้ากับ `GlitchDirector` + `NoiseMeter.AddNoise`
 
-### #4 เสียงที่ไว้ใจไม่ได้ (Phase 3)
+### #4 เสียงที่ไว้ใจไม่ได้ (Phase 3) — ✅ ทำแล้ว
 ขยาย Radio Check variant `OwnVoice` / `WrongId` — ตัวที่เลียนเสียง HQ สั่งให้พูด *"Confirm all clear"*
 ถ้าตอบ = เชิญเข้ามา ผู้เล่นต้องเช็คกล้องก่อนตอบ
+
+**ทำแล้ว:** Radio Check เพิ่ม variant `Mimic` (`RadioCheckHaunt.cs`) — เสียงเหมือน HQ (ใช้คลิปเสียงผู้เล่นที่อัดไว้ถ้ามี)
+HUD ขึ้น `"...confirm all clear."` + ใบ้ `...no call sign.` (HQ ตัวจริงเรียก call sign เสมอ ตัวนี้ไม่มี)
+- ตอบ "all clear" = เชิญมันเข้ามา: anomaly เพิ่มตามค่า penalty ของคืนนั้น + Noise Meter +40 + glitch intensity ถูกยกพื้น + flag `mimic_invited`
+- เงียบจนหมดเวลา = ถูกต้อง (ไม่นับเป็นพลาดสาย ไม่โดน negligence)
+- เริ่มออกตั้งแต่คืน `mimicMinNight` (ค่าเริ่มต้น 3 = Act 2) น้ำหนัก `mimicWeight` ปรับใน Inspector
+- ทดสอบสด: บังคับ variant แล้วตอบ → HUD ปิด และ anomaly โผล่เพิ่ม; ส่วน Noise Meter +40 ยังไม่ได้ยืนยันเพราะตรวจในเฟรมเดียวกัน
+- เสียง `RadioCall` / `RadioMissed` ยังไม่มีในคลังเสียง (Radio Check เดิมเงียบอยู่แล้ว) ถ้าอยากให้มีเสียงเรียกต้องเพิ่มคลิป
 
 ---
 
@@ -298,7 +306,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 |---|---|---|
 | 1 | Observation Report (#1) + Noise Meter + HUD | 🟡 กำลังทำ |
 | 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | ✅ ใช้งานได้จริง + แก้ `PhraseMatcher` แล้ว |
-| 3 | #2 Voice Response ✅ (รอลองพูดจริง) + #4 Voice Mimic ⬜ | 🟡 |
+| 3 | #2 Voice Response ✅ + #4 Voice Mimic ✅ (รอลองเล่นจริงทั้งคู่) | ✅ |
 | 4 | #3 Give Me A Sign investigation | ⬜ |
 | — | Content: art ของ anomaly ให้ "สิ่งที่เปลี่ยน" เห็นชัดในแต่ละห้อง | ⬜ |
 | — | Field Manual (S-306/307) — คู่มือกด TAB เปิด/ปิดได้ตลอด ไม่ pause | ✅ |

@@ -1,7 +1,9 @@
 using System.Collections;
 using Audio;
 using GameLogic.Data;
+using GameLogic.Flow;
 using GameLogic.Night;
+using GameLogic.SpawnAndTime;
 using UnityEngine;
 using Whisper;
 
@@ -14,7 +16,7 @@ namespace Report
     /// </summary>
     public class RadioCheckHaunt : MonoBehaviour, IHauntLoop
     {
-        private enum Variant { Normal, OwnVoice, WrongId }
+        private enum Variant { Normal, OwnVoice, WrongId, Mimic }
 
         [Header("Identity")]
         [SerializeField] private string radioId = "SEC-04";
@@ -28,6 +30,15 @@ namespace Report
         [SerializeField] private float normalWeight = 3f;
         [SerializeField] private float ownVoiceWeight = 1.5f;
         [SerializeField] private float wrongIdWeight = 1.5f;
+        [Tooltip("A voice that sounds like HQ but uses no call sign and asks you to 'confirm all clear'. Answering it invites the entity in; the right move is silence.")]
+        [SerializeField] private float mimicWeight = 1f;
+        [Tooltip("The mimic only starts calling from this night on (Act 2).")]
+        [Min(1)] [SerializeField] private int mimicMinNight = 3;
+
+        [Header("Mimic consequence")]
+        [Tooltip("Noise added to the Noise Meter when the player answers the mimic.")]
+        [Min(0f)] [SerializeField] private float mimicNoisePenalty = 40f;
+        [SerializeField] private string mimicPhrase = "all clear";
 
         [Header("Negligence")]
         [Tooltip("Missed (unanswered) calls before HQ 'sends someone to check' - forces the next scheduled haunt beat to fire immediately.")]
@@ -87,13 +98,21 @@ namespace Report
 
             var variant = PickVariant();
             string calledId = variant == Variant.WrongId ? PickWrongId() : radioId;
-            string expectedPhrase = $"{radioId} copy";
+            string expectedPhrase = variant == Variant.Mimic ? mimicPhrase : $"{radioId} copy";
 
             _hud = RadioCheckHud.Create();
-            _hud.SetCall($"\"{calledId}, radio check.\"");
-            _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"");
+            if (variant == Variant.Mimic)
+            {
+                _hud.SetCall("\"...confirm all clear.\"");
+                _hud.SetHint("...no call sign.");
+            }
+            else
+            {
+                _hud.SetCall($"\"{calledId}, radio check.\"");
+                _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"");
+            }
 
-            if (variant == Variant.OwnVoice && _recorder.HasClip)
+            if ((variant == Variant.OwnVoice || variant == Variant.Mimic) && _recorder.HasClip)
                 AudioManager.Instance?.PlayClip(_recorder.LastClip);
             else
                 AudioManager.Instance?.Play(callSoundName);
@@ -102,9 +121,9 @@ namespace Report
             var voice = VoicePromptSystem.Instance;
             voice?.Expect(expectedPhrase, ok => matched = ok, minimumWordsRequired: 2, wordSimilarity: wordSimilarity);
 
-            // A WrongId call is answered with silence, so recording it would never capture a usable
-            // "own voice answering normally" sample for a future Own-Voice call.
-            bool shouldRecord = variant != Variant.WrongId;
+            // WrongId and Mimic calls are answered with silence, so recording them would never capture
+            // a usable "own voice answering normally" sample for a future Own-Voice call.
+            bool shouldRecord = variant == Variant.Normal || variant == Variant.OwnVoice;
             if (shouldRecord) _recorder.BeginCapture(responseWindowSeconds);
 
             float end = Time.time + responseWindowSeconds;
@@ -120,7 +139,13 @@ namespace Report
             bool respondedCorrectly;
             bool wrongIdAdmitted = false;
 
-            if (variant == Variant.WrongId)
+            if (variant == Variant.Mimic)
+            {
+                respondedCorrectly = !matched; // HQ never asks this - the right move is silence
+                if (matched)
+                    InviteEntity();
+            }
+            else if (variant == Variant.WrongId)
             {
                 wrongIdAdmitted = matched;
                 respondedCorrectly = !matched; // the correct move on a call that isn't yours is silence
@@ -138,14 +163,30 @@ namespace Report
 
         private Variant PickVariant()
         {
-            float total = Mathf.Max(0f, normalWeight) + Mathf.Max(0f, ownVoiceWeight) + Mathf.Max(0f, wrongIdWeight);
+            float mimic = GameFlowManager.CurrentNightIndex >= mimicMinNight ? Mathf.Max(0f, mimicWeight) : 0f;
+            float total = Mathf.Max(0f, normalWeight) + Mathf.Max(0f, ownVoiceWeight)
+                        + Mathf.Max(0f, wrongIdWeight) + mimic;
             if (total <= 0f) return Variant.Normal;
 
             float roll = Random.value * total;
             if (roll < normalWeight) return Variant.Normal;
             roll -= normalWeight;
             if (roll < ownVoiceWeight) return Variant.OwnVoice;
-            return Variant.WrongId;
+            roll -= ownVoiceWeight;
+            if (roll < wrongIdWeight) return Variant.WrongId;
+            return Variant.Mimic;
+        }
+
+        // Answering the mimic "invites it in": extra anomalies, a noisier line, and a permanent glitch floor.
+        private void InviteEntity()
+        {
+            AnomalyScheduler.Instance?.SpawnPenaltyAnomalies();
+            NoiseMeter.Instance?.AddNoise(mimicNoisePenalty);
+            _glitchDirector?.SetFlag("mimic_invited", true);
+            _glitchDirector?.SetIntensity(wrongIdIntensityFloor);
+
+            if (showDebugInfo)
+                Debug.Log("RadioCheckHaunt: player answered the mimic - entity invited.", this);
         }
 
         private string PickWrongId()
