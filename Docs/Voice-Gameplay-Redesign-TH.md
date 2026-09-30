@@ -251,6 +251,16 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 - ใช้ `WhisperMicInput.BeginPushToTalk/EndPushToTalk` ตัวเดิม ทุกคำที่พูดผ่าน Noise Meter เหมือนกัน
 - ไอคอนไมค์มุมจอบอกสถานะ
 
+**ทำแล้ว (Phase 2):** `Whisper/GlobalPushToTalk.cs` (กดค้าง V = `BeginPushToTalk`/ปล่อย = `EndPushToTalk`) +
+`Whisper/PushToTalkHud.cs` (มุมขวาล่าง: `[V] MIC` จาง → `REC` แดงกะพริบ) ติดอยู่บน GameObject `VoiceDetect`
+(ตัวเดียวกับ `WhisperMicInput`) ใน `GamePlay.unity`
+- ไม่ทำงานเมื่อ pause (`timeScale<=0`), cutscene กำลังเล่น, หรือฟอร์ม Incident Report เปิดอยู่ (ฟอร์มมีปุ่ม Hold to Speak
+  ของตัวเอง กันสองปุ่มแย่งไมค์) ถ้าเงื่อนไขเหล่านี้เกิดระหว่างกดค้าง จะหยุดพูดให้เอง
+- คำที่พูดผ่าน V ไหลเข้า `NoiseMeter` (ผ่าน `OnSpeechChunk`) และ `VoicePromptSystem`/`SignRequestSystem` เหมือนเดิม
+- **ยังไม่ได้ทดสอบกดปุ่มจริง:** Input System ทิ้ง event ที่ฉีดเข้าไปตอน Editor ไม่มี focus จึงจำลองการกด V ผ่านสคริปต์ไม่ได้
+  ยืนยันแค่ว่า compile ผ่าน, component ทำงาน, HUD สร้างขึ้นและแสดง `[V] MIC` ตอนว่าง — ต้องลองกด V ในเกมจริง
+- ที่ยังไม่ได้แก้จากหัวข้อ 7: `PhraseMatcher.WordsMatch` ที่หลวมเกินไปสำหรับ Radio Check
+
 ---
 
 ## 5. Rollout ตามโครงเรื่อง 3 องก์
@@ -268,7 +278,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 | Phase | งาน | สถานะ |
 |---|---|---|
 | 1 | Observation Report (#1) + Noise Meter + HUD | 🟡 กำลังทำ |
-| 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | ⬜ |
+| 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | 🟡 V ทำแล้ว รอทดสอบจริง / `PhraseMatcher` ยังไม่แก้ |
 | 3 | #2 Voice Response + #4 Voice Mimic | ⬜ |
 | 4 | #3 Give Me A Sign investigation | ⬜ |
 | — | Content: art ของ anomaly ให้ "สิ่งที่เปลี่ยน" เห็นชัดในแต่ละห้อง | ⬜ |
