@@ -1,5 +1,4 @@
 using GameLogic.Story;
-using Report;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -46,8 +45,8 @@ namespace GameLogic
 #endif
             if (togglePressed) Toggle();
 
-            // Something else claimed the screen (report opened, cutscene started, demon revealed,
-            // paused) - close rather than fight it for input/visibility.
+            // Something else claimed the screen (cutscene started, demon revealed, paused) -
+            // close rather than fight it for input/visibility.
             if (fieldManual.IsOpen && IsBlocked()) fieldManual.Close();
         }
 
@@ -64,7 +63,7 @@ namespace GameLogic
             if (Time.timeScale <= 0f) return true; // paused, or a cutscene is mid-playback
             if (CinematicPlayer.IsAnyPlaying) return true;
             if (DemonAnomaly.AnyRevealed) return true;
-            if (IncidentReportManager.Instance != null && IncidentReportManager.Instance.IsReportOpen) return true;
+            // Report form deliberately NOT blocking: reading the manual while filling a report is its purpose.
             return false;
         }
     }

@@ -196,8 +196,12 @@ report ต่อได้ปกติ (ยืนยัน hard requirement "no U
    ถ้าต้องการ minimize/maximize จริงต้องขยาย base class ก่อน (กระทบ MailWindow/TextContentWindow ด้วย)
 2. **`useLockedEntries`** — ปิดไว้ (false) และ `IsDiscovered()` return true เสมอ (stub) เพราะ `SaveData` ยังไม่มี
    field เก็บว่า anomaly ไหนเคยเจอมาก่อน — ตรงตาม spec ที่บอกให้ stub ถ้ายังไม่มี save record
-3. **Desktop icon "Field Manual.exe" บน MainMenu + Help item เปิด Field Manual** — **ยังไม่ได้ทำ** (entry points
-   b/c ใน spec) เพราะ session นี้เน้นจุดที่เจบอกไว้ท้ายสุดคือใส่เข้า Gameplay Canvas ก่อน ถ้าต้องการให้ทำสองจุดนี้ต่อบอกได้เลย
+3. **Desktop icon "Field Manual.exe" บน MainMenu + Help item เปิด Field Manual** — ✅ ทำแล้ว:
+   `DesktopAction.OpenFieldManual` + ช่อง `fieldManualWindowPrefab` ใน `DesktopManager`, ไอคอนใหม่ `Icon_FieldManual`
+   (ใช้รูปเดียวกับ Mail ชั่วคราว ต้องเปลี่ยนเป็นรูปจริง), `HelpItem` ใน Incident Report มี `OpenFieldManualOnClick`
+   (ใน `GamePlay.unity` window ถูก unpack จาก prefab แล้ว จึงต้องแก้ใน scene ตรงๆ ไม่ใช่ที่ prefab)
+   และแก้ `windowWidth` ใน prefab เป็น 560 (ค่าเดิม 275 ทำให้หน้าต่างบีบเมื่อสร้างจาก MainMenu)
+   **เปลี่ยนพฤติกรรม:** Field Manual ไม่ถูกบล็อก/ปิดเองตอนฟอร์ม Incident Report เปิดอยู่แล้ว (เพื่อให้เปิดอ่านระหว่างเขียน report ได้)
 4. **XP scrollbar** — ไม่มี asset "XP scrollbar" สำเร็จรูปในโปรเจกต์ให้ reuse ใช้ `ScrollRect` เปล่าๆ (ลาก mouse
    wheel ได้) ยังไม่มี Scrollbar handle ที่เห็นเป็นแท่งเลื่อน (8 แถว×24px=192px ยังพอดีกับความสูง sidebar 341px
    อยู่แล้วในตอนนี้ เลยไม่จำเป็นต้องสกอลล์จริงๆ)

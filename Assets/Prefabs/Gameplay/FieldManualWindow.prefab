@@ -842,7 +842,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.FieldManualUI
   windowRoot: {fileID: 3575953468116402844}
   windowRect: {fileID: 31200397255043280}
-  windowWidth: 275
+  windowWidth: 560
   titleText: {fileID: 5781313542130412734}
   windowTitle: Field Manual.exe
   closeButton: {fileID: 3657928934435915344}

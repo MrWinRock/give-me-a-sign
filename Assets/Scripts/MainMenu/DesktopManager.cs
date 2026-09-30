@@ -26,7 +26,8 @@ namespace MainMenu
         // Appended, never inserted: these values are serialized as ints in MainMenu.unity, so
         // inserting anywhere above would silently repoint every existing menu item.
         NewGame,
-        OpenMail
+        OpenMail,
+        OpenFieldManual
     }
 
     /// <summary>Named audio cues; each maps to a serialized AudioClip on the DesktopManager.</summary>
@@ -77,6 +78,7 @@ namespace MainMenu
         [SerializeField] private XPWindowController recycleBinWindowPrefab;
         [SerializeField] private XPWindowController logOffWindowPrefab;
         [SerializeField] private XPWindowController helpWindowPrefab;
+        [SerializeField] private XPWindowController fieldManualWindowPrefab;
 
         [Header("Sequences")]
         [SerializeField] private ShutdownSequence shutdownSequence;
@@ -202,6 +204,7 @@ namespace MainMenu
                 case DesktopAction.NewGame: NewGame(); break;
                 case DesktopAction.OpenMyReports: OpenWindowPrefab(myReportsWindowPrefab); break;
                 case DesktopAction.OpenMail: OpenWindowPrefab(mailWindowPrefab); break;
+                case DesktopAction.OpenFieldManual: OpenWindowPrefab(fieldManualWindowPrefab); break;
                 case DesktopAction.OpenControlPanel: OpenWindowPrefab(controlPanelWindowPrefab); break;
                 case DesktopAction.OpenHelp: OpenWindowPrefab(helpWindowPrefab); break;
                 case DesktopAction.OpenNotepad: OpenWindowPrefab(notepadWindowPrefab); break;
