@@ -232,11 +232,10 @@ report ต่อได้ปกติ (ยืนยัน hard requirement "no U
 fresh scene load → `IsOpen=false` แต่ต้น, กด toggle ครั้งแรก → sidebar 8 แถวตำแหน่งถูกต้อง (ห่างกัน 24px ตาม
 สเปค), ไม่มี NRE, detail pane/preview sprite/report-as text ขึ้นถูกทุกช่อง, toggle ซ้ำปิดได้ปกติ
 
-**Note เรื่อง testing artifact:** ระหว่างไล่ debug เจอแถว sidebar ซ้ำ (9 แทนที่จะเป็น 8) เป็นบางรอบตอนยิง
-RunCommand ติดกันเร็วๆ — สืบแล้วเป็นผลจาก Unity Editor ไม่มี OS focus จริงระหว่าง session อัตโนมัตินี้ ทำให้
-`Time.frameCount` แทบไม่ขยับระหว่างการเรียกเครื่องมือแต่ละครั้ง เลย `Destroy()` ที่ `EnsureRows()` เรียกไว้ (deferred
-ไปจบเฟรม ตามคอมเมนต์ในโค้ดเอง) ไม่เคยถูก flush จริงๆ ระหว่าง test calls ที่ถี่มาก — ไม่ใช่บั๊กจริงในเกม เพราะ
-เฟรมจริงตอนเล่นเดินหน้าตามปกติ `Destroy()` จะ flush ก่อนเฟรมถัดไปเสมอ
+**บั๊กข้อ 5 (แก้แล้ว): แถว sidebar เกิน 1 แถว (9 แทน 8)** — เดิมสรุปผิดว่าเป็น testing artifact จริงๆ คือมี
+GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **save ค้างอยู่ใน `GamePlay.unity`** (จากการทดสอบในโหมด Edit)
+เลยมี 1 แถวก่อน `EnsureRows()` ทำงานเสมอ → ลบออกจากซีนแล้ว ยืนยันสด: ก่อนเปิด rows=0, หลัง TAB rows=8
+**ข้อควรระวัง:** ห้ามรัน `Instantiate`/`Setup` ทดสอบกับ instance ในซีนตอน Edit mode แล้ว save ซีน
 
 ---
 
