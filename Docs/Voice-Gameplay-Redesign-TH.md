@@ -103,6 +103,14 @@
 ทุกครั้งที่ถาม → noise +20 และ glitch intensity ขึ้น
 ต้องทำ: ต่อ `SignRequestSystem` เข้ากับ `GlitchDirector` + `NoiseMeter.AddNoise`
 
+**ทำแล้ว (Phase 4):**
+- พบว่า `GamePlay.unity` **ไม่เคยมี `SignRequestSystem`** (มีแค่ใน StartScene เก่า) และ `WhisperMicInput.signRequestSystem` เป็น null
+  → "Give me a sign" ไม่เคยทำงานในเกมจริง แก้แล้ว: ติดบน `VoiceDetect` และผูกกับ `WhisperMicInput`
+- ทุกครั้งที่ขอสำเร็จ Noise Meter +20 (`noisePerUse`) นอกจาก glitch intensity + Camera Betrayal ที่มีอยู่แล้ว
+- คำตอบแสดง**ทุกห้อง**ที่มี anomaly จริงยังไม่ถูกรายงาน (เดิมแค่ตัวแรก) — เป็นข้อมูลจริงอย่างเดียวตอน glitch/Mimic โกหก
+- กันนับซ้ำ: ผล partial ของ Whisper พูดซ้ำวลีเดียวกัน จึงมี cooldown 3 วิ (`cooldownSeconds`) ให้ 1 คำขอ = 1 สิทธิ์ (3 ครั้ง/คืน)
+- ยังไม่มีเสียงเคาะ/ไฟกะพริบเฉพาะห้อง (ไม่มี asset) — ตอนนี้ตอบเป็นข้อความ `⚠ <ห้อง>` + Camera Betrayal
+
 ### #4 เสียงที่ไว้ใจไม่ได้ (Phase 3) — ✅ ทำแล้ว
 ขยาย Radio Check variant `OwnVoice` / `WrongId` — ตัวที่เลียนเสียง HQ สั่งให้พูด *"Confirm all clear"*
 ถ้าตอบ = เชิญเข้ามา ผู้เล่นต้องเช็คกล้องก่อนตอบ
@@ -307,7 +315,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 | 1 | Observation Report (#1) + Noise Meter + HUD | 🟡 กำลังทำ |
 | 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | ✅ ใช้งานได้จริง + แก้ `PhraseMatcher` แล้ว |
 | 3 | #2 Voice Response ✅ + #4 Voice Mimic ✅ (รอลองเล่นจริงทั้งคู่) | ✅ |
-| 4 | #3 Give Me A Sign investigation | ⬜ |
+| 4 | #3 Give Me A Sign investigation | ✅ (รอลองเล่นจริง) |
 | — | Content: art ของ anomaly ให้ "สิ่งที่เปลี่ยน" เห็นชัดในแต่ละห้อง | ⬜ |
 | — | Field Manual (S-306/307) — คู่มือกด TAB เปิด/ปิดได้ตลอด ไม่ pause | ✅ |
 

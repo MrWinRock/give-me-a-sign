@@ -32,6 +32,10 @@ namespace Whisper
         [Tooltip("GlitchDirector intensity floor added per use (1 + this * usesSpent). Permanent for the rest of the night.")]
         [SerializeField] private float intensityBumpPerUse = 0.15f;
         [SerializeField] private float hintDisplaySeconds = 4f;
+        [Tooltip("Noise Meter cost per successful ask - the thing you're calling to hears you too.")]
+        [Min(0f)] [SerializeField] private float noisePerUse = 20f;
+        [Tooltip("Streaming speech repeats the phrase in partial results; ignore repeats inside this window so one ask costs one use.")]
+        [Min(0f)] [SerializeField] private float cooldownSeconds = 3f;
         [Tooltip("Force an immediate Camera Betrayal glitch on each successful use, if one isn't already running and a CameraBetrayalHaunt exists in the scene.")]
         [SerializeField] private bool triggerCameraBetrayalOnUse = true;
 
@@ -41,6 +45,7 @@ namespace Whisper
         public Action<bool> OnSignRequested;
 
         private int _usesRemaining;
+        private float _nextAllowedTime;
         private GlitchDirector _glitchDirector;
         private CameraBetrayalHaunt _cameraBetrayal;
         private SignHintHud _hud;
@@ -107,6 +112,9 @@ namespace Whisper
         {
             if (usesPerNight <= 0) return; // hint mechanic disabled - legacy activate-only behaviour
 
+            if (Time.unscaledTime < _nextAllowedTime) return;
+            _nextAllowedTime = Time.unscaledTime + cooldownSeconds;
+
             if (_usesRemaining <= 0)
             {
                 ShowHudMessage("...nothing answers.", 2f);
@@ -115,12 +123,11 @@ namespace Whisper
 
             _usesRemaining--;
 
-            var target = FindNearestUnreportedAnomaly();
-            string message = target != null && target.AssignedRoom != null
-                ? $"⚠ {target.AssignedRoom.Label}"
-                : "...nothing is out there right now.";
-
+            string message = DescribeRooms();
             ShowHudMessage(message, hintDisplaySeconds);
+
+            // Asking out loud is loud: it fills the Noise Meter like any other speech.
+            NoiseMeter.Instance?.AddNoise(noisePerUse);
 
             // Cost 1: floors GlitchDirector's intensity a little higher per use spent. A floor, not
             // a stacking multiply-every-time bump - asking three times shouldn't compound into an
@@ -139,14 +146,22 @@ namespace Whisper
                 Debug.Log($"SignRequestSystem: hint given ('{message}'). {_usesRemaining}/{usesPerNight} uses left.", this);
         }
 
-        private static Anomaly FindNearestUnreportedAnomaly()
+        // Every room holding a real, unreported anomaly - the one source of truth the player has
+        // when glitches and mimics are lying to them.
+        private static string DescribeRooms()
         {
+            var rooms = new List<string>();
             foreach (var anomaly in Anomaly.ActiveAnomalies)
             {
-                if (anomaly != null && anomaly.gameObject.activeInHierarchy && !anomaly.IsReported)
-                    return anomaly;
+                if (anomaly == null || !anomaly.gameObject.activeInHierarchy || anomaly.IsReported) continue;
+
+                string label = anomaly.AssignedRoom != null ? anomaly.AssignedRoom.Label : "?";
+                if (!rooms.Contains(label)) rooms.Add(label);
             }
-            return null;
+
+            return rooms.Count > 0
+                ? $"⚠ {string.Join(", ", rooms)}"
+                : "...nothing is out there right now.";
         }
 
         private void ShowHudMessage(string text, float seconds)

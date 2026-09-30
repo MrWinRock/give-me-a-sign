@@ -634,6 +634,10 @@ MonoBehaviour:
   normalWeight: 3
   ownVoiceWeight: 1.5
   wrongIdWeight: 1.5
+  mimicWeight: 1
+  mimicMinNight: 3
+  mimicNoisePenalty: 40
+  mimicPhrase: all clear
   strikesForConsequence: 3
   wrongIdIntensityFloor: 1.25
   callSoundName: RadioCall
@@ -5759,6 +5763,7 @@ GameObject:
   - component: {fileID: 1349133151}
   - component: {fileID: 1349133153}
   - component: {fileID: 1349133154}
+  - component: {fileID: 1349133155}
   m_Layer: 0
   m_Name: VoiceDetect
   m_TagString: Untagged
@@ -5785,7 +5790,7 @@ MonoBehaviour:
   modelPathInStreamingAssets: 1
   language: en
   router: {fileID: 1349133151}
-  signRequestSystem: {fileID: 0}
+  signRequestSystem: {fileID: 1349133155}
   prayUiManager: {fileID: 894996012}
   incidentReportManager: {fileID: 4205114680779514433}
   whisperManager: {fileID: 0}
@@ -5852,6 +5857,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.QuietResponse
   quietSeconds: 8
+  soundThresholdMultiplier: 2.5
+  toleranceSeconds: 0.3
+  graceSeconds: 1
+  jumpScareSeconds: 0.9
+  jumpScareSound: JumpScare
+--- !u!114 &1349133155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349133148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c41905e02b48409db8c1a862e5e537f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Whisper.SignRequestSystem
+  signGameObjects: []
+  targetSignRequest: Give me a sign
+  minimumWordsRequired: 3
+  wordSimilarity: 0.7
+  usesPerNight: 3
+  intensityBumpPerUse: 0.15
+  hintDisplaySeconds: 4
+  noisePerUse: 20
+  cooldownSeconds: 3
+  triggerCameraBetrayalOnUse: 1
+  showDebugInfo: 0
 --- !u!1 &1367956995
 GameObject:
   m_ObjectHideFlags: 0
