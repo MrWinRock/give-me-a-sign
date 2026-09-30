@@ -60,4 +60,12 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 38794cabea36a5f4ca7efa885c051ee3, type: 3}
     channel: 1
     volume: 1
+  - soundName: MicOpenAndClose
+    clip: {fileID: 8300000, guid: 9dc6504bc858a3742b547ced036c6dbe, type: 3}
+    channel: 1
+    volume: 1
+  - soundName: MicHold
+    clip: {fileID: 8300000, guid: 168e23781624fec4dbe60a0899441ede, type: 3}
+    channel: 1
+    volume: 1
   showDebugInfo: 0

@@ -15,7 +15,9 @@ namespace Whisper
         private readonly GameObject _root;
         private readonly Image _dot;
         private readonly TextMeshProUGUI _label;
+        private readonly TextMeshProUGUI _status;
         private Tween _pulse;
+        private Tween _statusFade;
 
         public static PushToTalkHud Create() => new PushToTalkHud();
 
@@ -46,6 +48,16 @@ namespace Whisper
             _label.raycastTarget = false;
             Anchor((RectTransform)labelGo.transform, new Vector2(-32f, 28f), new Vector2(150f, 28f));
 
+            var statusGo = new GameObject("Status", typeof(RectTransform));
+            statusGo.transform.SetParent(_root.transform, false);
+            _status = statusGo.AddComponent<TextMeshProUGUI>();
+            _status.font = XPTheme.Load().ResolvedFont;
+            _status.fontSize = 26f;
+            _status.alignment = TextAlignmentOptions.BottomRight;
+            _status.raycastTarget = false;
+            _status.color = new Color(1f, 1f, 1f, 0f);
+            Anchor((RectTransform)statusGo.transform, new Vector2(-32f, 60f), new Vector2(300f, 36f));
+
             SetTalking(false);
         }
 
@@ -69,10 +81,25 @@ namespace Whisper
             }
         }
 
+        public void ShowStatus(string text, Color color)
+        {
+            if (_status == null) return;
+
+            _statusFade?.Kill();
+            _status.text = text;
+            _status.color = color;
+
+            _statusFade = DOTween.To(() => _status.color.a, a => _status.color = new Color(color.r, color.g, color.b, a), 0f, 0.8f)
+                .SetDelay(1.5f)
+                .SetUpdate(true);
+        }
+
         public void Destroy()
         {
             _pulse?.Kill();
             _pulse = null;
+            _statusFade?.Kill();
+            _statusFade = null;
             if (_root != null) Object.Destroy(_root);
         }
 

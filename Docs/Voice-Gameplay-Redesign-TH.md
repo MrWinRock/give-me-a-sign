@@ -259,6 +259,16 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 - คำที่พูดผ่าน V ไหลเข้า `NoiseMeter` (ผ่าน `OnSpeechChunk`) และ `VoicePromptSystem`/`SignRequestSystem` เหมือนเดิม
 - **ยังไม่ได้ทดสอบกดปุ่มจริง:** Input System ทิ้ง event ที่ฉีดเข้าไปตอน Editor ไม่มี focus จึงจำลองการกด V ผ่านสคริปต์ไม่ได้
   ยืนยันแค่ว่า compile ผ่าน, component ทำงาน, HUD สร้างขึ้นและแสดง `[V] MIC` ตอนว่าง — ต้องลองกด V ในเกมจริง
+**ทิศทางใหม่ — Walkie-talkie เป็นช่องทางรายงานหลัก (แทนฟอร์ม Incident Report):**
+- กด V: เล่น `MicOpenAndClose` (ไมค์เปิด) แล้ววน `MicHold` ระหว่างกดค้าง; ปล่อย V: หยุด `MicHold` แล้วเล่น `MicOpenAndClose` อีกครั้ง
+  (เสียงลงทะเบียนในคลัง `AudioManager.prefab`)
+- คำที่พูดระหว่างกดค้างถูกรวมเป็น 1 transmission แล้วยื่นเป็นรายงานเมื่อปล่อยปุ่มรอ 1 วิ (`finalizeGraceSeconds`) ผ่าน
+  `IncidentReportManager.FileRadioReport()` — ใช้ `ObservationVocabulary` ตัวเดิม, ถ้าพูดชื่อห้องด้วย (Kitchen ฯลฯ) ต้องตรงกับห้องของ anomaly
+- ไม่มีคำ observation ในประโยค (เช่น radio check) = ไม่นับเป็นรายงาน; ตรง anomaly = `COPY THAT` + anomaly ถูก resolve;
+  พูด observation แต่ไม่ตรง = `NEGATIVE` + นับ fail + anomaly ที่ยังไม่ถูกรายงานตัวแรกขยับเข้าใกล้ (`Respond()`)
+- ฟอร์ม Incident Report ปิดไว้ด้วย `reportFormEnabled = false` (Spacebar ไม่เปิดฟอร์มแล้ว) โค้ดฟอร์มยังอยู่ เปิดกลับได้ที่ Inspector
+- ยังไม่ได้ทดสอบกับเสียงพูดจริง / anomaly จริงที่ active
+
 - ที่ยังไม่ได้แก้จากหัวข้อ 7: `PhraseMatcher.WordsMatch` ที่หลวมเกินไปสำหรับ Radio Check
 
 ---

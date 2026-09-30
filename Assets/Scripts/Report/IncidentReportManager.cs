@@ -24,6 +24,9 @@ namespace Report
         [SerializeField] private GameManager gameManager;
         [SerializeField] private bool autoFindReferences = true;
 
+        [Tooltip("Off = Spacebar no longer opens the report form; reports are called in over the walkie-talkie (hold V).")]
+        [SerializeField] private bool reportFormEnabled;
+
         [Header("Matching Settings")]
         [Tooltip("If true, the selected LOCATION must also match the anomaly's actual room for the report to succeed. If false, only what the player said they saw is checked.")]
         [SerializeField] private bool requireCorrectLocation;
@@ -95,8 +98,88 @@ namespace Report
             reportUI.Hide();
         }
 
+        public enum RadioReportOutcome { NotAReport, Confirmed, Negative }
+
+        // Walkie-talkie path (hold V): no form. Same observation matching and bookkeeping as SubmitReport.
+        public RadioReportOutcome FileRadioReport(string spoken)
+        {
+            if (IsReportOpen || string.IsNullOrWhiteSpace(spoken)) return RadioReportOutcome.NotAReport;
+
+            var vocabulary = ObservationVocabulary.Load();
+            if (!MentionsAnyObservation(vocabulary, spoken)) return RadioReportOutcome.NotAReport;
+
+            _recognizedKeyword = spoken.Trim();
+            string room = FindSpokenRoom(spoken);
+
+            Anomaly matched = null;
+            foreach (var anomaly in Anomaly.ActiveAnomalies)
+            {
+                if (anomaly != null && !anomaly.IsReported && IsReportable(anomaly, room)
+                    && (room == null || MatchesLocationStrict(anomaly, room)))
+                {
+                    matched = anomaly;
+                    break;
+                }
+            }
+
+            bool success = matched != null;
+            ReportsFiled++;
+            if (!success) ReportsFailed++;
+            _glitchStateSource?.RegisterReportResult(success);
+
+            if (success)
+            {
+                matched.MarkReported();
+                matched.ResolveByReport();
+            }
+            else
+            {
+                // A wrong call-in lets the nearest unreported threat advance.
+                foreach (var anomaly in Anomaly.ActiveAnomalies)
+                {
+                    if (anomaly != null && anomaly.isActiveAndEnabled && !anomaly.IsReported
+                        && anomaly.State != AnomalyState.Resolved)
+                    {
+                        anomaly.Respond();
+                        break;
+                    }
+                }
+            }
+
+            if (showDebugInfo)
+                Debug.Log($"IncidentReportManager: Radio report {(success ? "CONFIRMED" : "NEGATIVE")}. Spoken: '{spoken}', Room: '{room ?? "(none)"}'.");
+
+            return success ? RadioReportOutcome.Confirmed : RadioReportOutcome.Negative;
+        }
+
+        private static bool MentionsAnyObservation(ObservationVocabulary vocabulary, string spoken)
+        {
+            foreach (ObservationType type in Enum.GetValues(typeof(ObservationType)))
+            {
+                if (vocabulary.Mentions(spoken, type)) return true;
+            }
+            return false;
+        }
+
+        private static string FindSpokenRoom(string spoken)
+        {
+            foreach (var name in RoomRegistry.DisplayNames())
+            {
+                if (spoken.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0) return name;
+            }
+            return null;
+        }
+
+        private static bool MatchesLocationStrict(Anomaly anomaly, string room)
+        {
+            var assigned = anomaly.AssignedRoom;
+            return assigned == null || string.Equals(room, assigned.Label, StringComparison.OrdinalIgnoreCase);
+        }
+
         void Update()
         {
+            if (!reportFormEnabled) return;
+
             bool spacePressed;
 #if ENABLE_INPUT_SYSTEM
             spacePressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;

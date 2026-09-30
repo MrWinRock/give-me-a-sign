@@ -285,6 +285,7 @@ namespace Whisper
                         voicePrompt.Route(trimmed);
 
                     signRequestSystem?.Route(trimmed);
+                    GlobalPushToTalk.Instance?.OnSpeech(trimmed);
                 }
                 catch (Exception e)
                 {
