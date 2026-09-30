@@ -56,7 +56,7 @@ namespace Whisper
             _status.alignment = TextAlignmentOptions.BottomRight;
             _status.raycastTarget = false;
             _status.color = new Color(1f, 1f, 1f, 0f);
-            Anchor((RectTransform)statusGo.transform, new Vector2(-32f, 60f), new Vector2(300f, 36f));
+            Anchor((RectTransform)statusGo.transform, new Vector2(-32f, 60f), new Vector2(700f, 36f));
 
             SetTalking(false);
         }

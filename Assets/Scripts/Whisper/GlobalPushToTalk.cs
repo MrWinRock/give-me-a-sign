@@ -1,5 +1,6 @@
 using System.Text;
 using Audio;
+using GameLogic;
 using GameLogic.Story;
 using Report;
 using UnityEngine;
@@ -116,8 +117,14 @@ namespace Whisper
             var reports = IncidentReportManager.Instance;
             if (reports == null) return;
 
-            switch (reports.FileRadioReport(spoken))
+            var outcome = reports.FileRadioReport(spoken);
+            Debug.Log($"[Walkie] heard '{spoken}' -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
+
+            switch (outcome)
             {
+                case IncidentReportManager.RadioReportOutcome.NotAReport:
+                    _hud?.ShowStatus(string.IsNullOrWhiteSpace(spoken) ? "(nothing heard)" : $"HEARD: {spoken}", new Color(1f, 1f, 1f, 0.8f));
+                    break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
                     _hud?.ShowStatus("COPY THAT", new Color(0.4f, 0.9f, 0.4f));
                     break;
@@ -125,6 +132,18 @@ namespace Whisper
                     _hud?.ShowStatus("NEGATIVE", new Color(0.95f, 0.6f, 0.2f));
                     break;
             }
+        }
+
+        private static string DescribeActiveAnomalies()
+        {
+            var sb = new StringBuilder();
+            foreach (var a in Anomaly.ActiveAnomalies)
+            {
+                if (a == null) continue;
+                if (sb.Length > 0) sb.Append(", ");
+                sb.Append(a.name).Append(a.IsReported ? " [reported]" : "").Append(" ").Append(a.State);
+            }
+            return sb.Length > 0 ? sb.ToString() : "none";
         }
 
         private static bool IsKeyDown()
