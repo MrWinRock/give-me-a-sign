@@ -32,6 +32,9 @@ namespace Whisper
         private bool _talking;
         private float _fileAt = -1f;
         private readonly StringBuilder _transmission = new StringBuilder();
+        private float _rmsSum;
+        private int _rmsCount;
+        private VoiceLevel _liveLevel = VoiceLevel.Silent;
 
         void Awake()
         {
@@ -42,10 +45,12 @@ namespace Whisper
         {
             Instance = this;
             _hud = PushToTalkHud.Create();
+            WhisperMicInput.OnSpeechChunk += HandleSpeechChunk;
         }
 
         void OnDisable()
         {
+            WhisperMicInput.OnSpeechChunk -= HandleSpeechChunk;
             StopTalking(playClick: false);
             _hud?.Destroy();
             _hud = null;
@@ -69,6 +74,34 @@ namespace Whisper
                 FileTransmission();
         }
 
+        public void ShowHint(string text) => _hud?.SetHint(text);
+
+        // Average of the chunks that are actually speech, so pauses between words don't drag a shout down.
+        private void HandleSpeechChunk(float rms, float seconds)
+        {
+            if (!_talking) return;
+
+            var meter = NoiseMeter.Instance;
+            var level = meter != null ? meter.Classify(rms) : VoiceLevel.Normal;
+            if (level == VoiceLevel.Silent) return;
+
+            _rmsSum += rms;
+            _rmsCount++;
+
+            if (level != _liveLevel)
+            {
+                _liveLevel = level;
+                _hud?.SetTalking(true, level.ToString().ToUpperInvariant());
+            }
+        }
+
+        private VoiceLevel TransmissionLevel()
+        {
+            if (_rmsCount == 0) return VoiceLevel.Normal;
+            var meter = NoiseMeter.Instance;
+            return meter != null ? meter.Classify(_rmsSum / _rmsCount) : VoiceLevel.Normal;
+        }
+
         // Called by WhisperMicInput for every recognized chunk.
         public void OnSpeech(string text)
         {
@@ -84,6 +117,9 @@ namespace Whisper
             _talking = true;
             _fileAt = -1f;
             _transmission.Clear();
+            _rmsSum = 0f;
+            _rmsCount = 0;
+            _liveLevel = VoiceLevel.Silent;
 
             mic.BeginPushToTalk();
             var audio = AudioManager.Instance;
@@ -113,12 +149,13 @@ namespace Whisper
             _fileAt = -1f;
             string spoken = _transmission.ToString();
             _transmission.Clear();
+            var level = TransmissionLevel();
 
             var reports = IncidentReportManager.Instance;
             if (reports == null) return;
 
-            var outcome = reports.FileRadioReport(spoken);
-            Debug.Log($"[Walkie] heard '{spoken}' -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
+            var outcome = reports.FileRadioReport(spoken, level);
+            Debug.Log($"[Walkie] heard '{spoken}' ({level}) -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
 
             switch (outcome)
             {
@@ -127,6 +164,12 @@ namespace Whisper
                     break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
                     _hud?.ShowStatus("COPY THAT", new Color(0.4f, 0.9f, 0.4f));
+                    break;
+                case IncidentReportManager.RadioReportOutcome.TooLoud:
+                    _hud?.ShowStatus("STATIC - TOO LOUD", new Color(0.7f, 0.85f, 1f));
+                    break;
+                case IncidentReportManager.RadioReportOutcome.TooQuiet:
+                    _hud?.ShowStatus("STATIC - SPEAK UP", new Color(0.7f, 0.85f, 1f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Negative:
                     _hud?.ShowStatus("NEGATIVE", new Color(0.95f, 0.6f, 0.2f));

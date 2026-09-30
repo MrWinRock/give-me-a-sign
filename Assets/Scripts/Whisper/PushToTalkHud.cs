@@ -16,6 +16,7 @@ namespace Whisper
         private readonly Image _dot;
         private readonly TextMeshProUGUI _label;
         private readonly TextMeshProUGUI _status;
+        private readonly TextMeshProUGUI _hint;
         private Tween _pulse;
         private Tween _statusFade;
 
@@ -58,17 +59,32 @@ namespace Whisper
             _status.color = new Color(1f, 1f, 1f, 0f);
             Anchor((RectTransform)statusGo.transform, new Vector2(-32f, 60f), new Vector2(700f, 36f));
 
+            var hintGo = new GameObject("Hint", typeof(RectTransform));
+            hintGo.transform.SetParent(_root.transform, false);
+            _hint = hintGo.AddComponent<TextMeshProUGUI>();
+            _hint.font = XPTheme.Load().ResolvedFont;
+            _hint.fontSize = 22f;
+            _hint.alignment = TextAlignmentOptions.BottomRight;
+            _hint.raycastTarget = false;
+            _hint.color = new Color(1f, 0.9f, 0.6f, 0.9f);
+            Anchor((RectTransform)hintGo.transform, new Vector2(-32f, 96f), new Vector2(700f, 30f));
+
             SetTalking(false);
         }
 
-        public void SetTalking(bool talking)
+        public void SetHint(string text)
+        {
+            if (_hint != null) _hint.text = text ?? "";
+        }
+
+        public void SetTalking(bool talking, string suffix = null)
         {
             if (_label == null) return;
 
             _pulse?.Kill();
             _pulse = null;
 
-            _label.text = talking ? "REC" : "[V] MIC";
+            _label.text = talking ? (string.IsNullOrEmpty(suffix) ? "REC" : $"REC {suffix}") : "[V] MIC";
             _label.color = talking ? TalkColor : IdleColor;
             _dot.color = talking ? TalkColor : new Color(1f, 1f, 1f, 0.2f);
 

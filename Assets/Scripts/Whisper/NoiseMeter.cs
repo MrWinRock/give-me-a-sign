@@ -7,6 +7,8 @@ using UnityEngine;
 
 namespace Whisper
 {
+    public enum VoiceLevel { Silent, Whisper, Normal, Shout }
+
     /// <summary>
     /// How loud the guard has been lately (0-100). Speaking into the mic fills it - whispering
     /// barely, shouting fast - and silence drains it. When it fills, the Listener (Silence
@@ -115,6 +117,15 @@ namespace Whisper
                 : 1f;
 
             AddNoise(speechNoisePerSecond * cost * seconds);
+        }
+
+        public VoiceLevel Classify(float rms)
+        {
+            float floor = Mathf.Max(0.001f, MicCalibration.NoiseFloor);
+            if (rms <= floor * 1.1f) return VoiceLevel.Silent;
+            if (rms >= floor * shoutBandMultiplier) return VoiceLevel.Shout;
+            if (rms <= floor * whisperBandMultiplier) return VoiceLevel.Whisper;
+            return VoiceLevel.Normal;
         }
 
         private static bool ListenerActive =>

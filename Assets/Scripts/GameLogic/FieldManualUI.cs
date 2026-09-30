@@ -228,7 +228,17 @@ namespace GameLogic
                 }
             }
 
-            return words.Count > 0 ? $"\"{string.Join("\", \"", words)}\"" : "(no words configured)";
+            string volume = def.voiceResponse switch
+            {
+                VoiceResponse.Whisper => "\n<b>Whisper it.</b> Speak quietly.",
+                VoiceResponse.Shout => "\n<b>Shout it.</b> Speak loudly.",
+                VoiceResponse.Silence => "\n<b>Don't report.</b> Stay off the radio until it leaves.",
+                _ => ""
+            };
+
+            if (def.voiceResponse == VoiceResponse.Silence) return volume.TrimStart('\n');
+
+            return (words.Count > 0 ? $"\"{string.Join("\", \"", words)}\"" : "(no words configured)") + volume;
         }
 
         // Stub: SaveData has no "anomalies encountered" record today. useLockedEntries defaults

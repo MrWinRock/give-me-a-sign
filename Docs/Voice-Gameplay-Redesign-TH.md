@@ -89,6 +89,16 @@
 ใช้ช่วง whisper/danger เดียวกับ Silence Protocol และ Noise Meter ต่อยอดได้ทันที
 ต้องทำ: `AnomalyDefinition.voiceResponse` (Whisper/Shout/Silence) + UI บอกว่ากำลังรับมือแบบไหน
 
+**ทำแล้ว (ทดสอบด้วยสคริปต์ ยังไม่ได้ลองพูดจริง):**
+- `AnomalyDefinition.voiceResponse` (None/Whisper/Shout/Silence) ตั้งค่าเริ่มต้น: Demon=Shout, Shadow Blob=Whisper, Hooded Figure=Silence
+- ระดับเสียงวัดจากค่าเฉลี่ย RMS ของ chunk ที่เป็นเสียงพูดตลอดการกด V เทียบกับ `MicCalibration.NoiseFloor` ผ่าน
+  `NoiseMeter.Classify()` (ใช้ช่วง whisper ×3 / shout ×8 ชุดเดียวกับ Noise Meter)
+- Whisper/Shout: พูดถูกคำแต่ผิดระดับ = `STATIC - TOO LOUD` / `STATIC - SPEAK UP` ไม่ยื่นรายงาน ไม่ลงโทษ (ลองใหม่ได้)
+- Silence: เรียกทางวอไม่ได้ ต้องไม่กด V พูด (`QuietResponse`) เงียบต่อเนื่อง 8 วิ → anomaly หายไปและได้คะแนนเหมือนรายงานถูก
+  พูดระหว่างนั้นจะรีเซ็ตเวลา HUD ขึ้น `STAY QUIET... n`
+- HUD ขณะกด V แสดงระดับเสียงสด (`REC WHISPER/NORMAL/SHOUT`); Field Manual เพิ่มบรรทัดบอกวิธีรับมือของแต่ละ anomaly
+- ข้อควรรู้: ฟอร์ม Incident Report ปิดอยู่ ดังนั้น Demon ต้อง**ตะโกน** "demon" ทางวอเท่านั้น
+
 ### #3 "Give me a sign" เป็นเครื่องมือสืบสวน (Phase 4)
 พูด *"Give me a sign"* → ผีตอบด้วยไฟกะพริบ/เสียงเคาะ/กล้องกระตุก ชี้ห้องที่มีของจริง หรือบอกว่าตัวไหนเป็นตัวหลอก
 ทุกครั้งที่ถาม → noise +20 และ glitch intensity ขึ้น
@@ -289,7 +299,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 |---|---|---|
 | 1 | Observation Report (#1) + Noise Meter + HUD | 🟡 กำลังทำ |
 | 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | ✅ ใช้งานได้จริง + แก้ `PhraseMatcher` แล้ว |
-| 3 | #2 Voice Response + #4 Voice Mimic | ⬜ |
+| 3 | #2 Voice Response ✅ (รอลองพูดจริง) + #4 Voice Mimic ⬜ | 🟡 |
 | 4 | #3 Give Me A Sign investigation | ⬜ |
 | — | Content: art ของ anomaly ให้ "สิ่งที่เปลี่ยน" เห็นชัดในแต่ละห้อง | ⬜ |
 | — | Field Manual (S-306/307) — คู่มือกด TAB เปิด/ปิดได้ตลอด ไม่ pause | ✅ |

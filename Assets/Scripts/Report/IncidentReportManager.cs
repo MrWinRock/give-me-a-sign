@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GameLogic;
 using GameLogic.Data;
+using Whisper;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -98,10 +99,11 @@ namespace Report
             reportUI.Hide();
         }
 
-        public enum RadioReportOutcome { NotAReport, Confirmed, Negative }
+        public enum RadioReportOutcome { NotAReport, Confirmed, Negative, TooLoud, TooQuiet }
 
         // Walkie-talkie path (hold V): no form. Same observation matching and bookkeeping as SubmitReport.
-        public RadioReportOutcome FileRadioReport(string spoken)
+        // A volume mismatch is "static on the line" - the report is not filed and nothing is penalised.
+        public RadioReportOutcome FileRadioReport(string spoken, VoiceLevel level = VoiceLevel.Normal)
         {
             if (IsReportOpen || string.IsNullOrWhiteSpace(spoken)) return RadioReportOutcome.NotAReport;
 
@@ -112,15 +114,33 @@ namespace Report
             string room = FindSpokenRoom(spoken);
 
             Anomaly matched = null;
+            RadioReportOutcome volumeMiss = RadioReportOutcome.NotAReport;
             foreach (var anomaly in Anomaly.ActiveAnomalies)
             {
-                if (anomaly != null && !anomaly.IsReported && IsReportable(anomaly, room)
-                    && (room == null || MatchesLocationStrict(anomaly, room)))
+                if (anomaly == null || anomaly.IsReported || !IsReportable(anomaly, room)
+                    || (room != null && !MatchesLocationStrict(anomaly, room)))
+                    continue;
+
+                var required = anomaly.Definition != null ? anomaly.Definition.voiceResponse : VoiceResponse.None;
+                if (required == VoiceResponse.Silence) continue; // can't be called in
+
+                if (required == VoiceResponse.Whisper && level != VoiceLevel.Whisper)
                 {
-                    matched = anomaly;
-                    break;
+                    if (volumeMiss == RadioReportOutcome.NotAReport) volumeMiss = RadioReportOutcome.TooLoud;
+                    continue;
                 }
+                if (required == VoiceResponse.Shout && level != VoiceLevel.Shout)
+                {
+                    if (volumeMiss == RadioReportOutcome.NotAReport) volumeMiss = RadioReportOutcome.TooQuiet;
+                    continue;
+                }
+
+                matched = anomaly;
+                break;
             }
+
+            if (matched == null && volumeMiss != RadioReportOutcome.NotAReport)
+                return volumeMiss;
 
             bool success = matched != null;
             ReportsFiled++;
