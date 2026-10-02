@@ -16,7 +16,18 @@ namespace Report
     /// </summary>
     public class RadioCheckHaunt : MonoBehaviour, IHauntLoop
     {
-        private enum Variant { Normal, OwnVoice, WrongId, Mimic }
+        public enum Variant { Normal, OwnVoice, WrongId, Mimic }
+
+        private Variant? _forcedVariant;
+
+        // Debug/tooling: place this call as a specific variant, ignoring weights and the Mimic night gate.
+        public bool DebugTrigger(Variant variant)
+        {
+            if (IsActive) return false;
+            _forcedVariant = variant;
+            Trigger(default);
+            return true;
+        }
 
         [Header("Identity")]
         [SerializeField] private string radioId = "SEC-04";
@@ -196,6 +207,13 @@ namespace Report
 
         private Variant PickVariant()
         {
+            if (_forcedVariant.HasValue)
+            {
+                var forced = _forcedVariant.Value;
+                _forcedVariant = null;
+                return forced;
+            }
+
             float mimic = GameFlowManager.CurrentNightIndex >= mimicMinNight ? Mathf.Max(0f, mimicWeight) : 0f;
             float total = Mathf.Max(0f, normalWeight) + Mathf.Max(0f, ownVoiceWeight)
                         + Mathf.Max(0f, wrongIdWeight) + mimic;

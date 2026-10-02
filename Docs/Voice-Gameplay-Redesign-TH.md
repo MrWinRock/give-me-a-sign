@@ -328,3 +328,19 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
   ถ้าไม่มีไมค์เลย มาตรจะไม่ขึ้น (พิมพ์ผ่าน `TypedInputFallback` ไม่คิดเสียง)
 - **โค้ด legacy ที่ไม่ได้ใช้** — `AnomalyMovement.MoveToTarget`, `AnomalyThreatTimer.Begin`, `_canPrayDisappear`,
   `VoiceCommandRouter` (prayer) ไม่มีใครเรียก ไม่ได้แตะใน Phase นี้ ควรตัดสินใจลบหรือต่อสายใหม่ทีหลัง
+
+---
+
+## 8. Debug Panel (F12) — เครื่องมือทดสอบ
+
+`DebugMasterPanel` กวาดปุ่มจาก `[ContextMenu]`/`[Button]` เดิม และตอนนี้มีหมวดสำเร็จรูปจาก `DebugBuiltInActions.cs` อยู่ด้านบนสุด:
+
+| หมวด | ทำอะไร |
+|---|---|
+| **QA Test checklist** | 10 หัวข้อทดสอบก่อน commit — แถว `How to test` แสดงขั้นตอนในกล่องข้อความ, แถว `[ ]`/`[x]` ติ๊กเสร็จ (เก็บใน PlayerPrefs `DebugQA_*`) |
+| **Spawn anomaly** | สร้าง anomaly ชนิดที่เลือกในห้องสุ่มทันที (Demon, Hooded Figure ฯลฯ) + สร้างทุกชนิด + ลบทั้งหมด (`AnomalyScheduler.SpawnNow`) |
+| **Fire haunt now** | เรียก SilenceProtocol / RadioCheck / CameraBetrayal / ImpostorCase ทันที ข้ามกฎคืนสอน (`HauntDirector.TriggerNow(..., ignoreTutorial)`) |
+| **Radio Check** | บังคับชนิดสาย Normal / OwnVoice / WrongId / Mimic (`RadioCheckHaunt.DebugTrigger`) ไม่ติดเงื่อนไขคืน |
+| **Voice / Noise / Field Manual** | ส่งข้อความที่พิมพ์เป็นรายงานทางวอที่ระดับ Whisper/Normal/Shout, Noise +25/+50, ปลดล็อก/ล็อกหน้า Field Manual ทั้งหมด |
+
+หมายเหตุ: Demon ซ่อนอยู่จนกว่ากล้องจะแพนเข้าใกล้ห้องที่มันอยู่ (ตามกลไกเดิม) ถ้าไม่เห็นผลทันทีให้เลื่อนกล้องไปห้องนั้น

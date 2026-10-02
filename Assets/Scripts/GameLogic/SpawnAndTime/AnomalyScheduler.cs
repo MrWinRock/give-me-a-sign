@@ -295,6 +295,34 @@ namespace GameLogic.SpawnAndTime
 
         // ── Penalty spawns ───────────────────────────────────────────────────────────────
 
+        // Debug/tooling: drop one specific anomaly kind into a room right now (random room if none given).
+        public GameObject SpawnNow(GameObject prefab, RoomDefinition room = null)
+        {
+            if (prefab == null) return null;
+            if (!_built) BuildTimeline();
+
+            RoomAnchor anchor = null;
+            if (RoomRegistry.Count > 0)
+            {
+                foreach (var candidate in RoomRegistry.All)
+                {
+                    if (room != null && candidate.Room == room) { anchor = candidate; break; }
+                }
+                if (anchor == null) anchor = RoomRegistry.All[_rng.Next(RoomRegistry.Count)];
+            }
+
+            Spawn(new ScheduledSpawn
+            {
+                atMinute = -1f,
+                prefab = prefab,
+                point = anchor != null ? anchor.GetSpawnPoint(_rng) : null,
+                room = anchor != null ? anchor.Room : null,
+                label = $"DEBUG: {prefab.name} in {(anchor != null ? anchor.Room.Label : "(no room)")}",
+            });
+
+            return _spawned[_spawned.Count - 1];
+        }
+
         public int SpawnPenaltyAnomalies()
         {
             int count = NightPlanProvider.HasPlan

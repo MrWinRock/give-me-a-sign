@@ -76,6 +76,8 @@ namespace GameLogic.DebugTools
             public string actionLabel;
             public MonoBehaviour target;
             public MethodInfo method;
+            public Action run;          // built-in action (DebugBuiltInActions) instead of a reflected method
+            public bool refreshAfter;
         }
 
         private readonly List<DiscoveredAction> _actions = new List<DiscoveredAction>();
@@ -84,6 +86,8 @@ namespace GameLogic.DebugTools
         private RectTransform _listContent;
         private TMP_InputField _typedInputField;
         private TextMeshProUGUI _statusText;
+        private TextMeshProUGUI _infoText;
+        private ScrollRect _scrollRect;
         private bool _isOpen;
 
         void Awake()
@@ -226,15 +230,46 @@ namespace GameLogic.DebugTools
                 return byOwner != 0 ? byOwner : string.Compare(a.actionLabel, b.actionLabel, StringComparison.Ordinal);
             });
 
+            // Built-ins keep their authored order and sit above the reflected scene actions.
+            var builtIns = new List<DiscoveredAction>();
+            foreach (var entry in DebugBuiltInActions.Build(() => _typedInputField != null ? _typedInputField.text : "", ShowInfo))
+            {
+                builtIns.Add(new DiscoveredAction
+                {
+                    ownerLabel = entry.group,
+                    actionLabel = entry.label,
+                    run = entry.run,
+                    refreshAfter = entry.refreshAfter,
+                });
+            }
+            _actions.InsertRange(0, builtIns);
+
             RebuildActionList();
 
             if (showDebugInfo)
                 Debug.Log($"DebugMasterPanel: found {_actions.Count} debug action(s).", this);
         }
 
+        private void ShowInfo(string text)
+        {
+            if (_infoText != null) _infoText.text = text;
+        }
+
+        // Ticking a checklist row rebuilds the list; without this the view would jump back to the top.
+        private void RefreshActionsKeepingScroll()
+        {
+            float position = _scrollRect != null ? _scrollRect.verticalNormalizedPosition : 1f;
+            RefreshActions();
+            if (_scrollRect != null)
+            {
+                Canvas.ForceUpdateCanvases();
+                _scrollRect.verticalNormalizedPosition = position;
+            }
+        }
+
         private void InvokeAction(DiscoveredAction action)
         {
-            if (action.target == null)
+            if (action.run == null && action.target == null)
             {
                 SetStatus($"'{action.actionLabel}' is gone (its GameObject was destroyed) - refreshing.");
                 RefreshActions();
@@ -243,6 +278,14 @@ namespace GameLogic.DebugTools
 
             try
             {
+                if (action.run != null)
+                {
+                    action.run();
+                    SetStatus($"Ran '{action.actionLabel}'.");
+                    if (action.refreshAfter) RefreshActionsKeepingScroll();
+                    return;
+                }
+
                 action.method.Invoke(action.target, null);
                 SetStatus($"Ran '{action.actionLabel}' on {action.ownerLabel}.");
             }
@@ -430,10 +473,22 @@ namespace GameLogic.DebugTools
                 12f, TextAlignmentOptions.MidlineLeft, new Color(0.6f, 0.75f, 1f));
             SetTopStretch(_statusText.rectTransform, topOffset, 18f, left: 16f, right: 16f);
 
-            var divider = CreateImage(parent, "Divider", new Color(1f, 1f, 1f, 0.12f));
-            SetTopStretch(divider.rectTransform, topOffset + 18f + 6f, 1f, left: 16f, right: 16f);
+            topOffset += 18f + 4f;
 
-            return topOffset + 18f + 6f + 10f;
+            // Multi-line box for "how to test" steps and spawn/report results.
+            _infoText = CreateText(parent, "InfoBox", "Click a 'How to test' row for steps.",
+                12f, TextAlignmentOptions.TopLeft, new Color(0.95f, 0.9f, 0.7f));
+            _infoText.enableWordWrapping = true;
+            _infoText.enableAutoSizing = false;
+            _infoText.fontSize = 12f;
+            _infoText.overflowMode = TextOverflowModes.Truncate;
+            SetTopStretch(_infoText.rectTransform, topOffset, 100f, left: 16f, right: 16f);
+            topOffset += 100f + 4f;
+
+            var divider = CreateImage(parent, "Divider", new Color(1f, 1f, 1f, 0.12f));
+            SetTopStretch(divider.rectTransform, topOffset, 1f, left: 16f, right: 16f);
+
+            return topOffset + 1f + 10f;
         }
 
         private void BuildActionScrollView(RectTransform parent, float topOffset)
@@ -491,6 +546,7 @@ namespace GameLogic.DebugTools
 
             scrollRect.viewport = viewportRect;
             scrollRect.content = _listContent;
+            _scrollRect = scrollRect;
         }
 
         /// <summary>Clears and repopulates the scroll content from <see cref="_actions"/>, one

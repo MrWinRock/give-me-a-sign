@@ -174,20 +174,20 @@ namespace Report
             _loops.TryGetValue(loopId, out var loop) && loop != null && loop.IsActive;
 
         // Unscheduled beat (e.g. NoiseMeter filling up). Same tutorial/exclusivity rules as the schedule.
-        public bool TriggerNow(HauntLoopId loopId, RoomDefinition room = null)
+        public bool TriggerNow(HauntLoopId loopId, RoomDefinition room = null, bool ignoreTutorial = false)
         {
             float minute = nightTimer != null ? nightTimer.ElapsedMinutes : 0f;
-            return Fire(new HauntBeat { loop = loopId, room = room, atMinute = minute });
+            return Fire(new HauntBeat { loop = loopId, room = room, atMinute = minute }, ignoreTutorial);
         }
 
-        private bool Fire(HauntBeat beat)
+        private bool Fire(HauntBeat beat, bool ignoreTutorial = false)
         {
             if (beat.loop == HauntLoopId.None) return false;
 
             // Sprint 6, S-604: night 1 is the tutorial - NightPlanRunner sets this flag on
             // GlitchDirector for night 1 only. Checked here (not in NightPlanGenerator) so no
             // haunt loop, present or future, needs its own tutorial-awareness.
-            if (_glitchDirector != null && _glitchDirector.GetFlag("tutorial"))
+            if (!ignoreTutorial && _glitchDirector != null && _glitchDirector.GetFlag("tutorial"))
             {
                 if (showDebugInfo)
                     Debug.Log($"HauntDirector: skipped {beat.loop} at {beat.atMinute:0.##}m - tutorial night.", this);
