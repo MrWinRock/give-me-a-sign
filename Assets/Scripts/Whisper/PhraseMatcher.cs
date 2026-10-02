@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Whisper
 {
     /// <summary>
-    /// Shared fuzzy phrase matching used by both the prayer system (VoiceCommandRouter)
-    /// and the sign request system (SignRequestSystem).
+    /// Shared fuzzy phrase matching used by the prayer system (VoiceCommandRouter),
+    /// VoicePromptSystem and radio-report matching.
     /// </summary>
     public static class PhraseMatcher
     {

@@ -607,7 +607,6 @@ GameObject:
   m_Component:
   - component: {fileID: 421132532}
   - component: {fileID: 421132531}
-  - component: {fileID: 421132533}
   m_Layer: 0
   m_Name: VoiceDetect
   m_TagString: Untagged
@@ -628,22 +627,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.WhisperMicInput
   sampleRate: 16000
-  windowSec: 2.5
   hopSec: 0.8
   deviceName: 
   modelPath: Models\ggml-tiny.bin
   modelPathInStreamingAssets: 1
-  toggleWithSpacebar: 1
-  holdToTalk: 1
+  language: en
   router: {fileID: 0}
-  signRequestSystem: {fileID: 421132533}
+  signRequestSystem: {fileID: 0}
   prayUiManager: {fileID: 0}
-  keyDownAudioSource: {fileID: 2147391718}
-  keyHoldAudioSource: {fileID: 664354857}
-  keyUpAudioSource: {fileID: 2147391718}
-  audioVolume: 0.4
-  enableAudioFeedback: 1
-  holdAudioDelay: 0.1
+  incidentReportManager: {fileID: 0}
   whisperManager: {fileID: 0}
   microphone: {fileID: 0}
   dispatchCooldownSec: 0.7
@@ -662,24 +654,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 124006550}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &421132533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 421132529}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c41905e02b48409db8c1a862e5e537f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Whisper.SignRequestSystem
-  signGameObjects:
-  - {fileID: 1249636279}
-  signThreshold: 0.7
-  targetSignRequest: Give me a sign
-  minimumWordsRequired: 2
-  fuzzyThreshold: 0.5
 --- !u!1 &450030846
 GameObject:
   m_ObjectHideFlags: 0
@@ -846,7 +820,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,6 +1046,7 @@ MonoBehaviour:
   noFade: 1
   deactivateDelay: 3.4
   fadeDuration: 0.5
+  fadeEase: 1
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -1365,7 +1339,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1276269934}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1044531562
 GameObject:
   m_ObjectHideFlags: 0
@@ -1632,7 +1605,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1149785125
 GameObject:
   m_ObjectHideFlags: 0
@@ -2326,6 +2298,7 @@ MonoBehaviour:
   noFade: 1
   deactivateDelay: 3.4
   fadeDuration: 0.5
+  fadeEase: 1
 --- !u!1 &1412054899
 GameObject:
   m_ObjectHideFlags: 0
@@ -2828,6 +2801,8 @@ MonoBehaviour:
   minDarkenIntensity: 0.3
   waveFrequency: 2
   waveAmplitude: 0.5
+  flickerOnRange: {x: 0.1, y: 0.3}
+  flickerOffRange: {x: 0.2, y: 0.8}
 --- !u!1 &1630909182
 GameObject:
   m_ObjectHideFlags: 0
@@ -2957,7 +2932,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1683818649
 GameObject:
   m_ObjectHideFlags: 0
@@ -3654,6 +3628,32 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1910000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 26950489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
+  channel: 0
+--- !u!114 &1910000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1694834698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
+  channel: 0
 --- !u!1 &1943797841
 GameObject:
   m_ObjectHideFlags: 0
@@ -3987,8 +3987,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-$(echo -e ---
-$(echo -e ---
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3996,29 +3994,3 @@ SceneRoots:
   - {fileID: 450030847}
   - {fileID: 1149785126}
   - {fileID: 124006550}
---- !u!114 &1910000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 26950489}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
-  channel: 0
---- !u!114 &1910000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1694834698}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
-  channel: 0

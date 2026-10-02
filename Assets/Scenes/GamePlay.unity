@@ -5763,7 +5763,6 @@ GameObject:
   - component: {fileID: 1349133151}
   - component: {fileID: 1349133153}
   - component: {fileID: 1349133154}
-  - component: {fileID: 1349133155}
   m_Layer: 0
   m_Name: VoiceDetect
   m_TagString: Untagged
@@ -5790,7 +5789,7 @@ MonoBehaviour:
   modelPathInStreamingAssets: 1
   language: en
   router: {fileID: 1349133151}
-  signRequestSystem: {fileID: 1349133155}
+  signRequestSystem: {fileID: 0}
   prayUiManager: {fileID: 894996012}
   incidentReportManager: {fileID: 4205114680779514433}
   whisperManager: {fileID: 0}
@@ -5862,29 +5861,6 @@ MonoBehaviour:
   graceSeconds: 1
   jumpScareSeconds: 0.9
   jumpScareSound: JumpScare
---- !u!114 &1349133155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1349133148}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c41905e02b48409db8c1a862e5e537f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Whisper.SignRequestSystem
-  signGameObjects: []
-  targetSignRequest: Give me a sign
-  minimumWordsRequired: 3
-  wordSimilarity: 0.7
-  usesPerNight: 3
-  intensityBumpPerUse: 0.15
-  hintDisplaySeconds: 4
-  noisePerUse: 20
-  cooldownSeconds: 3
-  triggerCameraBetrayalOnUse: 1
-  showDebugInfo: 0
 --- !u!1 &1367956995
 GameObject:
   m_ObjectHideFlags: 0
@@ -7214,7 +7190,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -498.19995, y: -475.20004}
+  m_AnchoredPosition: {x: -498.19995, y: -475.20007}
   m_SizeDelta: {x: 1406.39, y: 743.3701}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1734658304

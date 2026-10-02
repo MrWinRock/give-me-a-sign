@@ -32,7 +32,6 @@ namespace Whisper
 
         [Header("Wiring")]
         public VoiceCommandRouter router;
-        public SignRequestSystem signRequestSystem;
         public PrayUiManager prayUiManager;
         public IncidentReportManager incidentReportManager;
 
@@ -284,7 +283,6 @@ namespace Whisper
                     if (voicePrompt != null && voicePrompt.IsAwaitingPrompt)
                         voicePrompt.Route(trimmed);
 
-                    signRequestSystem?.Route(trimmed);
                     GlobalPushToTalk.Instance?.OnSpeech(trimmed);
                 }
                 catch (Exception e)

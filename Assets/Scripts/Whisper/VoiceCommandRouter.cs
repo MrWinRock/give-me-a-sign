@@ -10,7 +10,7 @@ namespace Whisper
     /// <summary>
     /// Receives recognized speech (from WhisperMicInput) while the prayer panel is open and
     /// banishes the active anomaly when enough words of the target prayer are heard.
-    /// Word matching lives in <see cref="PhraseMatcher"/>, shared with SignRequestSystem.
+    /// Word matching lives in <see cref="PhraseMatcher"/>.
     /// </summary>
     public class VoiceCommandRouter : MonoBehaviour
     {

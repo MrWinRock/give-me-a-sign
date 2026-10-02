@@ -10,7 +10,7 @@ namespace GameLogic.Flow
     /// GameFlowManager.delayAfterDeath seconds before the Result scene loads - replaces the
     /// previous "just wait, then cut" pause (delayAfterDeath used to just sit there blank) with
     /// something that actually reads as an ending. Runtime-built, same disposable-wrapper pattern
-    /// as SilenceProtocolHud/RadioCheckHud/CameraFeedHud/SignHintHud - no scene wiring needed.
+    /// as SilenceProtocolHud/RadioCheckHud/CameraFeedHud - no scene wiring needed.
     /// </summary>
     public class DeathSequenceHud
     {

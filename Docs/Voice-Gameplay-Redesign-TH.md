@@ -98,18 +98,10 @@
 - HUD ขณะกด V แสดงระดับเสียงสด (`REC WHISPER/NORMAL/SHOUT`); Field Manual เพิ่มบรรทัดบอกวิธีรับมือของแต่ละ anomaly
 - ข้อควรรู้: ฟอร์ม Incident Report ปิดอยู่ ดังนั้น Demon ต้อง**ตะโกน** "demon" ทางวอเท่านั้น
 
-### #3 "Give me a sign" เป็นเครื่องมือสืบสวน (Phase 4)
-พูด *"Give me a sign"* → ผีตอบด้วยไฟกะพริบ/เสียงเคาะ/กล้องกระตุก ชี้ห้องที่มีของจริง หรือบอกว่าตัวไหนเป็นตัวหลอก
-ทุกครั้งที่ถาม → noise +20 และ glitch intensity ขึ้น
-ต้องทำ: ต่อ `SignRequestSystem` เข้ากับ `GlitchDirector` + `NoiseMeter.AddNoise`
+### #3 "Give me a sign" — ❌ ยกเลิก (ตัดออกจากเกม)
+เจตัดสินใจเอาออก: ลบ `SignRequestSystem.cs`, `SignHintHud.cs`, คอมโพเนนต์ในซีน GamePlay/StartScene และ hook ใน `WhisperMicInput`
+ไม่มีการพูดวลีนี้ในเกมอีก (Camera Betrayal / GlitchDirector ยังทำงานตามเดิมจากทางอื่น) ถ้าจะกลับมาดูประวัติใน git ก่อน commit "remove Give Me A Sign"
 
-**ทำแล้ว (Phase 4):**
-- พบว่า `GamePlay.unity` **ไม่เคยมี `SignRequestSystem`** (มีแค่ใน StartScene เก่า) และ `WhisperMicInput.signRequestSystem` เป็น null
-  → "Give me a sign" ไม่เคยทำงานในเกมจริง แก้แล้ว: ติดบน `VoiceDetect` และผูกกับ `WhisperMicInput`
-- ทุกครั้งที่ขอสำเร็จ Noise Meter +20 (`noisePerUse`) นอกจาก glitch intensity + Camera Betrayal ที่มีอยู่แล้ว
-- คำตอบแสดง**ทุกห้อง**ที่มี anomaly จริงยังไม่ถูกรายงาน (เดิมแค่ตัวแรก) — เป็นข้อมูลจริงอย่างเดียวตอน glitch/Mimic โกหก
-- กันนับซ้ำ: ผล partial ของ Whisper พูดซ้ำวลีเดียวกัน จึงมี cooldown 3 วิ (`cooldownSeconds`) ให้ 1 คำขอ = 1 สิทธิ์ (3 ครั้ง/คืน)
-- ยังไม่มีเสียงเคาะ/ไฟกะพริบเฉพาะห้อง (ไม่มี asset) — ตอนนี้ตอบเป็นข้อความ `⚠ <ห้อง>` + Camera Betrayal
 
 ### #4 เสียงที่ไว้ใจไม่ได้ (Phase 3) — ✅ ทำแล้ว
 ขยาย Radio Check variant `OwnVoice` / `WrongId` — ตัวที่เลียนเสียง HQ สั่งให้พูด *"Confirm all clear"*
@@ -280,7 +272,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 (ตัวเดียวกับ `WhisperMicInput`) ใน `GamePlay.unity`
 - ไม่ทำงานเมื่อ pause (`timeScale<=0`), cutscene กำลังเล่น, หรือฟอร์ม Incident Report เปิดอยู่ (ฟอร์มมีปุ่ม Hold to Speak
   ของตัวเอง กันสองปุ่มแย่งไมค์) ถ้าเงื่อนไขเหล่านี้เกิดระหว่างกดค้าง จะหยุดพูดให้เอง
-- คำที่พูดผ่าน V ไหลเข้า `NoiseMeter` (ผ่าน `OnSpeechChunk`) และ `VoicePromptSystem`/`SignRequestSystem` เหมือนเดิม
+- คำที่พูดผ่าน V ไหลเข้า `NoiseMeter` (ผ่าน `OnSpeechChunk`) และ `VoicePromptSystem` เหมือนเดิม
 - **ยังไม่ได้ทดสอบกดปุ่มจริง:** Input System ทิ้ง event ที่ฉีดเข้าไปตอน Editor ไม่มี focus จึงจำลองการกด V ผ่านสคริปต์ไม่ได้
   ยืนยันแค่ว่า compile ผ่าน, component ทำงาน, HUD สร้างขึ้นและแสดง `[V] MIC` ตอนว่าง — ต้องลองกด V ในเกมจริง
 **ทิศทางใหม่ — Walkie-talkie เป็นช่องทางรายงานหลัก (แทนฟอร์ม Incident Report):**
@@ -303,7 +295,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 |---|---|
 | Act 1 (คืน 1-2) | Observation Report (#1) + Noise Meter (คืน 1 เตือนอย่างเดียว คืน 2 Listener มาจริง) + ตอบวิทยุ |
 | Act 2 (คืน 3-5) | เสียงปลอม (#4) + ตัวที่ต้องกระซิบ/ตะโกน (#2) |
-| Act 3 (คืน 6-7) | "Give me a sign" (#3) เป็นทางเดียวที่แยกของจริงกับของปลอมได้ |
+| Act 3 (คืน 6-7) | (ยกเลิก "Give me a sign" แล้ว — เนื้อหา Act 3 ยังไม่กำหนด) |
 
 ---
 
@@ -314,7 +306,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 | 1 | Observation Report (#1) + Noise Meter + HUD | 🟡 กำลังทำ |
 | 2 | Global Push-to-Talk (V) + ต่อ Radio Check ให้ฟังได้นอกฟอร์ม | ✅ ใช้งานได้จริง + แก้ `PhraseMatcher` แล้ว |
 | 3 | #2 Voice Response ✅ + #4 Voice Mimic ✅ (รอลองเล่นจริงทั้งคู่) | ✅ |
-| 4 | #3 Give Me A Sign investigation | ✅ (รอลองเล่นจริง) |
+| 4 | #3 Give Me A Sign investigation | ❌ ยกเลิก |
 | — | Content: art ของ anomaly ให้ "สิ่งที่เปลี่ยน" เห็นชัดในแต่ละห้อง | ⬜ |
 | — | Field Manual (S-306/307) — คู่มือกด TAB เปิด/ปิดได้ตลอด ไม่ pause | ✅ |
 
