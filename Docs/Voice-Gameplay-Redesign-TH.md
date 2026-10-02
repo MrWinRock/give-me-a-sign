@@ -99,6 +99,7 @@
   กด V ระหว่างนั้นไม่ได้ปิดไมค์ มีแค่เสียงคลิก; ค่าปรับได้ที่ `QuietResponse` / `GlobalPushToTalk` ใน Inspector
 - Radio Check: หลังจบสายแสดง `COPY THAT` / `NO RESPONSE` (พลาด n/3) / `GOOD CALL` / `IT HEARD YOU` ค้างบน HUD 2.5 วิ (`outcomeDisplaySeconds`) — เดิมกะพริบแล้วถูกลบทันทีจนมองไม่เห็นผล
   พลาด 2 ครั้งแรกไม่มีผลอะไร ครั้งที่ 3 HQ "ส่งคนมาดู" = บังคับ haunt ถัดไปของคืนนั้นให้เกิดทันที ตอบถูกรีเซ็ตตัวนับ
+  พลาดทุกครั้ง **Noise Meter +25 ทันที** (`missedCallNoise`) HUD ขึ้น `NO RESPONSE  (NOISE +25)`
 - HUD ขณะกด V แสดงระดับเสียงสด (`REC WHISPER/NORMAL/SHOUT`); Field Manual เพิ่มบรรทัดบอกวิธีรับมือของแต่ละ anomaly
 - ข้อควรรู้: ฟอร์ม Incident Report ปิดอยู่ ดังนั้น Demon ต้อง**ตะโกน** "demon" ทางวอเท่านั้น
 

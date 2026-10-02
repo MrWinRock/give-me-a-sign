@@ -46,6 +46,9 @@ namespace Report
         [Tooltip("Missed (unanswered) calls before HQ 'sends someone to check' - forces the next scheduled haunt beat to fire immediately.")]
         [SerializeField] private int strikesForConsequence = 3;
 
+        [Tooltip("Noise Meter added the moment a call goes unanswered - HQ shouting down the line carries.")]
+        [Min(0f)] [SerializeField] private float missedCallNoise = 25f;
+
         [Header("Wrong ID consequence")]
         [Tooltip("If the player answers a call meant for someone else, GlitchDirector's intensity is floored to at least this for the rest of the night.")]
         [SerializeField] private float wrongIdIntensityFloor = 1.25f;
@@ -182,7 +185,7 @@ namespace Report
             else
             {
                 int missed = _negligenceStrikes + 1;
-                headline = "NO RESPONSE";
+                headline = "NO RESPONSE  (NOISE +" + Mathf.RoundToInt(missedCallNoise) + ")";
                 detail = missed >= strikesForConsequence
                     ? "HQ is sending someone to check."
                     : $"Missed {missed}/{strikesForConsequence} - at {strikesForConsequence}, HQ sends someone.";
@@ -265,6 +268,7 @@ namespace Report
             }
 
             AudioManager.Instance?.Play(missedSoundName);
+            NoiseMeter.Instance?.AddNoise(missedCallNoise);
             _negligenceStrikes++;
 
             if (showDebugInfo)
