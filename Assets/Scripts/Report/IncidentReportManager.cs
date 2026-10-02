@@ -122,7 +122,7 @@ namespace Report
                     continue;
 
                 var required = anomaly.Definition != null ? anomaly.Definition.voiceResponse : VoiceResponse.None;
-                if (required == VoiceResponse.Silence) continue; // can't be called in
+                if (required == VoiceResponse.Silence) required = VoiceResponse.Whisper; // stealth: must be whispered
 
                 if (required == VoiceResponse.Whisper && level != VoiceLevel.Whisper)
                 {

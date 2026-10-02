@@ -84,9 +84,17 @@ namespace Report
                 _panel.color = good ? new Color(0.1f, 0.4f, 0.15f, 0.7f) : new Color(0.45f, 0.05f, 0.05f, 0.7f);
         }
 
-        public void Destroy()
+        public void ShowOutcome(bool good, string headline, string detail)
         {
-            if (_root != null) Object.Destroy(_root);
+            FlashResult(good);
+            SetCall(headline);
+            SetHint(detail);
+            if (_countdownFill != null) _countdownFill.transform.parent.gameObject.SetActive(false);
+        }
+
+        public void Destroy(float delay = 0f)
+        {
+            if (_root != null) Object.Destroy(_root, delay);
         }
 
         // ── tiny builder helpers (mirrors SilenceProtocolHud) ──────────────────────────────

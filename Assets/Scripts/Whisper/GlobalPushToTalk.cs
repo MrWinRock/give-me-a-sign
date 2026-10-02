@@ -26,7 +26,12 @@ namespace Whisper
         [Tooltip("Seconds after releasing V to wait for Whisper's last segment before filing the report.")]
         [Min(0f)] [SerializeField] private float finalizeGraceSeconds = 1f;
 
+        [Tooltip("While the game holds the mic open, seconds of silence after speech before it counts as one report.")]
+        [Min(0.3f)] [SerializeField] private float forcedFileGapSeconds = 1.2f;
+
         public static GlobalPushToTalk Instance { get; private set; }
+
+        private float _lastSpeechAt;
 
         private PushToTalkHud _hud;
         private bool _talking;
@@ -65,6 +70,11 @@ namespace Whisper
             if (_forcedOpen)
             {
                 if (!_talking) StartTalking();
+                else if (IsKeyDown()) AudioManager.Instance?.Play(OpenCloseSound); // V "keys the mic" - it's already live
+
+                // The mic never releases, so a pause in speech ends the transmission instead.
+                if (_transmission.Length > 0 && Time.unscaledTime - _lastSpeechAt >= forcedFileGapSeconds)
+                    FileTransmission();
                 return;
             }
 
@@ -83,7 +93,7 @@ namespace Whisper
 
         public void ShowHint(string text) => _hud?.SetHint(text);
 
-        // The game holds the mic open (V is ignored) and never files what was said as a report.
+        // The game holds the mic live (V can't close it). Speech is still filed as reports, one per pause.
         public void SetForcedOpen(bool forced)
         {
             if (_forcedOpen == forced) return;
@@ -128,6 +138,7 @@ namespace Whisper
             if (!_talking && _fileAt < 0f) return;
             if (string.IsNullOrWhiteSpace(text)) return;
 
+            _lastSpeechAt = Time.unscaledTime;
             if (_transmission.Length > 0) _transmission.Append(' ');
             _transmission.Append(text.Trim());
         }
@@ -170,6 +181,8 @@ namespace Whisper
             string spoken = _transmission.ToString();
             _transmission.Clear();
             var level = TransmissionLevel();
+            _rmsSum = 0f;
+            _rmsCount = 0;
 
             var reports = IncidentReportManager.Instance;
             if (reports == null) return;

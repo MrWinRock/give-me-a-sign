@@ -25,6 +25,8 @@ namespace Report
         [Header("Timing")]
         [SerializeField] private float responseWindowSeconds = 8f;
         [Range(0f, 1f)] [SerializeField] private float wordSimilarity = 0.7f;
+        [Tooltip("How long the PASS / FAIL result stays on screen after a call.")]
+        [Min(0f)] [SerializeField] private float outcomeDisplaySeconds = 2.5f;
 
         [Header("Variant weights")]
         [SerializeField] private float normalWeight = 3f;
@@ -109,7 +111,8 @@ namespace Report
             else
             {
                 _hud.SetCall($"\"{calledId}, radio check.\"");
-                _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"");
+                string strikes = _negligenceStrikes > 0 ? $"  (missed {_negligenceStrikes}/{strikesForConsequence})" : "";
+                _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"{strikes}");
             }
 
             if ((variant == Variant.OwnVoice || variant == Variant.Mimic) && _recorder.HasClip)
@@ -158,7 +161,34 @@ namespace Report
             if (showDebugInfo)
                 Debug.Log($"RadioCheckHaunt: variant={variant} calledId={calledId} matched={matched}.", this);
 
-            EndEncounter(respondedCorrectly, wrongIdAdmitted);
+            bool invited = variant == Variant.Mimic && matched;
+            string headline, detail;
+            if (invited)
+            {
+                headline = "IT HEARD YOU";
+                detail = "That wasn't HQ.";
+            }
+            else if (wrongIdAdmitted)
+            {
+                headline = "WRONG SIGN-IN";
+                detail = "That call wasn't for you.";
+            }
+            else if (respondedCorrectly)
+            {
+                bool declined = variant == Variant.WrongId || variant == Variant.Mimic;
+                headline = declined ? "GOOD CALL" : "COPY THAT";
+                detail = declined ? "That wasn't HQ." : "HQ is satisfied.";
+            }
+            else
+            {
+                int missed = _negligenceStrikes + 1;
+                headline = "NO RESPONSE";
+                detail = missed >= strikesForConsequence
+                    ? "HQ is sending someone to check."
+                    : $"Missed {missed}/{strikesForConsequence} - at {strikesForConsequence}, HQ sends someone.";
+            }
+
+            EndEncounter(respondedCorrectly, wrongIdAdmitted, headline: headline, detail: detail);
         }
 
         private Variant PickVariant()
@@ -195,7 +225,8 @@ namespace Report
             return wrongIds[Random.Range(0, wrongIds.Length)];
         }
 
-        private void EndEncounter(bool respondedCorrectly, bool wrongIdAdmitted, bool silent = false)
+        private void EndEncounter(bool respondedCorrectly, bool wrongIdAdmitted, bool silent = false,
+                                  string headline = null, string detail = null)
         {
             IsActive = false;
 
@@ -207,8 +238,9 @@ namespace Report
 
             if (_hud != null)
             {
-                if (!silent) _hud.FlashResult(respondedCorrectly);
-                _hud.Destroy();
+                // Linger so the player can actually read whether the check passed.
+                if (!silent) _hud.ShowOutcome(respondedCorrectly, headline ?? (respondedCorrectly ? "COPY THAT" : "NO RESPONSE"), detail ?? "");
+                _hud.Destroy(silent ? 0f : outcomeDisplaySeconds);
                 _hud = null;
             }
 

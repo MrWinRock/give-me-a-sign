@@ -90,11 +90,15 @@
 ต้องทำ: `AnomalyDefinition.voiceResponse` (Whisper/Shout/Silence) + UI บอกว่ากำลังรับมือแบบไหน
 
 **ทำแล้ว (ทดสอบด้วยสคริปต์ ยังไม่ได้ลองพูดจริง):**
-- `AnomalyDefinition.voiceResponse` (None/Whisper/Shout/Silence) ตั้งค่าเริ่มต้น: Demon=Shout, Shadow Blob=Whisper, Hooded Figure=Silence
+- `AnomalyDefinition.voiceResponse` (None/Whisper/Shout/Silence) ตั้งค่าปัจจุบัน: **Demon=Shout เท่านั้น**, Hooded Figure=Silence (stealth), ที่เหลือ None = พูดเบาหรือดังก็ได้ (Shadow Blob เคยเป็น Whisper — เจให้เอาออก)
 - ระดับเสียงวัดจากค่าเฉลี่ย RMS ของ chunk ที่เป็นเสียงพูดตลอดการกด V เทียบกับ `MicCalibration.NoiseFloor` ผ่าน
   `NoiseMeter.Classify()` (ใช้ช่วง whisper ×3 / shout ×8 ชุดเดียวกับ Noise Meter)
 - Whisper/Shout: พูดถูกคำแต่ผิดระดับ = `STATIC - TOO LOUD` / `STATIC - SPEAK UP` ไม่ยื่นรายงาน ไม่ลงโทษ (ลองใหม่ได้)
-- Silence (Hooded Figure): เกม**บังคับเปิดไมค์ค้าง**ทันทีที่มันโผล่ (V ถูกเมิน, HUD `MIC LIVE - DON'T MAKE A SOUND... n`) ผู้เล่นต้องเงียบ 8 วิ → มันหายไปและได้คะแนน; มีเสียงเกิน 0.3 วิ (เกินระดับ ×2.5 ของ noise floor, หลังผ่อนผัน 1 วิแรก) = jumpscare เต็มจอ + แพ้คืนนั้น (`KilledByAnomaly`). ค่าปรับได้ที่ `QuietResponse` ใน Inspector
+- Silence (Hooded Figure) = stealth: เกม**บังคับเปิดไมค์ค้าง**ทันทีที่มันโผล่ (เล่นเสียงไมค์เปิด, HUD `MIC LIVE - WHISPER ONLY... n`) เป็นระบบเดียวกับตอนกด V: คำพูดตอนนั้นถูกยื่นเป็นรายงานทุกครั้งที่เว้นจังหวะ 1.2 วิ (`forcedFileGapSeconds`)
+  **กระซิบ**คำที่ถูก (หรือเงียบ 8 วิ) = มันหายไปและได้คะแนน; พูดดังกว่ากระซิบ (ระดับ Normal ขึ้นไปจาก `NoiseMeter.Classify`) เกิน 0.3 วิ หลังผ่อนผัน 1 วิแรก = jumpscare เต็มจอ + แพ้คืนนั้น (`KilledByAnomaly`)
+  กด V ระหว่างนั้นไม่ได้ปิดไมค์ มีแค่เสียงคลิก; ค่าปรับได้ที่ `QuietResponse` / `GlobalPushToTalk` ใน Inspector
+- Radio Check: หลังจบสายแสดง `COPY THAT` / `NO RESPONSE` (พลาด n/3) / `GOOD CALL` / `IT HEARD YOU` ค้างบน HUD 2.5 วิ (`outcomeDisplaySeconds`) — เดิมกะพริบแล้วถูกลบทันทีจนมองไม่เห็นผล
+  พลาด 2 ครั้งแรกไม่มีผลอะไร ครั้งที่ 3 HQ "ส่งคนมาดู" = บังคับ haunt ถัดไปของคืนนั้นให้เกิดทันที ตอบถูกรีเซ็ตตัวนับ
 - HUD ขณะกด V แสดงระดับเสียงสด (`REC WHISPER/NORMAL/SHOUT`); Field Manual เพิ่มบรรทัดบอกวิธีรับมือของแต่ละ anomaly
 - ข้อควรรู้: ฟอร์ม Incident Report ปิดอยู่ ดังนั้น Demon ต้อง**ตะโกน** "demon" ทางวอเท่านั้น
 

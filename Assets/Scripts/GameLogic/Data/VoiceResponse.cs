@@ -6,6 +6,6 @@ namespace GameLogic.Data
         None,    // report it at any volume
         Whisper, // report it quietly
         Shout,   // report it loudly
-        Silence, // can't be reported - stay quiet until it leaves
+        Silence, // stealth: mic is held live; whisper the report (or say nothing) - anything louder is heard
     }
 }

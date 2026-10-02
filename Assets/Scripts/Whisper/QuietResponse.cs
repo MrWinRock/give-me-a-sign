@@ -10,18 +10,16 @@ using UnityEngine.UI;
 namespace Whisper
 {
     /// <summary>
-    /// Anomalies that must be answered with silence: while one is out, the game holds the radio mic
-    /// open and the guard has to stay quiet until it leaves. Any speech is heard - jumpscare, night lost.
+    /// Stealth anomalies: while one is out, the game holds the radio mic open. Whispering (or saying
+    /// nothing) is safe - a whispered report with the right words banishes it like any other, and
+    /// 8 quiet seconds make it leave. Speaking louder than a whisper is heard: jumpscare, night lost.
     /// </summary>
     public class QuietResponse : MonoBehaviour
     {
         [Tooltip("Seconds of unbroken silence needed after the anomaly appears.")]
         [Min(1f)] [SerializeField] private float quietSeconds = 8f;
 
-        [Tooltip("Mic level (x the calibrated noise floor) that counts as a sound. Above breathing, below speech.")]
-        [Min(1.1f)] [SerializeField] private float soundThresholdMultiplier = 2.5f;
-
-        [Tooltip("Seconds of sound it takes to be caught - ignores a single cough or click.")]
+        [Tooltip("Seconds of louder-than-a-whisper sound it takes to be caught - ignores a single cough or click. The whisper band comes from NoiseMeter.")]
         [Min(0f)] [SerializeField] private float toleranceSeconds = 0.3f;
 
         [Tooltip("Seconds after the mic is forced open before sound can catch the player (the open-mic click, reaching for the desk).")]
@@ -88,7 +86,7 @@ namespace Whisper
             if (soonestAnomaly != null)
             {
                 Hold(soonestAnomaly);
-                SetHint($"MIC LIVE - DON'T MAKE A SOUND... {Mathf.CeilToInt(soonest)}");
+                SetHint($"MIC LIVE - WHISPER ONLY... {Mathf.CeilToInt(soonest)}");
             }
             else
             {
@@ -126,8 +124,10 @@ namespace Whisper
             if (_caught || _watched == null || Time.timeScale <= 0f) return;
             if (Time.time - _micOpenedAt < graceSeconds) return;
 
-            float floor = Mathf.Max(0.001f, MicCalibration.NoiseFloor);
-            if (rms < floor * soundThresholdMultiplier)
+            // Breathing and a low whisper pass; normal speech or louder is heard.
+            var meter = NoiseMeter.Instance;
+            var level = meter != null ? meter.Classify(rms) : VoiceLevel.Normal;
+            if (level != VoiceLevel.Normal && level != VoiceLevel.Shout)
             {
                 _soundSeconds = 0f;
                 return;
