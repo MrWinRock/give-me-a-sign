@@ -398,3 +398,6 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 - placeholder ใน Call Line/Hint: `{id}` = SEC-04, `{wrong}` = call sign ที่เรียกผิด (ตั้งรายการได้ที่ `Wrong Ids`)
 - สายจริง: ตอบครบ = ผ่าน / ไม่ตอบ = เพิ่ม anomaly; สายหลอก: พูด `Answer All Of` ครบ = เพิ่ม anomaly / เงียบ = ผ่าน
 - ตัวอย่าง: Call Line `"{id}, status report."` Hint `say: "{id}, all quiet"` Answer All Of = [`{id}`, `all quiet`]
+
+**Lose condition (อัปเดต):** (1) Demon หมดเวลา, (2) Hooded Figure จับได้ว่าพูดดัง, (3) รอดถึง 6:00 แต่คะแนนไม่ถึงเกณฑ์, (4) **Anomaly ล้นฉาก** — `AnomalyOverloadWatcher` ถูกวางใน `GamePlay.unity` แล้ว (เดิมมีโค้ดแต่ไม่เคยอยู่ในซีน): anomaly ที่ยังไม่ถูกจัดการเกินจำนวนที่คืนนั้นกำหนด (`maxConcurrentAnomalies` ใน DifficultyProfile, 3-4) ต่อเนื่อง **60 วิ** (`Overload Duration Override`, ใส่ 0 = ใช้ค่าตามคืนจาก profile) = แพ้แบบ `Negligence`
+เริ่มนับเมื่อเกินจำนวน → HUD กลางบนขึ้น `TOO MANY ANOMALIES (n) - REPORT THEM BEFORE THE BUILDING FALLS` (กะพริบ) + ตัวเลขนับถอยหลัง; ลดลงถึงเกณฑ์ = รีเซ็ตและซ่อนข้อความ

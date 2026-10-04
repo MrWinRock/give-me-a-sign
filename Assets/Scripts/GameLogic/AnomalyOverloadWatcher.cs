@@ -25,6 +25,9 @@ namespace GameLogic
         [Tooltip("Fallback: seconds the overload must be sustained before losing.")]
         [Min(1f)] [SerializeField] private float fallbackOverloadDuration = 120f;
 
+        [Tooltip("Seconds the overload must be sustained before losing. Above 0 this replaces the per-night value from the DifficultyProfile; 0 = use the profile.")]
+        [Min(0f)] [SerializeField] private float overloadDurationOverride = 60f;
+
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
@@ -32,6 +35,8 @@ namespace GameLogic
         private float _overloadDuration;
         private float _overloadedFor;
         private bool _fired;
+        private bool _warned;
+        private OverloadWarningHud _hud;
 
         /// <summary>Seconds the board has been over the limit. 0 whenever it is not.</summary>
         public float OverloadedSeconds => _overloadedFor;
@@ -42,7 +47,17 @@ namespace GameLogic
 
         public int MaxConcurrent => _maxConcurrent;
 
-        void Start() => ApplyTuning();
+        void Start()
+        {
+            _hud = OverloadWarningHud.Create();
+            ApplyTuning();
+        }
+
+        void OnDestroy()
+        {
+            _hud?.Destroy();
+            _hud = null;
+        }
 
         /// <summary>
         /// Pulls this night's limits from the plan. Called again by GameFlowManager if the night
@@ -51,7 +66,7 @@ namespace GameLogic
         public void ApplyTuning()
         {
             _maxConcurrent = fallbackMaxConcurrent;
-            _overloadDuration = fallbackOverloadDuration;
+            _overloadDuration = overloadDurationOverride > 0f ? overloadDurationOverride : fallbackOverloadDuration;
 
             var library = NightContentLibrary.Load();
             if (library == null || library.difficulty == null) return;
@@ -61,7 +76,9 @@ namespace GameLogic
                 : GameFlowManager.CurrentDay;
 
             _maxConcurrent = library.difficulty.MaxConcurrentAnomaliesFor(night);
-            _overloadDuration = library.difficulty.OverloadDurationFor(night);
+            _overloadDuration = overloadDurationOverride > 0f
+                ? overloadDurationOverride
+                : library.difficulty.OverloadDurationFor(night);
 
             if (showDebugInfo)
                 Debug.Log($"[AnomalyOverloadWatcher] night {night}: >{_maxConcurrent} anomalies for {_overloadDuration:0}s = loss.", this);
@@ -79,14 +96,27 @@ namespace GameLogic
                     Debug.Log($"[AnomalyOverloadWatcher] recovered at {unresolved} anomalies - timer reset.", this);
 
                 _overloadedFor = 0f;
+                if (_warned)
+                {
+                    _warned = false;
+                    _hud?.Hide();
+                }
                 return;
             }
 
+            if (!_warned)
+            {
+                _warned = true;
+                _hud?.Show(unresolved, _maxConcurrent);
+            }
+
             _overloadedFor += Time.deltaTime;
+            _hud?.SetSecondsLeft(_overloadDuration - _overloadedFor);
 
             if (_overloadedFor < _overloadDuration) return;
 
             _fired = true;
+            _hud?.Hide();
             Debug.Log($"[AnomalyOverloadWatcher] {unresolved} anomalies held above {_maxConcurrent} for {_overloadDuration:0}s - night lost.", this);
 
             GameFlowManager.Instance?.EndNight(NightOutcome.Negligence, causeAnomalyId: OverloadCauseId);

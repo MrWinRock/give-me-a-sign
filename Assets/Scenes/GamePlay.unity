@@ -574,19 +574,31 @@ MonoBehaviour:
   - SEC-01
   - SEC-02
   - SEC-03
+  normalScripts:
+  - callLine: '"{id}, radio check."'
+    hint: 'say: "{id}, copy"'
+    answerAllOf:
+    - '{id}'
+    - copy
+  wrongIdScripts:
+  - callLine: '"{wrong}, radio check."'
+    hint: 'say: "{wrong}, copy"'
+    answerAllOf:
+    - copy
+  mimicScripts:
+  - callLine: '"...confirm all clear."'
+    hint: all clear.
+    answerAllOf:
+    - all clear
   responseWindowSeconds: 8
-  wordSimilarity: 0.7
   outcomeDisplaySeconds: 2.5
+  echoGraceSeconds: 0.4
   normalWeight: 3
   ownVoiceWeight: 1.5
   wrongIdWeight: 1.5
   mimicWeight: 1
   mimicMinNight: 3
-  mimicNoisePenalty: 40
-  mimicPhrase: all clear
-  strikesForConsequence: 3
-  missedCallNoise: 25
-  wrongIdIntensityFloor: 1.25
+  decoyIntensityFloor: 1.25
   callSoundName: RadioCall
   missedSoundName: RadioMissed
   showDebugInfo: 0
@@ -1018,7 +1030,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &234311631
 Transform:
   m_ObjectHideFlags: 0
@@ -2085,17 +2097,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a34c0b3a9f2cbe45937805933aacd8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.NoiseMeter
-  speechNoisePerSecond: 12
   whisperBandMultiplier: 3
   shoutBandMultiplier: 8
-  whisperCostMultiplier: 0.3
-  shoutCostMultiplier: 2.5
-  drainPerSecond: 4
-  drainDelaySeconds: 2.5
-  triggerThreshold: 100
-  levelAfterTrigger: 35
-  triggerCooldownSeconds: 45
-  showDebugInfo: 0
+  sliderMaxMultiplier: 16
+  riseSpeed: 8
+  fallSpeed: 2.5
+  holdSeconds: 0.25
 --- !u!4 &497488819
 Transform:
   m_ObjectHideFlags: 0
@@ -2844,6 +2851,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 843168414}
+  - component: {fileID: 843168415}
   - component: {fileID: 843168413}
   m_Layer: 0
   m_Name: MicHold
@@ -2964,6 +2972,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1367956997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &843168415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843168412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
+  channel: 1
 --- !u!1 &852930492
 GameObject:
   m_ObjectHideFlags: 0
@@ -4379,7 +4400,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1152383719
 Transform:
   m_ObjectHideFlags: 0
@@ -5750,6 +5771,7 @@ MonoBehaviour:
   whisperManager: {fileID: 0}
   microphone: {fileID: 0}
   dispatchCooldownSec: 0.25
+  windowSeconds: 6
 --- !u!114 &1349133151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7501,6 +7523,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1888672081}
+  - component: {fileID: 1888672083}
   - component: {fileID: 1888672082}
   m_Layer: 0
   m_Name: MicOpenStop
@@ -7508,7 +7531,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1888672081
 Transform:
   m_ObjectHideFlags: 0
@@ -7621,6 +7644,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1888672083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888672080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
+  channel: 1
 --- !u!1 &1900000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -7799,6 +7835,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1901644732}
+  - component: {fileID: 1901644733}
   - component: {fileID: 1901644731}
   m_Layer: 0
   m_Name: MicOpenAndClose
@@ -7919,6 +7956,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1367956997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1901644733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901644730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0f4e8c1d3b4c6a7e9f0a1b2c3d4e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Audio.ManagedAudioSource
+  channel: 1
 --- !u!114 &1910000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8592,6 +8642,54 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.84, y: 1.77}
   m_EdgeRadius: 0
+--- !u!1 &2071413204
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2071413206}
+  - component: {fileID: 2071413205}
+  m_Layer: 0
+  m_Name: AnomalyOverloadWatcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2071413205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071413204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 281016e53d2ff3e4f9e98b05723d852c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyOverloadWatcher
+  fallbackMaxConcurrent: 3
+  fallbackOverloadDuration: 120
+  overloadDurationOverride: 60
+  showDebugInfo: 0
+--- !u!4 &2071413206
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071413204}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2091993504
 GameObject:
   m_ObjectHideFlags: 0
@@ -20126,3 +20224,4 @@ SceneRoots:
   - {fileID: 811400002}
   - {fileID: 8000000000000002}
   - {fileID: 497488819}
+  - {fileID: 2071413206}
