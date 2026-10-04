@@ -28,7 +28,8 @@ namespace GameLogic.Flow
 
         // The overlay is left up on purpose: the scene load that follows removes it, so there is no
         // flash of the game between the scare and the lose screen.
-        public static IEnumerator Play(float seconds)
+        // visual:false = the Demon already filled the screen (it killed the player): cut to black and let only the scream play.
+        public static IEnumerator Play(float seconds, bool visual = true)
         {
             var root = new GameObject("DemonLossJumpscare", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -40,6 +41,13 @@ namespace GameLogic.Flow
             var black = NewGraphic<Image>(root.transform, "Black");
             black.color = Color.black;
             Stretch(black.rectTransform);
+
+            if (!visual)
+            {
+                AudioManager.Instance?.Play(ScreamSound);
+                yield return new WaitForSecondsRealtime(Mathf.Max(0.3f, seconds));
+                yield break;
+            }
 
             var demon = FindDemon();
             RectTransform face = null;

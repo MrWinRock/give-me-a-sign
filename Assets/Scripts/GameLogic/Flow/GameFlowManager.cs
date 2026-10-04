@@ -607,8 +607,8 @@ namespace GameLogic.Flow
             }
 
             // Every loss - killed, overrun, or surviving without enough reports - ends on the Demon,
-            // then cuts straight to the lose screen.
-            yield return DemonLossJumpscare.Play(delayAfterDeath);
+            // then cuts straight to the lose screen. When the Demon itself got you, it already scared you: only its scream plays.
+            yield return DemonLossJumpscare.Play(delayAfterDeath, visual: outcome != NightOutcome.KilledByDemon);
 
             LoadSceneByName(resultSceneName, "result");
         }

@@ -402,7 +402,7 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 **Lose condition (อัปเดต):** (1) Demon หมดเวลา, (2) Hooded Figure จับได้ว่าพูดดัง, (3) รอดถึง 6:00 แต่คะแนนไม่ถึงเกณฑ์, (4) **Anomaly ล้นฉาก** — `AnomalyOverloadWatcher` ถูกวางใน `GamePlay.unity` แล้ว (เดิมมีโค้ดแต่ไม่เคยอยู่ในซีน): anomaly ที่ยังไม่ถูกจัดการเกินจำนวนที่คืนนั้นกำหนด (`maxConcurrentAnomalies` ใน DifficultyProfile, 3-4) ต่อเนื่อง **60 วิ** (`Overload Duration Override`, ใส่ 0 = ใช้ค่าตามคืนจาก profile) = แพ้แบบ `Negligence`
 เริ่มนับเมื่อเกินจำนวน → HUD กลางบนขึ้น `TOO MANY ANOMALIES (n) - REPORT THEM BEFORE THE BUILDING FALLS` (กะพริบ) + ตัวเลขนับถอยหลัง; ลดลงถึงเกณฑ์ = รีเซ็ตและซ่อนข้อความ
 
-**ฉากแพ้ (อัปเดต):** ทุกการแพ้ — โดน Hooded Figure จับ, Demon หมดเวลา, anomaly ล้นฉาก, รอดถึง 6:00 แต่คะแนนไม่ถึง — จบด้วย **Demon jumpscare เต็มจอ + เสียงกรีด (`JumpScare`) แล้วตัดไปหน้า Result ทันที** (`Flow/DemonLossJumpscare.cs`, ใช้รูป/วิดีโอจาก DemonAnomaly prefab เอง เปลี่ยนที่ Demon ที่เดียว; ระยะเวลาปรับที่ `Delay After Death` ใน GameFlowManager ค่าเริ่มต้น 1.8 วิ). เอา `DeathSequenceHud` (fade + ข้อความสาเหตุ) และ jumpscare หน้าตัวผีของ QuietResponse ออก
+**ฉากแพ้ (อัปเดต):** ทุกการแพ้ (ยกเว้นแพ้เพราะ Demon เอง = ไม่เล่นภาพซ้ำ ตัดเป็นหน้าจอดำ + เสียงกรีดอย่างเดียว แล้วไปหน้า Result) — โดน Hooded Figure จับ, Demon หมดเวลา, anomaly ล้นฉาก, รอดถึง 6:00 แต่คะแนนไม่ถึง — จบด้วย **Demon jumpscare เต็มจอ + เสียงกรีด (`JumpScare`) แล้วตัดไปหน้า Result ทันที** (`Flow/DemonLossJumpscare.cs`, ใช้รูป/วิดีโอจาก DemonAnomaly prefab เอง เปลี่ยนที่ Demon ที่เดียว; ระยะเวลาปรับที่ `Delay After Death` ใน GameFlowManager ค่าเริ่มต้น 1.8 วิ). เอา `DeathSequenceHud` (fade + ข้อความสาเหตุ) และ jumpscare หน้าตัวผีของ QuietResponse ออก
 
 ---
 
