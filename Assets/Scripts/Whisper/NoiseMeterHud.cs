@@ -1,4 +1,3 @@
-using DG.Tweening;
 using TMPro;
 using UI;
 using UnityEngine;
@@ -7,27 +6,29 @@ using UnityEngine.UI;
 namespace Whisper
 {
     /// <summary>
-    /// Runtime-built bottom-left NOISE bar for <see cref="NoiseMeter"/>, plus a warning line that
-    /// flashes when the meter fills. No scene wiring, same pattern as the other runtime HUDs. Tahoma
-    /// via XPTheme so its label reads as the same monitor feed as everything else.
+    /// Runtime-built bottom-left volume slider for <see cref="NoiseMeter"/>: a track split into
+    /// quiet / normal / loud zones with a bar that slides right as the player gets louder. The zone
+    /// the current threat asks for stays bright; the others dim. No words say "loud" or "quiet".
     /// </summary>
     public class NoiseMeterHud
     {
-        private readonly XPTheme _theme = XPTheme.Load();
+        private static readonly Color QuietColor = new Color(0.35f, 0.85f, 0.45f);
+        private static readonly Color NormalColor = new Color(0.95f, 0.8f, 0.25f);
+        private static readonly Color LoudColor = new Color(0.9f, 0.2f, 0.2f);
 
-        private const float PulseFrom = 0.9f;
-        private const float DangerFraction = 0.8f;
-
-        private static readonly Color QuietColor = new Color(0.75f, 0.8f, 0.75f);
-        private static readonly Color WarnColor = new Color(0.95f, 0.75f, 0.2f);
-        private static readonly Color DangerColor = new Color(0.9f, 0.15f, 0.15f);
+        private const float TrackWidth = 360f;
+        private const float TrackHeight = 16f;
 
         private readonly GameObject _root;
+        private readonly CanvasGroup _group;
+        private readonly Image _zoneQuiet;
+        private readonly Image _zoneNormal;
+        private readonly Image _zoneLoud;
         private readonly Image _fill;
-        private readonly TextMeshProUGUI _warning;
+        private readonly RectTransform _marker;
 
-        private Tween _pulse;
-        private Tween _warningFade;
+        private float _whisperEdge = 0.4f;
+        private float _shoutEdge = 0.75f;
 
         public static NoiseMeterHud Create() => new NoiseMeterHud();
 
@@ -38,83 +39,114 @@ namespace Whisper
 
             var canvas = _root.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 400; // under the report window
+            canvas.sortingOrder = 400;
 
             var scaler = _root.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
 
-            var label = CreateText(_root.transform, "Label", 20f, BottomLeft(new Vector2(32f, 52f), new Vector2(200f, 26f)));
-            label.text = "NOISE";
+            _group = _root.AddComponent<CanvasGroup>();
+            _group.blocksRaycasts = false;
+            _group.interactable = false;
+
+            var theme = XPTheme.Load();
+            var label = CreateText(_root.transform, "Label", "MIC", 18f, new Vector2(32f, 54f), new Vector2(100f, 24f));
             label.color = new Color(1f, 1f, 1f, 0.7f);
-            label.font = _theme.ResolvedFont;
+            label.font = theme.ResolvedFont;
 
-            var background = CreateImage(_root.transform, "MeterBg", new Color(1f, 1f, 1f, 0.15f),
-                BottomLeft(new Vector2(32f, 32f), new Vector2(280f, 14f)));
+            var track = NewImage(_root.transform, "Track", new Color(0f, 0f, 0f, 0.55f));
+            Place(track.rectTransform, new Vector2(32f, 32f), new Vector2(TrackWidth + 4f, TrackHeight + 4f));
 
-            _fill = CreateImage(background.transform, "MeterFill", QuietColor, Stretch());
-            _fill.type = Image.Type.Filled;
-            _fill.fillMethod = Image.FillMethod.Horizontal;
-            _fill.fillAmount = 0f;
-            SetAlpha(_fill, PulseFrom);
+            var inner = NewImage(track.transform, "Inner", Color.clear);
+            Stretch(inner.rectTransform, 2f);
 
-            _warning = CreateText(_root.transform, "Warning", 26f, BottomLeft(new Vector2(32f, 82f), new Vector2(900f, 36f)));
-            _warning.color = new Color(1f, 0.85f, 0.85f, 0f);
-            _warning.font = _theme.ResolvedFont;
+            _zoneQuiet = NewImage(inner.transform, "ZoneQuiet", QuietColor);
+            _zoneNormal = NewImage(inner.transform, "ZoneNormal", NormalColor);
+            _zoneLoud = NewImage(inner.transform, "ZoneLoud", LoudColor);
+
+            _fill = NewImage(inner.transform, "Fill", Color.white);
+            _fill.rectTransform.anchorMin = new Vector2(0f, 0.3f);
+            _fill.rectTransform.anchorMax = new Vector2(0f, 0.7f);
+            _fill.rectTransform.pivot = new Vector2(0f, 0.5f);
+            _fill.rectTransform.offsetMin = Vector2.zero;
+            _fill.rectTransform.offsetMax = Vector2.zero;
+
+            var markerImage = NewImage(inner.transform, "Marker", Color.white);
+            _marker = markerImage.rectTransform;
+            _marker.anchorMin = new Vector2(0f, -0.35f);
+            _marker.anchorMax = new Vector2(0f, 1.35f);
+            _marker.pivot = new Vector2(0.5f, 0.5f);
+            _marker.sizeDelta = new Vector2(4f, 0f);
+            _marker.anchoredPosition = Vector2.zero;
+
+            LayoutZones();
+            SetRequirement(NoiseMeter.Requirement.None);
+            SetMicOpen(false);
         }
 
-        public void SetLevel(float normalized)
+        public void SetZones(float whisperEdge, float shoutEdge)
         {
-            if (_fill == null) return;
+            _whisperEdge = Mathf.Clamp01(whisperEdge);
+            _shoutEdge = Mathf.Clamp(shoutEdge, _whisperEdge, 1f);
+            LayoutZones();
+        }
 
-            normalized = Mathf.Clamp01(normalized);
-            _fill.fillAmount = normalized;
+        public void SetLevel(float position)
+        {
+            position = Mathf.Clamp01(position);
 
-            var color = normalized >= DangerFraction ? DangerColor : normalized >= 0.5f ? WarnColor : QuietColor;
-            _fill.color = new Color(color.r, color.g, color.b, _fill.color.a);
+            _fill.rectTransform.anchorMax = new Vector2(position, 0.7f);
+            _fill.color = position >= _shoutEdge ? LoudColor : position > _whisperEdge ? NormalColor : QuietColor;
 
-            bool danger = normalized >= DangerFraction;
-            if (danger && _pulse == null)
+            _marker.anchorMin = new Vector2(position, -0.35f);
+            _marker.anchorMax = new Vector2(position, 1.35f);
+            _marker.anchoredPosition = Vector2.zero;
+        }
+
+        // The zone the current threat wants stays bright; the rest dim down.
+        public void SetRequirement(NoiseMeter.Requirement requirement)
+        {
+            const float lit = 0.85f, base_ = 0.35f, dim = 0.12f;
+
+            switch (requirement)
             {
-                _pulse = _fill.DOFade(0.35f, 0.35f)
-                    .SetEase(Ease.InOutSine)
-                    .SetLoops(-1, LoopType.Yoyo)
-                    .SetUpdate(true)
-                    .SetLink(_fill.gameObject);
-            }
-            else if (!danger && _pulse != null)
-            {
-                KillPulse();
-                SetAlpha(_fill, PulseFrom);
+                case NoiseMeter.Requirement.StayQuiet:
+                    SetAlpha(_zoneQuiet, lit); SetAlpha(_zoneNormal, dim); SetAlpha(_zoneLoud, dim);
+                    break;
+                case NoiseMeter.Requirement.BeLoud:
+                    SetAlpha(_zoneQuiet, dim); SetAlpha(_zoneNormal, dim); SetAlpha(_zoneLoud, lit);
+                    break;
+                default:
+                    SetAlpha(_zoneQuiet, base_); SetAlpha(_zoneNormal, base_); SetAlpha(_zoneLoud, base_);
+                    break;
             }
         }
 
-        public void ShowWarning(string text)
+        // Faded while the mic is closed: nothing is being measured.
+        public void SetMicOpen(bool open)
         {
-            if (_warning == null) return;
-
-            _warningFade?.Kill();
-            _warning.text = text;
-            SetAlpha(_warning, 1f);
-
-            _warningFade = DOTween.To(() => _warning.color.a, a => SetAlpha(_warning, a), 0f, 1.2f)
-                .SetDelay(2f)
-                .SetUpdate(true);
+            if (_group != null) _group.alpha = open ? 1f : 0.35f;
         }
 
         public void Destroy()
         {
-            KillPulse();
-            _warningFade?.Kill();
-            _warningFade = null;
-
             if (_root != null) Object.Destroy(_root);
         }
 
-        private void KillPulse()
+        private void LayoutZones()
         {
-            _pulse?.Kill();
-            _pulse = null;
+            SetZone(_zoneQuiet, 0f, _whisperEdge);
+            SetZone(_zoneNormal, _whisperEdge, _shoutEdge);
+            SetZone(_zoneLoud, _shoutEdge, 1f);
+        }
+
+        private static void SetZone(Image zone, float from, float to)
+        {
+            var rect = zone.rectTransform;
+            rect.anchorMin = new Vector2(from, 0f);
+            rect.anchorMax = new Vector2(to, 1f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
         }
 
         private static void SetAlpha(Graphic graphic, float alpha)
@@ -123,49 +155,47 @@ namespace Whisper
             graphic.color = new Color(c.r, c.g, c.b, alpha);
         }
 
-        private static Image CreateImage(Transform parent, string name, Color color, System.Action<RectTransform> layout)
+        private static Image NewImage(Transform parent, string name, Color color)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             go.transform.SetParent(parent, false);
-
             var image = go.GetComponent<Image>();
             image.color = color;
             image.raycastTarget = false;
-
-            layout(go.GetComponent<RectTransform>());
             return image;
         }
 
-        private static TextMeshProUGUI CreateText(Transform parent, string name, float fontSize, System.Action<RectTransform> layout)
+        private static TextMeshProUGUI CreateText(Transform parent, string name, string text, float size, Vector2 position, Vector2 dimensions)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
 
-            var text = go.AddComponent<TextMeshProUGUI>();
-            text.font = TMP_Settings.defaultFontAsset;
-            text.fontSize = fontSize;
-            text.alignment = TextAlignmentOptions.BottomLeft;
-            text.raycastTarget = false;
+            var tmp = go.AddComponent<TextMeshProUGUI>();
+            tmp.font = TMP_Settings.defaultFontAsset;
+            tmp.text = text;
+            tmp.fontSize = size;
+            tmp.alignment = TextAlignmentOptions.BottomLeft;
+            tmp.raycastTarget = false;
 
-            layout(go.GetComponent<RectTransform>());
-            return text;
+            Place(tmp.rectTransform, position, dimensions);
+            return tmp;
         }
 
-        private static System.Action<RectTransform> Stretch() => rect =>
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-        };
-
-        private static System.Action<RectTransform> BottomLeft(Vector2 position, Vector2 size) => rect =>
+        private static void Place(RectTransform rect, Vector2 position, Vector2 size)
         {
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.zero;
             rect.pivot = Vector2.zero;
             rect.sizeDelta = size;
             rect.anchoredPosition = position;
-        };
+        }
+
+        private static void Stretch(RectTransform rect, float inset)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(inset, inset);
+            rect.offsetMax = new Vector2(-inset, -inset);
+        }
     }
 }

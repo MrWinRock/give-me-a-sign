@@ -31,6 +31,8 @@ namespace Whisper
 
         public static GlobalPushToTalk Instance { get; private set; }
 
+        public bool IsMicOpen => _talking;
+
         private float _lastSpeechAt;
 
         private PushToTalkHud _hud;
@@ -40,7 +42,6 @@ namespace Whisper
         private readonly StringBuilder _transmission = new StringBuilder();
         private float _rmsSum;
         private int _rmsCount;
-        private VoiceLevel _liveLevel = VoiceLevel.Silent;
 
         void Awake()
         {
@@ -66,6 +67,13 @@ namespace Whisper
         void Update()
         {
             if (mic == null) return;
+
+            // Game frozen (pause menu): the mic must not keep listening, even a forced-open one.
+            if (Time.timeScale <= 0f)
+            {
+                StopTalking(playClick: false);
+                return;
+            }
 
             if (_forcedOpen)
             {
@@ -121,11 +129,6 @@ namespace Whisper
             _rmsSum += rms;
             _rmsCount++;
 
-            if (level != _liveLevel)
-            {
-                _liveLevel = level;
-                _hud?.SetTalking(true, level.ToString().ToUpperInvariant());
-            }
         }
 
         private VoiceLevel TransmissionLevel()
@@ -153,7 +156,6 @@ namespace Whisper
             _transmission.Clear();
             _rmsSum = 0f;
             _rmsCount = 0;
-            _liveLevel = VoiceLevel.Silent;
 
             mic.BeginPushToTalk();
             var audio = AudioManager.Instance;

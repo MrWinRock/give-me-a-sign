@@ -41,25 +41,25 @@ namespace GameLogic.DebugTools
         private static readonly QaItem[] QaItems =
         {
             new QaItem { id = "ptt", title = "Hold V = walkie-talkie",
-                steps = "Run a night (GamePlay). Hold V: mic-open click, then MicHold loop, HUD bottom-right shows REC + WHISPER/NORMAL/SHOUT. Release: click again. Pause menu / cutscene: V does nothing." },
+                steps = "Run a night (GamePlay). Hold V: mic-open click, then MicHold loop, HUD bottom-right shows REC (no loudness text - that is the slider's job). Release: click again. Pause menu / cutscene: V does nothing." },
             new QaItem { id = "report", title = "Report an anomaly by voice",
                 steps = "Spawn: Shadow Blob. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'shadow in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'shadow' = WHICH ROOM? (not filed, no penalty); only 'in bedroom' = WHAT DID YOU SEE?; wrong word or wrong room = NEGATIVE + it advances." },
             new QaItem { id = "demon", title = "Demon needs a shout",
                 steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: STATIC - SPEAK UP, nothing else happens. Shout it: COPY THAT and it leaves." },
             new QaItem { id = "stealth", title = "Hooded Figure stealth mic",
                 steps = "Spawn: Hooded Figure. Mic opens by itself (open click), HUD: MIC LIVE - WHISPER ONLY n. Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper 'figure in <room>' = it leaves via report; (c) speak/shout = full-screen jumpscare then Result (night lost). V press during it only clicks." },
-            new QaItem { id = "radio", title = "Radio Check pass / fail / noise",
-                steps = "Radio Check > Normal. Answer 'SEC-04 copy': COPY THAT shown ~2.5s. Run it again and stay silent: NO RESPONSE (NOISE +25) + 'Missed n/3', Noise bar jumps. Miss 3 in a row: HQ sends someone = next scheduled haunt fires immediately." },
+            new QaItem { id = "radio", title = "Radio Check pass / fail",
+                steps = "Radio Check > Normal. Say exactly what the card says ('SEC-04 copy'): COPY THAT shown ~2.5s. Only noise, only 'copy', or the wrong call sign must NOT pass. Run again and stay silent: NO RESPONSE and a penalty anomaly appears in the scene." },
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
-                steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears, Noise +40. Same for Wrong ID (answering = WRONG SIGN-IN, silence = GOOD CALL)." },
-            new QaItem { id = "noise", title = "Noise Meter -> Listener",
-                steps = "Hold V and talk loudly for ~10s: bar bottom-left fills (whisper barely, shout fast). Full = 'Too loud. Something heard you...' and a Hooded Figure (the Listener) appears with the live mic - not on night 1. Stay quiet: bar drains after ~2.5s." },
+                steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears. Same for Wrong ID (saying 'copy' = WRONG SIGN-IN + penalty anomaly, silence = GOOD CALL). OwnVoice: your recorded voice plays - speaking over it must not count; answer after it ends." },
+            new QaItem { id = "noise", title = "Volume slider (bottom-left)",
+                steps = "Hold V and speak: the bar slides right as you get louder; coloured zones = quiet / normal / loud, no words. Spawn Hooded Figure: quiet zone lights up - stay in it (loud = jumpscare). Reveal the Demon: loud zone lights up - shout until you reach it. Mic closed: slider is faded." },
             new QaItem { id = "manual", title = "Field Manual locks + entry points",
                 steps = "Field Manual > Lock all pages, press TAB: every page '???'. Spawn an anomaly: its page unlocks (Demon only when it reveals). TAB opens/closes it, but not while paused, in a cutscene, or while the Demon is out. The MainMenu icon 'Field Manual.exe' opens it too." },
             new QaItem { id = "matcher", title = "Short words don't match everything",
                 steps = "Radio Check > Normal. Say just 'a' or 'in' or 'on': must NOT count as an answer. 'SEC-04 copy' (or 'copy') should." },
             new QaItem { id = "levels", title = "Mic levels feel right (your mic)",
-                steps = "Hold V and speak: whisper -> REC WHISPER, normal voice -> REC NORMAL, shout -> REC SHOUT. If whisper reads NORMAL, lower Noise Meter 'Whisper Band Multiplier' or recalibrate the mic in Control Panel." },
+                steps = "Hold V and watch the slider: a whisper should stay in the green zone, normal speech reach yellow, a shout reach red. If not, calibrate the mic (Debug > Mic: calibrate) or adjust the Whisper/Shout Band Multipliers on NoiseMeter." },
         };
 
         public static List<DebugEntry> Build(Func<string> typedText, Action<string> info)
@@ -313,23 +313,6 @@ namespace GameLogic.DebugTools
                 label = "Mic: show saved noise floor",
                 run = () => info($"Noise floor = {MicCalibration.NoiseFloor:0.0000}  ({(MicCalibration.HasCalibrated ? "calibrated" : "DEFAULT - never calibrated")})"),
             });
-
-            foreach (float amount in new[] { 25f, 50f })
-            {
-                float captured = amount;
-                list.Add(new DebugEntry
-                {
-                    group = VoiceGroup,
-                    label = $"Noise Meter +{captured:0}",
-                    run = () =>
-                    {
-                        var meter = NoiseMeter.Instance;
-                        if (meter == null) { info("No NoiseMeter in this scene."); return; }
-                        meter.AddNoise(captured);
-                        info($"Noise now {meter.Level:0}/100.");
-                    },
-                });
-            }
 
             list.Add(new DebugEntry
             {

@@ -374,3 +374,20 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
   Noise Meter เต็ม 100% ตอนนี้ **spawn Hooded Figure** (anomaly ชนิด `VoiceResponse.Silence`) แทน; คืน 1 (tutorial) หรือมีตัวนั้นอยู่แล้ว = ขึ้นแค่ "almost heard you"
 - **พบว่าค่า noise floor ของไมค์เคยถูกวัดแค่ใน Listener เก่าเท่านั้น** (เกณฑ์กระซิบ/ตะโกน/ตัวจับเสียงเงียบพึ่งค่านี้) ยังไม่เคยถูกวัดในเกมใหม่ → ใน Debug panel มีปุ่ม `Mic: calibrate noise floor (stay SILENT 3s)` และ `Mic: show saved noise floor`
   ควรวัดหนึ่งครั้งก่อนเทสเรื่อง Whisper/Shout/Hooded Figure (ตอนนี้ใช้ค่าเริ่มต้น 0.02)
+
+---
+
+## 11. ปรับรอบนี้ (ทับหัวข้อก่อนหน้าที่ขัดกัน)
+
+**Noise Meter = สไลเดอร์ความดังสด** (`NoiseMeter` + `NoiseMeterHud`, ซ้ายล่าง) — แทนระบบ "แถบสะสมจนเต็มแล้วเรียก Listener" เดิมทั้งหมด (เลิกแล้ว: ไม่มี `AddNoise`, ไม่มีบทลงโทษ Noise จาก Radio Check/Mimic)
+- แถบเลื่อนซ้าย→ขวาตามความดังของเสียงพูดขณะนั้น (สเกล log เทียบ noise floor ที่วัดไว้), มีโซนสี เขียว=เบา/กระซิบ เหลือง=ปกติ เขียว→แดง=ตะโกน (เส้นแบ่งตาม `Whisper/Shout Band Multiplier`)
+- โซนที่ภัยตรงหน้าต้องการจะสว่าง ที่เหลือหรี่: Hooded Figure (ต้องเงียบ) → โซนเขียวสว่าง, Demon เปิดตัวแล้ว (ต้องตะโกน) → โซนแดงสว่าง; ไมค์ปิดอยู่แถบจาง
+- ไม่มีตัวอักษรบอกดัง/เบา/ปกติอีก (HUD ไมค์ขึ้นแค่ `REC`); chunk ไมค์เล็กลงเป็น 0.1 วิให้แถบลื่น
+- เรียก Hooded Figure จากความดังเกินไม่มีแล้ว (ใช้ Debug panel / schedule ปกติ)
+
+**Radio Check**
+- ต้องตอบตามที่การ์ดเขียนจริง: `SEC-04 copy` = ต้องมีทั้ง "copy" และ call sign (รับ `sec 04`, `sec zero four`, `sec o four`) — `RadioPhrases.cs`, ตัวตรวจเข้มกว่าเดิม
+- **สาเหตุที่ "แค่ส่งเสียงก็ผ่าน" (สันนิษฐาน):** สาย OwnVoice เล่นคลิปเสียงตัวเองที่อัดไว้ (ซึ่งคือ "SEC-04 copy") ออกลำโพง ไมค์รับเสียงนั้นกลับเข้า Whisper แล้วนับเป็นคำตอบ → ตอนนี้ไม่นับคำพูดจนกว่าคลิปจะจบ +0.4 วิ (`Echo Grace Seconds`)
+- Fail (ไม่ตอบ) = **เพิ่ม anomaly ในฉาก** (`SpawnPenaltyAnomalies`); ตัวหลอก (Wrong ID / Mimic) กลับกัน — ถ้าตอบ (Wrong ID พูด "copy", Mimic พูด "all clear") = เพิ่ม anomaly, เงียบ = GOOD CALL. ตัดระบบ strike 3 ครั้งและ Noise ออก
+
+**Pause (ESC)** = หน้าตั้งค่า มี Master / Music / **SFX** (เสียงไมค์เปิด/ปิดอยู่ช่อง SFX อยู่แล้ว ตอนนี้ปรับได้) — กดแล้วหยุดทั้งเกม: `timeScale=0`, `AudioListener.pause`, `DOTween.timeScale=0`, วิดีโอที่กำลังเล่นถูก pause, ไมค์ (รวมไมค์ที่เกมบังคับเปิด) ถูกปิดจนกว่าจะ Resume

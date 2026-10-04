@@ -11,23 +11,13 @@ namespace Report
 {
     /// <summary>
     /// HL-4 Radio Check. Every so often HQ pings over the radio and the player has a few seconds
-    /// to answer by voice - the mechanic that keeps the mic "alive" all night instead of only
-    /// during the Incident Report form (see the roadmap's "ไมค์มีชีวิตตลอดคืน").
+    /// to answer by voice. A real call must be answered exactly as written on screen; a decoy call
+    /// (wrong call sign, or a mimic asking to "confirm all clear") must be left alone. Getting it
+    /// wrong either way lets another anomaly into the building.
     /// </summary>
     public class RadioCheckHaunt : MonoBehaviour, IHauntLoop
     {
         public enum Variant { Normal, OwnVoice, WrongId, Mimic }
-
-        private Variant? _forcedVariant;
-
-        // Debug/tooling: place this call as a specific variant, ignoring weights and the Mimic night gate.
-        public bool DebugTrigger(Variant variant)
-        {
-            if (IsActive) return false;
-            _forcedVariant = variant;
-            Trigger(default);
-            return true;
-        }
 
         [Header("Identity")]
         [SerializeField] private string radioId = "SEC-04";
@@ -35,34 +25,23 @@ namespace Report
 
         [Header("Timing")]
         [SerializeField] private float responseWindowSeconds = 8f;
-        [Range(0f, 1f)] [SerializeField] private float wordSimilarity = 0.7f;
         [Tooltip("How long the PASS / FAIL result stays on screen after a call.")]
         [Min(0f)] [SerializeField] private float outcomeDisplaySeconds = 2.5f;
+        [Tooltip("Speech heard within this long of the call audio ending is ignored - the mic can pick up the call itself (especially the player's own recorded voice).")]
+        [Min(0f)] [SerializeField] private float echoGraceSeconds = 0.4f;
 
         [Header("Variant weights")]
         [SerializeField] private float normalWeight = 3f;
         [SerializeField] private float ownVoiceWeight = 1.5f;
         [SerializeField] private float wrongIdWeight = 1.5f;
-        [Tooltip("A voice that sounds like HQ but uses no call sign and asks you to 'confirm all clear'. Answering it invites the entity in; the right move is silence.")]
+        [Tooltip("A voice that sounds like HQ but uses no call sign and asks you to 'confirm all clear'. Answering it lets an anomaly in; the right move is silence.")]
         [SerializeField] private float mimicWeight = 1f;
         [Tooltip("The mimic only starts calling from this night on (Act 2).")]
         [Min(1)] [SerializeField] private int mimicMinNight = 3;
 
-        [Header("Mimic consequence")]
-        [Tooltip("Noise added to the Noise Meter when the player answers the mimic.")]
-        [Min(0f)] [SerializeField] private float mimicNoisePenalty = 40f;
-        [SerializeField] private string mimicPhrase = "all clear";
-
-        [Header("Negligence")]
-        [Tooltip("Missed (unanswered) calls before HQ 'sends someone to check' - forces the next scheduled haunt beat to fire immediately.")]
-        [SerializeField] private int strikesForConsequence = 3;
-
-        [Tooltip("Noise Meter added the moment a call goes unanswered - HQ shouting down the line carries.")]
-        [Min(0f)] [SerializeField] private float missedCallNoise = 25f;
-
-        [Header("Wrong ID consequence")]
-        [Tooltip("If the player answers a call meant for someone else, GlitchDirector's intensity is floored to at least this for the rest of the night.")]
-        [SerializeField] private float wrongIdIntensityFloor = 1.25f;
+        [Header("Decoy consequence")]
+        [Tooltip("When a decoy call is answered, GlitchDirector's intensity is floored to at least this for the rest of the night (on top of the extra anomaly).")]
+        [SerializeField] private float decoyIntensityFloor = 1.25f;
 
         [Header("Audio (best-effort - a missing library entry just stays silent)")]
         [SerializeField] private string callSoundName = "RadioCall";
@@ -79,7 +58,17 @@ namespace Report
         private RadioCheckHud _hud;
         private GlitchDirector _glitchDirector;
         private Coroutine _encounter;
-        private int _negligenceStrikes;
+        private Variant? _forcedVariant;
+        private float _listenFrom;
+
+        // Debug/tooling: place this call as a specific variant, ignoring weights and the Mimic night gate.
+        public bool DebugTrigger(Variant variant)
+        {
+            if (IsActive) return false;
+            _forcedVariant = variant;
+            Trigger(default);
+            return true;
+        }
 
         void Awake()
         {
@@ -99,7 +88,7 @@ namespace Report
             HauntDirector.ExistingInstance?.Unregister(this);
 
             if (IsActive)
-                EndEncounter(respondedCorrectly: false, wrongIdAdmitted: false, silent: true);
+                EndEncounter(silent: true);
         }
 
         public void Trigger(HauntBeat beat)
@@ -113,8 +102,8 @@ namespace Report
             IsActive = true;
 
             var variant = PickVariant();
+            bool decoy = variant == Variant.WrongId || variant == Variant.Mimic;
             string calledId = variant == Variant.WrongId ? PickWrongId() : radioId;
-            string expectedPhrase = variant == Variant.Mimic ? mimicPhrase : $"{radioId} copy";
 
             _hud = RadioCheckHud.Create();
             if (variant == Variant.Mimic)
@@ -125,22 +114,29 @@ namespace Report
             else
             {
                 _hud.SetCall($"\"{calledId}, radio check.\"");
-                string strikes = _negligenceStrikes > 0 ? $"  (missed {_negligenceStrikes}/{strikesForConsequence})" : "";
-                _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"{strikes}");
+                _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"");
             }
 
+            float callSeconds = 0f;
+            var audio = AudioManager.Instance;
             if ((variant == Variant.OwnVoice || variant == Variant.Mimic) && _recorder.HasClip)
-                AudioManager.Instance?.PlayClip(_recorder.LastClip);
+            {
+                audio?.PlayClip(_recorder.LastClip);
+                callSeconds = _recorder.LastClip.length;
+            }
             else
-                AudioManager.Instance?.Play(callSoundName);
+            {
+                audio?.Play(callSoundName);
+            }
+            _listenFrom = Time.time + callSeconds + echoGraceSeconds;
 
             bool matched = false;
             var voice = VoicePromptSystem.Instance;
-            voice?.Expect(expectedPhrase, ok => matched = ok, minimumWordsRequired: 2, wordSimilarity: wordSimilarity);
+            voice?.Expect(text => Time.time >= _listenFrom && Heard(variant, text), ok => matched = ok);
 
-            // WrongId and Mimic calls are answered with silence, so recording them would never capture
-            // a usable "own voice answering normally" sample for a future Own-Voice call.
-            bool shouldRecord = variant == Variant.Normal || variant == Variant.OwnVoice;
+            // Decoys are answered with silence, so recording them would never capture a usable
+            // "own voice answering normally" sample for a future Own-Voice call.
+            bool shouldRecord = !decoy;
             if (shouldRecord) _recorder.BeginCapture(responseWindowSeconds);
 
             float end = Time.time + responseWindowSeconds;
@@ -153,56 +149,41 @@ namespace Report
             voice?.Cancel();
             if (shouldRecord) _recorder.EndCapture();
 
-            bool respondedCorrectly;
-            bool wrongIdAdmitted = false;
-
-            if (variant == Variant.Mimic)
-            {
-                respondedCorrectly = !matched; // HQ never asks this - the right move is silence
-                if (matched)
-                    InviteEntity();
-            }
-            else if (variant == Variant.WrongId)
-            {
-                wrongIdAdmitted = matched;
-                respondedCorrectly = !matched; // the correct move on a call that isn't yours is silence
-            }
-            else
-            {
-                respondedCorrectly = matched;
-            }
+            // Real call: answering is right. Decoy: answering is the mistake.
+            bool passed = decoy ? !matched : matched;
 
             if (showDebugInfo)
-                Debug.Log($"RadioCheckHaunt: variant={variant} calledId={calledId} matched={matched}.", this);
+                Debug.Log($"RadioCheckHaunt: variant={variant} calledId={calledId} answered={matched} passed={passed}.", this);
 
-            bool invited = variant == Variant.Mimic && matched;
             string headline, detail;
-            if (invited)
+            if (passed)
             {
-                headline = "IT HEARD YOU";
-                detail = "That wasn't HQ.";
+                headline = decoy ? "GOOD CALL" : "COPY THAT";
+                detail = decoy ? "That wasn't HQ." : "HQ is satisfied.";
             }
-            else if (wrongIdAdmitted)
+            else if (decoy)
             {
-                headline = "WRONG SIGN-IN";
-                detail = "That call wasn't for you.";
-            }
-            else if (respondedCorrectly)
-            {
-                bool declined = variant == Variant.WrongId || variant == Variant.Mimic;
-                headline = declined ? "GOOD CALL" : "COPY THAT";
-                detail = declined ? "That wasn't HQ." : "HQ is satisfied.";
+                headline = variant == Variant.Mimic ? "IT HEARD YOU" : "WRONG SIGN-IN";
+                detail = "Another anomaly got in.";
             }
             else
             {
-                int missed = _negligenceStrikes + 1;
-                headline = "NO RESPONSE  (NOISE +" + Mathf.RoundToInt(missedCallNoise) + ")";
-                detail = missed >= strikesForConsequence
-                    ? "HQ is sending someone to check."
-                    : $"Missed {missed}/{strikesForConsequence} - at {strikesForConsequence}, HQ sends someone.";
+                headline = "NO RESPONSE";
+                detail = "Another anomaly got in.";
             }
 
-            EndEncounter(respondedCorrectly, wrongIdAdmitted, headline: headline, detail: detail);
+            EndEncounter(passed, decoy, headline, detail);
+        }
+
+        // Real calls must be answered as written; decoys count as "answered" on any sensible attempt.
+        private bool Heard(Variant variant, string text)
+        {
+            switch (variant)
+            {
+                case Variant.Mimic: return RadioPhrases.SaidAllClear(text);
+                case Variant.WrongId: return RadioPhrases.SaidCopy(text);
+                default: return RadioPhrases.SaidCopy(text) && RadioPhrases.SaidCallSign(text, radioId);
+            }
         }
 
         private Variant PickVariant()
@@ -228,26 +209,13 @@ namespace Report
             return Variant.Mimic;
         }
 
-        // Answering the mimic "invites it in": extra anomalies, a noisier line, and a permanent glitch floor.
-        private void InviteEntity()
-        {
-            AnomalyScheduler.Instance?.SpawnPenaltyAnomalies();
-            NoiseMeter.Instance?.AddNoise(mimicNoisePenalty);
-            _glitchDirector?.SetFlag("mimic_invited", true);
-            _glitchDirector?.SetIntensity(wrongIdIntensityFloor);
-
-            if (showDebugInfo)
-                Debug.Log("RadioCheckHaunt: player answered the mimic - entity invited.", this);
-        }
-
         private string PickWrongId()
         {
             if (wrongIds == null || wrongIds.Length == 0) return "SEC-00";
             return wrongIds[Random.Range(0, wrongIds.Length)];
         }
 
-        private void EndEncounter(bool respondedCorrectly, bool wrongIdAdmitted, bool silent = false,
-                                  string headline = null, string detail = null)
+        private void EndEncounter(bool passed = false, bool decoy = false, string headline = null, string detail = null, bool silent = false)
         {
             IsActive = false;
 
@@ -260,49 +228,25 @@ namespace Report
             if (_hud != null)
             {
                 // Linger so the player can actually read whether the check passed.
-                if (!silent) _hud.ShowOutcome(respondedCorrectly, headline ?? (respondedCorrectly ? "COPY THAT" : "NO RESPONSE"), detail ?? "");
+                if (!silent) _hud.ShowOutcome(passed, headline ?? (passed ? "COPY THAT" : "NO RESPONSE"), detail ?? "");
                 _hud.Destroy(silent ? 0f : outcomeDisplaySeconds);
                 _hud = null;
             }
 
-            if (silent) return;
+            if (silent || passed) return;
 
-            if (wrongIdAdmitted)
+            // Fail, either way: the punishment is another anomaly in the building.
+            if (!decoy) AudioManager.Instance?.Play(missedSoundName);
+            AnomalyScheduler.Instance?.SpawnPenaltyAnomalies();
+
+            if (decoy)
             {
-                // Soft consequence, not a fail state. A floor rather than a stacking bump, so
-                // admitting twice doesn't compound.
-                _glitchDirector?.SetFlag("impostor_admitted", true);
-                _glitchDirector?.SetIntensity(wrongIdIntensityFloor);
-
-                if (showDebugInfo)
-                    Debug.Log("RadioCheckHaunt: player answered a call that wasn't theirs.", this);
-                return;
+                _glitchDirector?.SetFlag("decoy_answered", true);
+                _glitchDirector?.SetIntensity(decoyIntensityFloor);
             }
 
-            if (respondedCorrectly)
-            {
-                _negligenceStrikes = 0;
-                return;
-            }
-
-            AudioManager.Instance?.Play(missedSoundName);
-            NoiseMeter.Instance?.AddNoise(missedCallNoise);
-            _negligenceStrikes++;
-
             if (showDebugInfo)
-                Debug.Log($"RadioCheckHaunt: missed call - negligence {_negligenceStrikes}/{strikesForConsequence}.", this);
-
-            if (_negligenceStrikes < strikesForConsequence) return;
-
-            _negligenceStrikes = 0;
-
-            // "HQ sends someone to check" - reuse the existing scheduled-beat mechanism instead of
-            // inventing a new consequence system: force whatever haunt is next in this night's plan
-            // to fire immediately.
-            if (showDebugInfo)
-                Debug.Log("RadioCheckHaunt: 3 missed calls - forcing the next scheduled haunt.", this);
-
-            HauntDirector.ExistingInstance?.ForceFireNext();
+                Debug.Log($"RadioCheckHaunt: failed ({(decoy ? "answered a decoy" : "no answer")}) - anomaly added.", this);
         }
     }
 }

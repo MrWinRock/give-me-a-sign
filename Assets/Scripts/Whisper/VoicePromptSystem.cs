@@ -41,6 +41,7 @@ namespace Whisper
             public int minimumWordsRequired;
             public float wordSimilarity;
             public System.Action<bool> onMatched;
+            public System.Func<string, bool> matcher; // when set, replaces the fuzzy phrase match
         }
 
         private ActivePrompt _current;
@@ -76,17 +77,33 @@ namespace Whisper
             };
         }
 
+        // Caller decides what counts as a match (strict phrases, timing gates ...).
+        public void Expect(System.Func<string, bool> matcher, System.Action<bool> onMatched)
+        {
+            _current = new ActivePrompt { matcher = matcher, onMatched = onMatched, minimumWordsRequired = 1 };
+        }
+
         public void Cancel() => _current = null;
 
         public void Route(string recognizedText)
         {
             if (_current == null || string.IsNullOrWhiteSpace(recognizedText)) return;
 
-            int matches = PhraseMatcher.CountMatchingWords(recognizedText, _current.phrase, _current.wordSimilarity);
-            bool isMatch = matches >= _current.minimumWordsRequired;
+            bool isMatch;
+            if (_current.matcher != null)
+            {
+                isMatch = _current.matcher(recognizedText);
+                if (showDebugInfo)
+                    Debug.Log($"VoicePromptSystem: '{recognizedText}' -> {isMatch}");
+            }
+            else
+            {
+                int matches = PhraseMatcher.CountMatchingWords(recognizedText, _current.phrase, _current.wordSimilarity);
+                isMatch = matches >= _current.minimumWordsRequired;
 
-            if (showDebugInfo)
-                Debug.Log($"VoicePromptSystem: '{recognizedText}' vs '{_current.phrase}' - {matches} word(s) matched -> {isMatch}");
+                if (showDebugInfo)
+                    Debug.Log($"VoicePromptSystem: '{recognizedText}' vs '{_current.phrase}' - {matches} word(s) matched -> {isMatch}");
+            }
 
             if (!isMatch) return;
 

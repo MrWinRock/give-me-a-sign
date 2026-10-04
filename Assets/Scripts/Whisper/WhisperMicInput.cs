@@ -245,7 +245,7 @@ namespace Whisper
             microphone.vadLastSec = 0.9f;          // shorter window for earlier speech detection
             microphone.vadThd = 1.0f;
             microphone.vadFreqThd = 100.0f;
-            microphone.chunksLengthSec = Mathf.Max(0.15f, hopSec * 0.5f); // smaller chunks for lower latency
+            microphone.chunksLengthSec = 0.1f; // small chunks: low latency and a smooth volume slider
             microphone.maxLengthSec = 60;
             microphone.loop = true;
             microphone.echo = false;

@@ -1,9 +1,11 @@
 using Audio;
 using TMPro;
 using UI;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Video;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -14,7 +16,7 @@ namespace GameLogic.Flow
     /// Sprint 6, S-608 (MVP). Escape toggles a simple in-game pause: freezes Time.timeScale, which
     /// also freezes every Update-driven system in the game for free - NightTimer, haunt loop
     /// countdowns, glitch timers - since they all read Time.deltaTime/Time.time rather than the
-    /// unscaled variants. Shows Master/Music volume controls bound straight to AudioManager, plus
+    /// unscaled variants. Also pauses audio, DOTween and playing videos. Shows Master/Music/SFX volume controls bound straight to AudioManager, plus
     /// Resume and Quit to Menu. XP-chrome + CCTV tint via XPWindowBuilder, same as every other
     /// window in the gameplay scene.
     /// </summary>
@@ -36,6 +38,8 @@ namespace GameLogic.Flow
         private GameObject _root;
         private TextMeshProUGUI _masterValueText;
         private TextMeshProUGUI _musicValueText;
+        private TextMeshProUGUI _sfxValueText;
+        private readonly System.Collections.Generic.List<VideoPlayer> _pausedVideos = new System.Collections.Generic.List<VideoPlayer>();
 
         void Update()
         {
@@ -63,6 +67,7 @@ namespace GameLogic.Flow
             if (IsPaused) return;
             IsPaused = true;
             Time.timeScale = 0f;
+            FreezeEverythingElse(true);
 
             if (_root == null) BuildUi();
             _root.SetActive(true);
@@ -76,6 +81,7 @@ namespace GameLogic.Flow
             if (!IsPaused) return;
             IsPaused = false;
             Time.timeScale = 1f;
+            FreezeEverythingElse(false);
 
             if (_root != null) _root.SetActive(false);
 
@@ -85,6 +91,7 @@ namespace GameLogic.Flow
         private void QuitToMenu()
         {
             Time.timeScale = 1f; // never leave the next scene frozen
+            FreezeEverythingElse(false);
             SceneManager.LoadScene(mainMenuSceneName);
         }
 
@@ -92,7 +99,37 @@ namespace GameLogic.Flow
         {
             // Safety: never leave the game frozen if this object is torn down while paused (e.g.
             // scene unload mid-pause, such as a night ending via GameFlowManager before Resume).
-            if (IsPaused) Time.timeScale = 1f;
+            if (IsPaused)
+            {
+                Time.timeScale = 1f;
+                FreezeEverythingElse(false);
+            }
+        }
+
+        // timeScale alone leaves audio, videos and unscaled UI tweens running.
+        private void FreezeEverythingElse(bool freeze)
+        {
+            AudioListener.pause = freeze;
+            DOTween.timeScale = freeze ? 0f : 1f;
+
+            if (freeze)
+            {
+                _pausedVideos.Clear();
+                foreach (var video in FindObjectsByType<VideoPlayer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                {
+                    if (!video.isPlaying) continue;
+                    video.Pause();
+                    _pausedVideos.Add(video);
+                }
+            }
+            else
+            {
+                foreach (var video in _pausedVideos)
+                {
+                    if (video != null) video.Play();
+                }
+                _pausedVideos.Clear();
+            }
         }
 
         // ── volume nudge ─────────────────────────────────────────────────────────────────
@@ -111,11 +148,19 @@ namespace GameLogic.Flow
             RefreshVolumeLabels();
         }
 
+        private void NudgeSfx(float delta)
+        {
+            if (AudioManager.Instance == null) return;
+            AudioManager.Instance.SfxVolume = Mathf.Clamp01(AudioManager.Instance.SfxVolume + delta);
+            RefreshVolumeLabels();
+        }
+
         private void RefreshVolumeLabels()
         {
             var audio = AudioManager.Instance;
             if (_masterValueText != null) _masterValueText.text = audio != null ? $"{audio.MasterVolume * 100f:0}%" : "-";
             if (_musicValueText != null) _musicValueText.text = audio != null ? $"{audio.MusicVolume * 100f:0}%" : "-";
+            if (_sfxValueText != null) _sfxValueText.text = audio != null ? $"{audio.SfxVolume * 100f:0}%" : "-";
         }
 
         // ── UI build ─────────────────────────────────────────────────────────────────────
@@ -123,16 +168,17 @@ namespace GameLogic.Flow
         private void BuildUi()
         {
             _theme = XPTheme.Load();
-            _window = XPWindowBuilder.Build("PauseMenuCanvas", "System Paused.exe", new Vector2(480f, 360f), 900, _theme, Resume, cctv: true);
+            _window = XPWindowBuilder.Build("PauseMenuCanvas", "System Paused.exe", new Vector2(480f, 410f), 900, _theme, Resume, cctv: true);
             _root = _window.Root;
 
             var panel = _window.Panel;
 
             BuildVolumeRow(panel, "Master", 70f, NudgeMaster, out _masterValueText);
             BuildVolumeRow(panel, "Music", 116f, NudgeMusic, out _musicValueText);
+            BuildVolumeRow(panel, "SFX", 162f, NudgeSfx, out _sfxValueText);
 
-            XPWindowBuilder.BuildButton(panel, _theme, "Resume", TopCenter(200f, 220f, 40f), Resume);
-            XPWindowBuilder.BuildButton(panel, _theme, "Quit to Menu", TopCenter(230f, 268f, 40f), QuitToMenu);
+            XPWindowBuilder.BuildButton(panel, _theme, "Resume", TopCenter(200f, 246f, 40f), Resume);
+            XPWindowBuilder.BuildButton(panel, _theme, "Quit to Menu", TopCenter(230f, 294f, 40f), QuitToMenu);
         }
 
         private void BuildVolumeRow(RectTransform panel, string label, float top, System.Action<float> nudge, out TextMeshProUGUI valueText)
