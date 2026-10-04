@@ -189,11 +189,30 @@ namespace Report
         private static string FindSpokenRoom(string spoken)
         {
             string squashed = Squash(spoken);
-            foreach (var name in RoomRegistry.DisplayNames())
+            var names = RoomRegistry.DisplayNames();
+
+            foreach (var name in names)
             {
                 if (squashed.Contains(Squash(name))) return name;
             }
-            return null;
+
+            // The tiny model mishears ("kitchin", "kitten"): accept a close-enough single word.
+            string best = null;
+            float bestScore = 0.7f;
+            foreach (var word in spoken.ToLowerInvariant().Split(new[] { ' ', ',', '.', '!', '?', '-' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (word.Length < 5) continue;
+
+                foreach (var name in names)
+                {
+                    string target = Squash(name);
+                    if (target.Length < 5) continue;
+
+                    float score = PhraseMatcher.Similarity(word, target);
+                    if (score >= bestScore) { bestScore = score; best = name; }
+                }
+            }
+            return best;
         }
 
         private static string Squash(string text)

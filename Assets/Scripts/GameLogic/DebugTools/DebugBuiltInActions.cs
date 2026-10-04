@@ -53,7 +53,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
                 steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears, Noise +40. Same for Wrong ID (answering = WRONG SIGN-IN, silence = GOOD CALL)." },
             new QaItem { id = "noise", title = "Noise Meter -> Listener",
-                steps = "Hold V and talk loudly for ~10s: bar bottom-left fills (whisper barely, shout fast). Full = 'Too loud. Something heard you...' and Silence Protocol starts. Stay quiet: bar drains after ~2.5s." },
+                steps = "Hold V and talk loudly for ~10s: bar bottom-left fills (whisper barely, shout fast). Full = 'Too loud. Something heard you...' and a Hooded Figure (the Listener) appears with the live mic - not on night 1. Stay quiet: bar drains after ~2.5s." },
             new QaItem { id = "manual", title = "Field Manual locks + entry points",
                 steps = "Field Manual > Lock all pages, press TAB: every page '???'. Spawn an anomaly: its page unlocks (Demon only when it reveals). TAB opens/closes it, but not while paused, in a cutscene, or while the Demon is out. The MainMenu icon 'Field Manual.exe' opens it too." },
             new QaItem { id = "matcher", title = "Short words don't match everything",
@@ -284,6 +284,34 @@ namespace GameLogic.DebugTools
                     info(mic == null ? "No WhisperMicInput in this scene."
                         : $"{mic.CurrentModelLabel}  -  {(mic.IsModelReady ? "ready" : "loading...")}");
                 },
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = VoiceGroup,
+                label = "Mic: calibrate noise floor (stay SILENT 3s)",
+                run = () =>
+                {
+                    var monitor = UnityEngine.Object.FindFirstObjectByType<MicAmplitudeMonitor>();
+                    var host = new GameObject("DebugMicCalibration");
+                    if (monitor == null) monitor = host.AddComponent<MicAmplitudeMonitor>();
+
+                    var runner = host.AddComponent<MicCalibrationRunner>();
+                    runner.OnCompleted = floor =>
+                    {
+                        info($"Noise floor saved: {floor:0.0000}  (whisper <= x3, shout >= x8 of this)");
+                        UnityEngine.Object.Destroy(host, 1f);
+                    };
+                    runner.Run(monitor);
+                    info("Calibrating... stay silent for 3 seconds.");
+                },
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = VoiceGroup,
+                label = "Mic: show saved noise floor",
+                run = () => info($"Noise floor = {MicCalibration.NoiseFloor:0.0000}  ({(MicCalibration.HasCalibrated ? "calibrated" : "DEFAULT - never calibrated")})"),
             });
 
             foreach (float amount in new[] { 25f, 50f })

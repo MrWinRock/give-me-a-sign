@@ -9,7 +9,7 @@ namespace Report
 {
     /// <summary>
     /// Something a HauntBeat can trigger. A haunt loop component registers itself in OnEnable
-    /// (see <see cref="SilenceProtocolHaunt"/> for the pattern) and HauntDirector fires it
+    /// (see <see cref="RadioCheckHaunt"/> for the pattern) and HauntDirector fires it
     /// automatically at its scheduled minute - no change to this file needed for Sprint 5+'s
     /// Radio Check / Camera Betrayal / Impostor Case.
     /// </summary>

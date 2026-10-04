@@ -464,61 +464,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.RoomAnchor
   room: {fileID: 11400000, guid: 5f5d9c0c1c880184eb6756a4eaa16ddb, type: 2}
   spawnPoints: []
---- !u!1 &106559431
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 106559432}
-  - component: {fileID: 106559433}
-  m_Layer: 0
-  m_Name: SilenceProtocolHaunt
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &106559432
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 106559431}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1900000002}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &106559433
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 106559431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb3ae474d73981141979078d3da215c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Report.SilenceProtocolHaunt
-  requiredQuietSeconds: 18
-  whisperProgressMultiplier: 2.5
-  dangerSustainSeconds: 2
-  strikesToLose: 3
-  safetyMaxDurationSeconds: 90
-  whisperBandMultiplier: 3
-  dangerMultiplier: 8
-  revealSoundName: ListenerReveal
-  strikeSoundName: ListenerStrike
-  escapeSoundName: ListenerEscape
-  showDebugInfo: 0
 --- !u!1 &115135439
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,6 +576,7 @@ MonoBehaviour:
   - SEC-03
   responseWindowSeconds: 8
   wordSimilarity: 0.7
+  outcomeDisplaySeconds: 2.5
   normalWeight: 3
   ownVoiceWeight: 1.5
   wrongIdWeight: 1.5
@@ -639,6 +585,7 @@ MonoBehaviour:
   mimicNoisePenalty: 40
   mimicPhrase: all clear
   strikesForConsequence: 3
+  missedCallNoise: 25
   wrongIdIntensityFloor: 1.25
   callSoundName: RadioCall
   missedSoundName: RadioMissed
@@ -5782,19 +5729,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ad8b9fffac46fc4b90d8379fce2696d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.WhisperMicInput
+  defaultLanguage: 0
+  englishModel:
+    label: English (tiny)
+    modelPath: Models/ggml-tiny.bin
+    language: en
+  thaiModel:
+    label: Thai (thonburian large-v3)
+    modelPath: Models/thonburian-large-v3-q5_0.bin
+    language: th
   sampleRate: 16000
   hopSec: 0.8
   deviceName: 
-  modelPath: Models/ggml-tiny.bin
+  modelPath: Models/ggml-medium.en.bin
   modelPathInStreamingAssets: 1
   language: en
   router: {fileID: 1349133151}
-  signRequestSystem: {fileID: 0}
   prayUiManager: {fileID: 894996012}
   incidentReportManager: {fileID: 4205114680779514433}
   whisperManager: {fileID: 0}
   microphone: {fileID: 0}
-  dispatchCooldownSec: 0.7
+  dispatchCooldownSec: 0.25
 --- !u!114 &1349133151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5843,6 +5798,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.GlobalPushToTalk
   mic: {fileID: 0}
   finalizeGraceSeconds: 1
+  forcedFileGapSeconds: 1.2
 --- !u!114 &1349133154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5856,7 +5812,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.QuietResponse
   quietSeconds: 8
-  soundThresholdMultiplier: 2.5
   toleranceSeconds: 0.3
   graceSeconds: 1
   jumpScareSeconds: 0.9
@@ -7700,7 +7655,6 @@ Transform:
   - {fileID: 479646212}
   - {fileID: 2091993506}
   - {fileID: 1068152285}
-  - {fileID: 106559432}
   - {fileID: 219540831}
   - {fileID: 395310485}
   m_Father: {fileID: 477437160}

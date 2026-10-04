@@ -8,7 +8,7 @@ namespace Report
     /// Minimal runtime-built HUD for Radio Check: a small corner panel (not a full-screen dim like
     /// Silence Protocol - this is a ping, not a threat you're inside of) showing the call line, a
     /// countdown bar, and the hint of what to say. Same "programmer art now, restyle later" spirit
-    /// as <see cref="SilenceProtocolHud"/>.
+    /// as the other runtime-built HUDs.
     /// </summary>
     public class RadioCheckHud
     {
@@ -97,7 +97,7 @@ namespace Report
             if (_root != null) Object.Destroy(_root, delay);
         }
 
-        // ── tiny builder helpers (mirrors SilenceProtocolHud) ──────────────────────────────
+        // ── tiny builder helpers (mirrors the other runtime HUDs) ──────────────────────────────
 
         private static Image CreateImage(Transform parent, string name, Color color, System.Action<RectTransform> layout)
         {

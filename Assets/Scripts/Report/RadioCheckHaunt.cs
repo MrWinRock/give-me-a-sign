@@ -95,7 +95,7 @@ namespace Report
 
         void OnDisable()
         {
-            // ExistingInstance, not Instance - same teardown-safety rule as SilenceProtocolHaunt.
+            // ExistingInstance, not Instance.
             HauntDirector.ExistingInstance?.Unregister(this);
 
             if (IsActive)

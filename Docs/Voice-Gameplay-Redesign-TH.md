@@ -362,3 +362,15 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 **Noise Meter คืออะไร:** ยิ่งพูดใส่ไมค์ (กด V) แถบมุมซ้ายล่างยิ่งเต็ม (กระซิบเต็มช้า ตะโกนเต็มเร็ว, เงียบ ~2.5 วิแล้วค่อยลด) แถบแดงที่ 80% เป็นแค่เตือน — **ผลจริงเกิดตอนเต็ม 100%**: เรียก Listener (Silence Protocol) มา
 แต่จะไม่เรียก ถ้าเป็นคืนสอน (คืน 1), มี haunt อื่นกำลังเล่น, อยู่ใน cutscene/Demon, หรือติด cooldown 45 วิ (จะขึ้น "Something almost heard you" แทน)
 เพิ่มข้อความเตือนตอนผ่าน 50% ("You're getting loud...") และ 80% ("They can hear you. Stop talking.")
+
+---
+
+## 10. แก้ไขหลังเทสรอบ tiny model
+
+- **สาเหตุที่รายงานติดแต่ Bedroom (สันนิษฐาน ยังไม่ได้ยืนยันกับเสียงจริง):** หน้าต่างถอดเสียงของ Whisper เดิมสั้นแค่ 1.6 วิ (`lengthSec`) ประโยค "shadow in the kitchen" ถูกหั่นเป็นหลาย segment บางครั้งกลางคำ + partial result ที่มาถี่กว่า 0.7 วิถูกทิ้ง (`dispatchCooldownSec`) ทำให้ข้อความที่สะสมได้ขาดชื่อห้องหรือชื่อ anomaly
+  แก้: หน้าต่างเป็น 6 วิ (`Window Seconds` ใน `WhisperMicInput`; ถ้าใช้โมเดลใหญ่ให้ลด), cooldown เหลือ 0.25 วิ, ชื่อห้องจับแบบ fuzzy (`kitchin`, `hall way`), และ HUD ขึ้น `heard: "..."` ทุกครั้งที่ไม่ผ่าน เพื่อเห็นว่า Whisper ได้ยินอะไร (คู่กับ log `[Walkie]`)
+- **โมเดล English กลับเป็น `ggml-tiny.bin`** (medium.en ช้าเกินไปบนเครื่องนี้) — เปลี่ยนที่ `English Model` ใน Inspector
+- **เอา Silence Protocol (event เก่า "Stay quiet") ออก:** ลบ `SilenceProtocolHaunt/Hud`, component ในซีน, `HauntLoopId.SilenceProtocol` และรายการใน `HauntProfile.asset` — ซ้ำกับ Hooded Figure (stealth) ที่ทำใหม่แล้ว
+  Noise Meter เต็ม 100% ตอนนี้ **spawn Hooded Figure** (anomaly ชนิด `VoiceResponse.Silence`) แทน; คืน 1 (tutorial) หรือมีตัวนั้นอยู่แล้ว = ขึ้นแค่ "almost heard you"
+- **พบว่าค่า noise floor ของไมค์เคยถูกวัดแค่ใน Listener เก่าเท่านั้น** (เกณฑ์กระซิบ/ตะโกน/ตัวจับเสียงเงียบพึ่งค่านี้) ยังไม่เคยถูกวัดในเกมใหม่ → ใน Debug panel มีปุ่ม `Mic: calibrate noise floor (stay SILENT 3s)` และ `Mic: show saved noise floor`
+  ควรวัดหนึ่งครั้งก่อนเทสเรื่อง Whisper/Shout/Hooded Figure (ตอนนี้ใช้ค่าเริ่มต้น 0.02)

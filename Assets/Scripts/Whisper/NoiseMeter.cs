@@ -1,6 +1,8 @@
 using GameLogic;
 using GameLogic.Data;
 using GameLogic.Flow;
+using GameLogic.Night;
+using GameLogic.SpawnAndTime;
 using GameLogic.Story;
 using Report;
 using UnityEngine;
@@ -139,32 +141,63 @@ namespace Whisper
             return VoiceLevel.Normal;
         }
 
-        private static bool ListenerActive =>
-            HauntDirector.ExistingInstance != null && HauntDirector.ExistingInstance.IsLoopActive(HauntLoopId.SilenceProtocol);
+        // The "Listener" is the stealth anomaly (a VoiceResponse.Silence kind, e.g. Hooded Figure).
+        private static bool ListenerActive
+        {
+            get
+            {
+                foreach (var anomaly in Anomaly.ActiveAnomalies)
+                {
+                    if (anomaly != null && anomaly.State != AnomalyState.Resolved
+                        && anomaly.Definition != null && anomaly.Definition.voiceResponse == VoiceResponse.Silence)
+                        return true;
+                }
+                return false;
+            }
+        }
 
-        // Held until the report window closes: the Listener measures the mic itself, and fighting
-        // the report's live recording for the device isn't worth it. Also waits out cutscenes/the demon.
+        // Also waits out cutscenes and the Demon.
         private static bool CanSummonNow()
         {
             if (GameFlowManager.State != GameFlowState.DayGameplay) return false;
-            if (IncidentReportManager.Instance != null && IncidentReportManager.Instance.IsReportOpen) return false;
             if (CinematicPlayer.IsAnyPlaying || DemonAnomaly.AnyRevealed) return false;
             return true;
         }
 
         private void Summon()
         {
-            bool came = HauntDirector.Instance != null && HauntDirector.Instance.TriggerNow(HauntLoopId.SilenceProtocol);
+            bool came = TrySpawnListener();
 
             Level = levelAfterTrigger;
             _cooldownUntil = Time.unscaledTime + triggerCooldownSeconds;
 
-            // Not summoned = tutorial night or another haunt already running: warn instead of punish.
+            // Not summoned = tutorial night or one already out: warn instead of punish.
             _hud?.ShowWarning(came ? "Too loud. Something heard you..." : "Too loud. Something almost heard you.");
 
             if (showDebugInfo)
-                Debug.Log($"NoiseMeter: filled - Listener {(came ? "summoned" : "blocked (tutorial or another haunt)")}.", this);
+                Debug.Log($"NoiseMeter: filled - Listener {(came ? "summoned" : "blocked (tutorial or already out)")}.", this);
         }
+
+        private static bool TrySpawnListener()
+        {
+            var glitch = FindFirstObjectByType<GlitchDirector>();
+            if (glitch != null && glitch.GetFlag("tutorial")) return false; // night 1 teaches, it doesn't punish
+            if (ListenerActive) return false;
+
+            var scheduler = AnomalyScheduler.Instance;
+            var library = NightContentLibrary.Load();
+            if (scheduler == null || library == null) return false;
+
+            foreach (var def in library.anomalies)
+            {
+                if (def == null || def.prefab == null || def.voiceResponse != VoiceResponse.Silence) continue;
+                return scheduler.SpawnNow(def.prefab) != null;
+            }
+            return false;
+        }
+
+        [ContextMenu("Debug/Summon Listener Now")]
+        public void DebugSummonListener() => Summon();
 
         [ContextMenu("Debug/Fill Meter")]
         private void DebugFill() => AddNoise(Max);

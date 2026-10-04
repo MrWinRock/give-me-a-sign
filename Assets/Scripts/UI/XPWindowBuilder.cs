@@ -10,7 +10,7 @@ namespace UI
     /// titlebar with a red close button, matching the dimensions in
     /// Docs/MainMenu-XP-Desktop.md's TextContentWindow (24px titlebar, 4px radius, 14px body
     /// padding). Built entirely from script - the same disposable-wrapper pattern as
-    /// SilenceProtocolHud/CinematicPlayer - so any gameplay-scene overlay can look like it
+    /// CinematicPlayer - so any gameplay-scene overlay can look like it
     /// belongs on the same desktop as the main menu without a prefab.
     /// </summary>
     public static class XPWindowBuilder
@@ -122,7 +122,7 @@ namespace UI
         private static Texture2D _scanlineTexture;
 
         /// <summary>Adds a low-opacity scanline overlay to any full-screen HUD, not just a window
-        /// built by <see cref="Build"/> - used by SilenceProtocolHud/NoiseMeterHud so a threat
+        /// built by <see cref="Build"/> - used by NoiseMeterHud so a threat
         /// encounter reads as the same monitor feed without wrapping it in a titlebar.</summary>
         public static void AddScanlineOverlay(Transform parent, XPTheme theme)
         {

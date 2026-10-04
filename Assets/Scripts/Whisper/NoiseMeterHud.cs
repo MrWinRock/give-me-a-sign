@@ -8,7 +8,7 @@ namespace Whisper
 {
     /// <summary>
     /// Runtime-built bottom-left NOISE bar for <see cref="NoiseMeter"/>, plus a warning line that
-    /// flashes when the meter fills. No scene wiring, same pattern as SilenceProtocolHud. Tahoma
+    /// flashes when the meter fills. No scene wiring, same pattern as the other runtime HUDs. Tahoma
     /// via XPTheme so its label reads as the same monitor feed as everything else.
     /// </summary>
     public class NoiseMeterHud
@@ -38,7 +38,7 @@ namespace Whisper
 
             var canvas = _root.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 400; // under SilenceProtocolHud (500) and the report window
+            canvas.sortingOrder = 400; // under the report window
 
             var scaler = _root.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

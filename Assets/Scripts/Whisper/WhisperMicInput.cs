@@ -34,7 +34,7 @@ namespace Whisper
         [Header("Voice Models (swap the files/languages here, or from the Debug panel)")]
         [Tooltip("Used until the player/Debug panel picks one; the choice is then remembered (PlayerPrefs 'VoiceLanguage').")]
         [SerializeField] private VoiceLanguage defaultLanguage = VoiceLanguage.English;
-        [SerializeField] private VoiceModel englishModel = new VoiceModel { label = "English (medium.en)", modelPath = "Models/ggml-medium.en.bin", language = "en" };
+        [SerializeField] private VoiceModel englishModel = new VoiceModel { label = "English (tiny)", modelPath = "Models/ggml-tiny.bin", language = "en" };
         [SerializeField] private VoiceModel thaiModel = new VoiceModel { label = "Thai (thonburian large-v3)", modelPath = "Models/thonburian-large-v3-q5_0.bin", language = "th" };
 
         [Header("Config")]
@@ -61,7 +61,9 @@ namespace Whisper
 
         [Header("Routing")]
         [Tooltip("Debounce for early (partial) recognition updates, so the routers aren't spammed.")]
-        [SerializeField] private float dispatchCooldownSec = 0.7f;
+        [SerializeField] private float dispatchCooldownSec = 0.25f;
+        [Tooltip("Seconds of audio Whisper re-reads each pass. Long enough to hold a whole spoken report; bigger models should lower it (slower per pass).")]
+        [Min(1f)] [SerializeField] private float windowSeconds = 6f;
 
         // RMS level and duration (seconds) of each chunk heard while push-to-talk is live. NoiseMeter listens.
         public static event Action<float, float> OnSpeechChunk;
@@ -201,7 +203,9 @@ namespace Whisper
             float step = Mathf.Max(0.2f, hopSec);
             whisperManager.stepSec = step;
             whisperManager.keepSec = 0.1f;
-            whisperManager.lengthSec = Mathf.Max(step * 2f, 0.6f);
+            // A window long enough for a whole report ("shadow in the kitchen" ~2-3s): with the old 1.6s
+            // window a sentence was cut into separate segments, often mid-word.
+            whisperManager.lengthSec = Mathf.Max(step * 2f, windowSeconds);
             whisperManager.updatePrompt = false;    // avoid ever-growing prompt cost
             whisperManager.dropOldBuffer = true;    // original ggml sliding window
             whisperManager.useVad = true;           // skip inference while the player is silent

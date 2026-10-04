@@ -193,19 +193,21 @@ namespace Whisper
             var outcome = reports.FileRadioReport(spoken, level);
             Debug.Log($"[Walkie] heard '{spoken}' ({level}) -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
 
+            string heard = string.IsNullOrWhiteSpace(spoken) ? "(nothing heard)" : $"heard: \"{Trim(spoken, 55)}\"";
+
             switch (outcome)
             {
                 case IncidentReportManager.RadioReportOutcome.NotAReport:
-                    _hud?.ShowStatus(string.IsNullOrWhiteSpace(spoken) ? "(nothing heard)" : $"HEARD: {spoken}", new Color(1f, 1f, 1f, 0.8f));
+                    _hud?.ShowStatus(heard, new Color(1f, 1f, 1f, 0.8f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
                     _hud?.ShowStatus("COPY THAT", new Color(0.4f, 0.9f, 0.4f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedRoom:
-                    _hud?.ShowStatus("WHICH ROOM?  (\"shadow in bedroom\")", new Color(0.95f, 0.85f, 0.4f));
+                    _hud?.ShowStatus($"WHICH ROOM?  {heard}", new Color(0.95f, 0.85f, 0.4f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedWhat:
-                    _hud?.ShowStatus("WHAT DID YOU SEE?", new Color(0.95f, 0.85f, 0.4f));
+                    _hud?.ShowStatus($"WHAT DID YOU SEE?  {heard}", new Color(0.95f, 0.85f, 0.4f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.TooLoud:
                     _hud?.ShowStatus("STATIC - TOO LOUD", new Color(0.7f, 0.85f, 1f));
@@ -214,10 +216,13 @@ namespace Whisper
                     _hud?.ShowStatus("STATIC - SPEAK UP", new Color(0.7f, 0.85f, 1f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Negative:
-                    _hud?.ShowStatus("NEGATIVE", new Color(0.95f, 0.6f, 0.2f));
+                    _hud?.ShowStatus($"NEGATIVE  {heard}", new Color(0.95f, 0.6f, 0.2f));
                     break;
             }
         }
+
+        private static string Trim(string text, int max) =>
+            text.Length <= max ? text : text.Substring(0, max) + "...";
 
         private static string DescribeActiveAnomalies()
         {

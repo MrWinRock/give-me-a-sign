@@ -7,7 +7,7 @@ namespace Report
 {
     /// <summary>
     /// Always-on camera watermark: "CAM 0X — ROOM NAME" plus a running timestamp, built entirely
-    /// from script like <see cref="SilenceProtocolHud"/>/<see cref="RadioCheckHud"/>. It exists for
+    /// from script like <see cref="RadioCheckHud"/>. It exists for
     /// its own sake as a bit of security-camera flavour, but its real job is being the "tell" HL-5
     /// Camera Betrayal lies through - a stuck timestamp or a wrong label only reads as wrong if the
     /// player has already learned what right looks like, which means this has to run the whole

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GameLogic.Night
 {
     /// <summary>
-    /// Which haunt loops (Silence Protocol, and Sprint 5+'s Radio Check / Camera Betrayal /
+    /// Which haunt loops (Radio Check / Camera Betrayal /
     /// Impostor Case) a night is allowed to schedule, and how many. Mirrors
     /// <see cref="GlitchProfile"/>'s shape on purpose - same weighted-pick idea, same reason:
     /// a night's character is data, not code.
@@ -16,7 +16,7 @@ namespace GameLogic.Night
         [System.Serializable]
         public class LoopWeight
         {
-            public HauntLoopId loop = HauntLoopId.SilenceProtocol;
+            public HauntLoopId loop = HauntLoopId.RadioCheck;
             public bool enabled = true;
             [Tooltip("Relative chance of being picked. 0 = never.")]
             [Min(0f)] public float weight = 1f;
@@ -27,7 +27,7 @@ namespace GameLogic.Night
         [Tooltip("Haunt loops this night may schedule, with relative weights.")]
         public List<LoopWeight> loops = new List<LoopWeight>
         {
-            new LoopWeight { loop = HauntLoopId.SilenceProtocol, weight = 1f, minNightIndex = 1 },
+            new LoopWeight { loop = HauntLoopId.RadioCheck, weight = 1f, minNightIndex = 1 },
         };
 
         [Header("How many")]
