@@ -31,6 +31,13 @@ namespace GameLogic.Flow
         // visual:false = the Demon already filled the screen (it killed the player): cut to black and let only the scream play.
         public static IEnumerator Play(float seconds, bool visual = true)
         {
+            // Cut everything else first so the scream is the only thing heard (with a pile of
+            // anomalies out, their own loops and stingers would otherwise bury it).
+            foreach (var source in Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (source.isPlaying) source.Stop();
+            }
+
             var root = new GameObject("DemonLossJumpscare", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;

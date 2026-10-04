@@ -60,6 +60,8 @@ namespace GameLogic.Flow
         [SerializeField] private float delayAfterSurviving = 1f;
         [Tooltip("How long the Demon jumpscare holds on a loss before cutting to the lose screen.")]
         [SerializeField] private float delayAfterDeath = 1.8f;
+        [Tooltip("Same, but when the Demon itself killed the player (only its scream plays, so this can be much shorter).")]
+        [SerializeField] private float delayAfterDemonDeath = 0.8f;
 
         // Concrete subclass, not UnityEvent<int> directly: Unity only serializes a generic
         // UnityEvent through a named [Serializable] type, and without it these would compile but
@@ -608,7 +610,8 @@ namespace GameLogic.Flow
 
             // Every loss - killed, overrun, or surviving without enough reports - ends on the Demon,
             // then cuts straight to the lose screen. When the Demon itself got you, it already scared you: only its scream plays.
-            yield return DemonLossJumpscare.Play(delayAfterDeath, visual: outcome != NightOutcome.KilledByDemon);
+            bool byDemon = outcome == NightOutcome.KilledByDemon;
+            yield return DemonLossJumpscare.Play(byDemon ? delayAfterDemonDeath : delayAfterDeath, visual: !byDemon);
 
             LoadSceneByName(resultSceneName, "result");
         }
