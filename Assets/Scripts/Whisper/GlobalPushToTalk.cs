@@ -211,11 +211,9 @@ namespace Whisper
                 case IncidentReportManager.RadioReportOutcome.NeedWhat:
                     _hud?.ShowStatus($"WHAT DID YOU SEE?  {heard}", new Color(0.95f, 0.85f, 0.4f));
                     break;
+                // Wrong volume for the threat: no words - the volume slider is how the player learns it.
                 case IncidentReportManager.RadioReportOutcome.TooLoud:
-                    _hud?.ShowStatus("STATIC - TOO LOUD", new Color(0.7f, 0.85f, 1f));
-                    break;
                 case IncidentReportManager.RadioReportOutcome.TooQuiet:
-                    _hud?.ShowStatus("STATIC - SPEAK UP", new Color(0.7f, 0.85f, 1f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Negative:
                     _hud?.ShowStatus($"NEGATIVE  {heard}", new Color(0.95f, 0.6f, 0.2f));

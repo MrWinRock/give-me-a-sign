@@ -45,7 +45,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "report", title = "Report an anomaly by voice",
                 steps = "Spawn: Shadow Blob. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'shadow in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'shadow' = WHICH ROOM? (not filed, no penalty); only 'in bedroom' = WHAT DID YOU SEE?; wrong word or wrong room = NEGATIVE + it advances." },
             new QaItem { id = "demon", title = "Demon needs a shout",
-                steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: STATIC - SPEAK UP, nothing else happens. Shout it: COPY THAT and it leaves." },
+                steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: nothing happens (no text - watch the slider's red zone). Shout it: COPY THAT and it leaves." },
             new QaItem { id = "stealth", title = "Hooded Figure stealth mic",
                 steps = "Spawn: Hooded Figure. Mic opens by itself (open click), HUD: MIC LIVE - WHISPER ONLY n. Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper 'figure in <room>' = it leaves via report; (c) speak/shout = full-screen jumpscare then Result (night lost). V press during it only clicks." },
             new QaItem { id = "radio", title = "Radio Check pass / fail",
