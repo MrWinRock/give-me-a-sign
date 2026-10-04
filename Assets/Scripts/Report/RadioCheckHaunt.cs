@@ -19,9 +19,39 @@ namespace Report
     {
         public enum Variant { Normal, OwnVoice, WrongId, Mimic }
 
+        [System.Serializable]
+        public class CallScript
+        {
+            [Tooltip("What HQ says (shown on the card). {id} = your call sign, {wrong} = the other call sign used by a wrong-ID call.")]
+            public string callLine;
+            [Tooltip("The instruction under the card. {id} / {wrong} work here too.")]
+            public string hint;
+            [Tooltip("Every entry must be heard for the answer to count. A word or short phrase ('copy', 'all clear'); '{id}' means your call sign (SEC-04, 'sec zero four' ...).")]
+            public string[] answerAllOf;
+        }
+
         [Header("Identity")]
         [SerializeField] private string radioId = "SEC-04";
         [SerializeField] private string[] wrongIds = { "SEC-01", "SEC-02", "SEC-03" };
+
+        [Header("What HQ says and what the player must answer (one is picked at random per call)")]
+        [Tooltip("Real call - answer it. Also used by the OwnVoice call.")]
+        [SerializeField] private CallScript[] normalScripts =
+        {
+            new CallScript { callLine = "\"{id}, radio check.\"", hint = "say: \"{id}, copy\"", answerAllOf = new[] { "{id}", "copy" } },
+        };
+
+        [Tooltip("Decoy - a call for someone else. Saying any of these answers is the mistake; stay silent.")]
+        [SerializeField] private CallScript[] wrongIdScripts =
+        {
+            new CallScript { callLine = "\"{wrong}, radio check.\"", hint = "...that's not your call sign.", answerAllOf = new[] { "copy" } },
+        };
+
+        [Tooltip("Decoy - a fake HQ voice. Saying the answer is the mistake; stay silent.")]
+        [SerializeField] private CallScript[] mimicScripts =
+        {
+            new CallScript { callLine = "\"...confirm all clear.\"", hint = "...no call sign.", answerAllOf = new[] { "all clear" } },
+        };
 
         [Header("Timing")]
         [SerializeField] private float responseWindowSeconds = 8f;
@@ -60,6 +90,7 @@ namespace Report
         private Coroutine _encounter;
         private Variant? _forcedVariant;
         private float _listenFrom;
+        private string[] _answerAllOf;
 
         // Debug/tooling: place this call as a specific variant, ignoring weights and the Mimic night gate.
         public bool DebugTrigger(Variant variant)
@@ -105,17 +136,12 @@ namespace Report
             bool decoy = variant == Variant.WrongId || variant == Variant.Mimic;
             string calledId = variant == Variant.WrongId ? PickWrongId() : radioId;
 
+            var script = PickScript(variant);
+            _answerAllOf = script.answerAllOf;
+
             _hud = RadioCheckHud.Create();
-            if (variant == Variant.Mimic)
-            {
-                _hud.SetCall("\"...confirm all clear.\"");
-                _hud.SetHint("...no call sign.");
-            }
-            else
-            {
-                _hud.SetCall($"\"{calledId}, radio check.\"");
-                _hud.SetHint(variant == Variant.WrongId ? "...that's not your call sign." : $"say: \"{radioId}, copy\"");
-            }
+            _hud.SetCall(Fill(script.callLine, calledId));
+            _hud.SetHint(Fill(script.hint, calledId));
 
             float callSeconds = 0f;
             var audio = AudioManager.Instance;
@@ -132,7 +158,7 @@ namespace Report
 
             bool matched = false;
             var voice = VoicePromptSystem.Instance;
-            voice?.Expect(text => Time.time >= _listenFrom && Heard(variant, text), ok => matched = ok);
+            voice?.Expect(text => Time.time >= _listenFrom && Heard(text), ok => matched = ok);
 
             // Decoys are answered with silence, so recording them would never capture a usable
             // "own voice answering normally" sample for a future Own-Voice call.
@@ -175,15 +201,33 @@ namespace Report
             EndEncounter(passed, decoy, headline, detail);
         }
 
-        // Real calls must be answered as written; decoys count as "answered" on any sensible attempt.
-        private bool Heard(Variant variant, string text)
+        private CallScript PickScript(Variant variant)
         {
-            switch (variant)
+            var pool = variant == Variant.Mimic ? mimicScripts
+                     : variant == Variant.WrongId ? wrongIdScripts
+                     : normalScripts;
+
+            if (pool == null || pool.Length == 0)
             {
-                case Variant.Mimic: return RadioPhrases.SaidAllClear(text);
-                case Variant.WrongId: return RadioPhrases.SaidCopy(text);
-                default: return RadioPhrases.SaidCopy(text) && RadioPhrases.SaidCallSign(text, radioId);
+                Debug.LogWarning($"RadioCheckHaunt: no scripts set for a {variant} call - using a plain default.", this);
+                return new CallScript { callLine = "\"{id}, radio check.\"", hint = "say: \"{id}, copy\"", answerAllOf = new[] { "{id}", "copy" } };
             }
+            return pool[Random.Range(0, pool.Length)];
+        }
+
+        private string Fill(string text, string calledId) =>
+            (text ?? "").Replace("{id}", radioId).Replace("{wrong}", calledId);
+
+        // Every configured phrase must be heard. An empty list can never be answered (nothing to say).
+        private bool Heard(string text)
+        {
+            if (_answerAllOf == null || _answerAllOf.Length == 0) return false;
+
+            foreach (var phrase in _answerAllOf)
+            {
+                if (!RadioPhrases.SaidPhrase(text, phrase, radioId)) return false;
+            }
+            return true;
         }
 
         private Variant PickVariant()

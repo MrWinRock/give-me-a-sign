@@ -391,3 +391,10 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 - Fail (ไม่ตอบ) = **เพิ่ม anomaly ในฉาก** (`SpawnPenaltyAnomalies`); ตัวหลอก (Wrong ID / Mimic) กลับกัน — ถ้าตอบ (Wrong ID พูด "copy", Mimic พูด "all clear") = เพิ่ม anomaly, เงียบ = GOOD CALL. ตัดระบบ strike 3 ครั้งและ Noise ออก
 
 **Pause (ESC)** = หน้าตั้งค่า มี Master / Music / **SFX** (เสียงไมค์เปิด/ปิดอยู่ช่อง SFX อยู่แล้ว ตอนนี้ปรับได้) — กดแล้วหยุดทั้งเกม: `timeScale=0`, `AudioListener.pause`, `DOTween.timeScale=0`, วิดีโอที่กำลังเล่นถูก pause, ไมค์ (รวมไมค์ที่เกมบังคับเปิด) ถูกปิดจนกว่าจะ Resume
+
+**ตั้งคำพูดของ Radio Check เองได้** (`RadioCheckHaunt` ใน Inspector, หมวด "What HQ says and what the player must answer")
+- 3 ลิสต์: `Normal Scripts` (สายจริง + OwnVoice), `Wrong Id Scripts` (ตัวหลอก: เรียกคนอื่น), `Mimic Scripts` (ตัวหลอก: เสียง HQ ปลอม) — แต่ละสายสุ่มเลือก 1 รายการ เพิ่มได้หลายรายการ
+- แต่ละรายการมี `Call Line` (ข้อความบนการ์ด), `Hint` (บรรทัดบอกผู้เล่น), `Answer All Of` (ทุกคำ/วลีต้องได้ยินครบ; `{id}` = call sign ของผู้เล่น)
+- placeholder ใน Call Line/Hint: `{id}` = SEC-04, `{wrong}` = call sign ที่เรียกผิด (ตั้งรายการได้ที่ `Wrong Ids`)
+- สายจริง: ตอบครบ = ผ่าน / ไม่ตอบ = เพิ่ม anomaly; สายหลอก: พูด `Answer All Of` ครบ = เพิ่ม anomaly / เงียบ = ผ่าน
+- ตัวอย่าง: Call Line `"{id}, status report."` Hint `say: "{id}, all quiet"` Answer All Of = [`{id}`, `all quiet`]

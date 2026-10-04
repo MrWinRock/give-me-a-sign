@@ -8,6 +8,24 @@ namespace Whisper
     {
         private static readonly char[] Separators = { ' ', ',', '.', '!', '?', '-', ':', ';', '"', '\'', '(', ')', '[', ']' };
 
+        // One configured answer phrase: '{id}' = the call sign, otherwise a word or short phrase,
+        // tolerant of squashed spacing ("all clear" / "allclear") and near-miss spelling on longer words.
+        public static bool SaidPhrase(string text, string phrase, string callSign)
+        {
+            if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(phrase)) return false;
+
+            phrase = phrase.Trim();
+            if (phrase == "{id}") return SaidCallSign(text, callSign);
+            string squashedPhrase = Squash(phrase);
+            if (squashedPhrase.Length >= 4 && Squash(text).Contains(squashedPhrase)) return true;
+
+            foreach (var word in phrase.ToLowerInvariant().Split(Separators, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (!HasWord(text, word, 0.75f)) return false;
+            }
+            return true;
+        }
+
         public static bool SaidCopy(string text) => HasWord(text, "copy", 0.75f);
 
         public static bool SaidAllClear(string text)
