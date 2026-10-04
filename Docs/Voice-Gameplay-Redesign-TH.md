@@ -344,3 +344,21 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 | **Voice / Noise / Field Manual** | ส่งข้อความที่พิมพ์เป็นรายงานทางวอที่ระดับ Whisper/Normal/Shout, Noise +25/+50, ปลดล็อก/ล็อกหน้า Field Manual ทั้งหมด |
 
 หมายเหตุ: Demon ซ่อนอยู่จนกว่ากล้องจะแพนเข้าใกล้ห้องที่มันอยู่ (ตามกลไกเดิม) ถ้าไม่เห็นผลทันทีให้เลื่อนกล้องไปห้องนั้น
+
+---
+
+## 9. อัปเดตตามผลเทสรอบล่าสุด
+
+**รายงานต้องมี "อะไร + ที่ไหน"** (`IncidentReportManager.FileRadioReport`) เช่น `Shadow in Bedroom`
+- พูดอย่างเดียว (`shadow`) → `WHICH ROOM?` ไม่ยื่นรายงาน ไม่ลงโทษ; พูดห้องอย่างเดียว → `WHAT DID YOU SEE?`
+- ห้องจับแบบไม่สนช่องว่าง/เครื่องหมาย (`bed room` = Bedroom); ห้องผิด/คำผิด = `NEGATIVE` เหมือนเดิม
+- Field Manual ขึ้น `REPORT AS: <หมวด> + ROOM`
+
+**โมเดลเสียง 2 ภาษา** (`WhisperMicInput`): ไฟล์ `Assets/StreamingAssets/Models/` (ไม่ถูก commit เพราะ `*.bin` อยู่ใน `.gitignore` ต้องแชร์ไฟล์เอง)
+- English = `ggml-medium.en.bin` (`en`), Thai = `thonburian-large-v3-q5_0.bin` (`th`) — แก้ path/ภาษาได้ใน Inspector (`English Model` / `Thai Model`), `Default Language` ตั้งค่าเริ่มต้น
+- สลับตอนรัน: Debug panel → `Voice model: switch to English/Thai` (หรือเรียก `SwitchLanguage`) จำค่าใน PlayerPrefs `VoiceLanguage`; ระหว่างโหลด กด V แล้ว HUD ขึ้น `VOICE MODEL LOADING...`
+- **ข้อจำกัด:** คำศัพท์ `ObservationVocabulary`, ชื่อห้อง, Radio Check ("SEC-04 copy"), "all clear" เป็นภาษาอังกฤษทั้งหมด — โหมดไทยถอดเสียงได้แต่ยังจับคำสั่งเกมไม่ได้ ต้องเพิ่มคำศัพท์ไทยก่อน (ภาษาไทยไม่มีช่องว่างคั่นคำ ตัว matcher ต้องปรับด้วย)
+
+**Noise Meter คืออะไร:** ยิ่งพูดใส่ไมค์ (กด V) แถบมุมซ้ายล่างยิ่งเต็ม (กระซิบเต็มช้า ตะโกนเต็มเร็ว, เงียบ ~2.5 วิแล้วค่อยลด) แถบแดงที่ 80% เป็นแค่เตือน — **ผลจริงเกิดตอนเต็ม 100%**: เรียก Listener (Silence Protocol) มา
+แต่จะไม่เรียก ถ้าเป็นคืนสอน (คืน 1), มี haunt อื่นกำลังเล่น, อยู่ใน cutscene/Demon, หรือติด cooldown 45 วิ (จะขึ้น "Something almost heard you" แทน)
+เพิ่มข้อความเตือนตอนผ่าน 50% ("You're getting loud...") และ 80% ("They can hear you. Stop talking.")

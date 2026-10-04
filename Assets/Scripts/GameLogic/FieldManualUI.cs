@@ -213,7 +213,7 @@ namespace GameLogic
             string category = vocabulary != null ? vocabulary.LabelFor(def.observation) : def.observation.ToString();
 
             if (reportAsText != null)
-                reportAsText.text = locked ? "REPORT AS: ???" : $"REPORT AS: <b><color=#0A246A>{category}</color></b>";
+                reportAsText.text = locked ? "REPORT AS: ???" : $"REPORT AS: <b><color=#0A246A>{category}</color></b> + ROOM";
 
             if (spotBodyText != null)
                 spotBodyText.text = locked ? "Not yet encountered." :

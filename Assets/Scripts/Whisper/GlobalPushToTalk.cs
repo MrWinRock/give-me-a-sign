@@ -84,7 +84,10 @@ namespace Whisper
             }
             else if (!_talking && IsKeyDown() && !IsBlocked())
             {
-                StartTalking();
+                if (mic.IsModelLoading)
+                    _hud?.ShowStatus("VOICE MODEL LOADING...", new Color(0.8f, 0.8f, 0.8f));
+                else
+                    StartTalking();
             }
 
             if (_fileAt >= 0f && Time.unscaledTime >= _fileAt)
@@ -197,6 +200,12 @@ namespace Whisper
                     break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
                     _hud?.ShowStatus("COPY THAT", new Color(0.4f, 0.9f, 0.4f));
+                    break;
+                case IncidentReportManager.RadioReportOutcome.NeedRoom:
+                    _hud?.ShowStatus("WHICH ROOM?  (\"shadow in bedroom\")", new Color(0.95f, 0.85f, 0.4f));
+                    break;
+                case IncidentReportManager.RadioReportOutcome.NeedWhat:
+                    _hud?.ShowStatus("WHAT DID YOU SEE?", new Color(0.95f, 0.85f, 0.4f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.TooLoud:
                     _hud?.ShowStatus("STATIC - TOO LOUD", new Color(0.7f, 0.85f, 1f));

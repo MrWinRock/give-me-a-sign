@@ -99,7 +99,7 @@ namespace Report
             reportUI.Hide();
         }
 
-        public enum RadioReportOutcome { NotAReport, Confirmed, Negative, TooLoud, TooQuiet }
+        public enum RadioReportOutcome { NotAReport, Confirmed, Negative, TooLoud, TooQuiet, NeedRoom, NeedWhat }
 
         // Walkie-talkie path (hold V): no form. Same observation matching and bookkeeping as SubmitReport.
         // A volume mismatch is "static on the line" - the report is not filed and nothing is penalised.
@@ -108,10 +108,14 @@ namespace Report
             if (IsReportOpen || string.IsNullOrWhiteSpace(spoken)) return RadioReportOutcome.NotAReport;
 
             var vocabulary = ObservationVocabulary.Load();
-            if (!MentionsAnyObservation(vocabulary, spoken)) return RadioReportOutcome.NotAReport;
+            string room = FindSpokenRoom(spoken);
+
+            // A report is "what + where" ("shadow in bedroom"); half of one is bounced back, not filed.
+            if (!MentionsAnyObservation(vocabulary, spoken))
+                return room != null ? RadioReportOutcome.NeedWhat : RadioReportOutcome.NotAReport;
+            if (room == null) return RadioReportOutcome.NeedRoom;
 
             _recognizedKeyword = spoken.Trim();
-            string room = FindSpokenRoom(spoken);
 
             Anomaly matched = null;
             RadioReportOutcome volumeMiss = RadioReportOutcome.NotAReport;
@@ -181,13 +185,25 @@ namespace Report
             return false;
         }
 
+        // Spaces/punctuation ignored so "bed room" or "Bedroom." both hear as Bedroom.
         private static string FindSpokenRoom(string spoken)
         {
+            string squashed = Squash(spoken);
             foreach (var name in RoomRegistry.DisplayNames())
             {
-                if (spoken.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0) return name;
+                if (squashed.Contains(Squash(name))) return name;
             }
             return null;
+        }
+
+        private static string Squash(string text)
+        {
+            var sb = new System.Text.StringBuilder(text.Length);
+            foreach (char c in text)
+            {
+                if (char.IsLetterOrDigit(c)) sb.Append(char.ToLowerInvariant(c));
+            }
+            return sb.ToString();
         }
 
         private static bool MatchesLocationStrict(Anomaly anomaly, string room)

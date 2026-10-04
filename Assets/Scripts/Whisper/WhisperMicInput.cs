@@ -17,6 +17,26 @@ namespace Whisper
     {
         private const string DefaultModelPath = "Models/ggml-tiny.bin";
 
+        public enum VoiceLanguage { English = 0, Thai = 1 }
+
+        [Serializable]
+        public class VoiceModel
+        {
+            public string label;
+            [Tooltip("File path under StreamingAssets/Models (not committed to git - *.bin is ignored).")]
+            public string modelPath;
+            [Tooltip("Language code passed to Whisper: 'en', 'th' or 'auto'.")]
+            public string language;
+        }
+
+        public const string LanguagePrefKey = "VoiceLanguage";
+
+        [Header("Voice Models (swap the files/languages here, or from the Debug panel)")]
+        [Tooltip("Used until the player/Debug panel picks one; the choice is then remembered (PlayerPrefs 'VoiceLanguage').")]
+        [SerializeField] private VoiceLanguage defaultLanguage = VoiceLanguage.English;
+        [SerializeField] private VoiceModel englishModel = new VoiceModel { label = "English (medium.en)", modelPath = "Models/ggml-medium.en.bin", language = "en" };
+        [SerializeField] private VoiceModel thaiModel = new VoiceModel { label = "Thai (thonburian large-v3)", modelPath = "Models/thonburian-large-v3-q5_0.bin", language = "th" };
+
         [Header("Config")]
         [Tooltip("Whisper models expect 16 kHz input.")]
         public int sampleRate = 16000;
@@ -24,10 +44,10 @@ namespace Whisper
         public float hopSec = 0.8f;
         [Tooltip("Microphone device name. Leave empty for the system default mic.")]
         public string deviceName;
-        [Tooltip("Model file path, relative to StreamingAssets when the checkbox below is on.")]
+        [Tooltip("Filled from the selected Voice Model at start - edit the models above instead.")]
         public string modelPath = DefaultModelPath;
         public bool modelPathInStreamingAssets = true;
-        [Tooltip("Spoken language passed to Whisper ('en', 'th', or 'auto'). 'auto' detects per phrase but costs a little extra processing.")]
+        [Tooltip("Filled from the selected Voice Model at start - edit the models above instead.")]
         public string language = "en";
 
         [Header("Wiring")]
@@ -56,25 +76,83 @@ namespace Whisper
         private string _lastQueuedText;
         private float _nextDispatchTime;
 
+        public VoiceLanguage CurrentLanguage { get; private set; }
+        public string CurrentModelLabel => ModelFor(CurrentLanguage).label;
+        public bool IsModelReady => whisperManager != null && whisperManager.IsLoaded;
+        public bool IsModelLoading => whisperManager == null || whisperManager.IsLoading || !whisperManager.IsLoaded;
+
+        private VoiceModel ModelFor(VoiceLanguage lang) => lang == VoiceLanguage.Thai ? thaiModel : englishModel;
+
+        private void SelectLanguage(VoiceLanguage lang)
+        {
+            CurrentLanguage = lang;
+            var model = ModelFor(lang);
+            if (!string.IsNullOrWhiteSpace(model.modelPath)) modelPath = model.modelPath;
+            if (!string.IsNullOrWhiteSpace(model.language)) language = model.language;
+        }
+
+        // Unloads the current model and loads the other one. Heavy (seconds) - Debug panel / options only.
+        public void SwitchLanguage(VoiceLanguage lang)
+        {
+            if (lang == CurrentLanguage && IsModelReady) return;
+
+            if (whisperManager != null && !_createdWhisperManager)
+            {
+                Debug.LogWarning("WhisperMicInput: the WhisperManager is scene-owned, so the model can't be swapped at runtime. Clear the 'Whisper Manager' field to let this component own it.", this);
+                return;
+            }
+
+            PlayerPrefs.SetInt(LanguagePrefKey, (int)lang);
+            PlayerPrefs.Save();
+
+            StopListening();
+            ReleaseStream();
+            if (_createdWhisperManager && whisperManager != null)
+                Destroy(whisperManager.gameObject);
+            whisperManager = null;
+            _createdWhisperManager = false;
+
+            SelectLanguage(lang);
+            CreateWhisperManager();
+        }
+
+        private void ReleaseStream()
+        {
+            if (_stream == null) return;
+
+            _stream.OnSegmentFinished -= OnStreamSegmentFinished;
+            _stream.OnSegmentUpdated -= OnStreamSegmentUpdated;
+            _stream.OnResultUpdated -= OnStreamResultUpdated;
+            _stream.OnStreamFinished -= OnStreamFinished;
+            _stream = null;
+        }
+
+        private void CreateWhisperManager()
+        {
+            // Create on an inactive GO so ModelPath is set before its Awake loads the model.
+            var go = new GameObject("WhisperManager");
+            go.SetActive(false);
+            whisperManager = go.AddComponent<WhisperManager>();
+            _createdWhisperManager = true;
+
+            ApplyModelPath();
+            ApplyStreamingSettings();
+
+            go.SetActive(true); // Awake runs now, loading the model with our settings
+        }
+
         private async void Start()
         {
             // Both are optional (every call site null-checks), so a missing reference is expected
             // rather than a misconfiguration - no warning.
 
+            SelectLanguage((VoiceLanguage)PlayerPrefs.GetInt(LanguagePrefKey, (int)defaultLanguage));
+
             try
             {
                 if (whisperManager == null)
                 {
-                    // Create on an inactive GO so ModelPath is set before its Awake loads the model.
-                    var go = new GameObject("WhisperManager");
-                    go.SetActive(false);
-                    whisperManager = go.AddComponent<WhisperManager>();
-                    _createdWhisperManager = true;
-
-                    ApplyModelPath();
-                    ApplyStreamingSettings();
-
-                    go.SetActive(true); // Awake runs now, loading the model with our settings
+                    CreateWhisperManager();
                 }
                 else
                 {

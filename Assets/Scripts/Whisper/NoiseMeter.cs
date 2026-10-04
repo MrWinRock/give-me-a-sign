@@ -100,8 +100,10 @@ namespace Whisper
         {
             if (amount <= 0f || ListenerActive || _pendingTrigger) return;
 
+            float before = Normalized;
             Level = Mathf.Min(Max, Level + amount);
             _lastNoiseTime = Time.unscaledTime;
+            WarnOnThresholds(before, Normalized);
 
             if (Level >= triggerThreshold && Time.unscaledTime >= _cooldownUntil)
                 _pendingTrigger = true;
@@ -117,6 +119,15 @@ namespace Whisper
                 : 1f;
 
             AddNoise(speechNoisePerSecond * cost * seconds);
+        }
+
+        // The bar alone never says what it is for - tell the player when it crosses each step.
+        private void WarnOnThresholds(float before, float after)
+        {
+            if (after >= 0.8f && before < 0.8f)
+                _hud?.ShowWarning("They can hear you. Stop talking.");
+            else if (after >= 0.5f && before < 0.5f)
+                _hud?.ShowWarning("You're getting loud...");
         }
 
         public VoiceLevel Classify(float rms)

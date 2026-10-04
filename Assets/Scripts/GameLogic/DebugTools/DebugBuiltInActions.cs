@@ -43,11 +43,11 @@ namespace GameLogic.DebugTools
             new QaItem { id = "ptt", title = "Hold V = walkie-talkie",
                 steps = "Run a night (GamePlay). Hold V: mic-open click, then MicHold loop, HUD bottom-right shows REC + WHISPER/NORMAL/SHOUT. Release: click again. Pause menu / cutscene: V does nothing." },
             new QaItem { id = "report", title = "Report an anomaly by voice",
-                steps = "Spawn: Shadow Blob. Hold V and say 'shadow' (any volume). Expect COPY THAT and the anomaly leaves + score up. Say a wrong word (e.g. 'door') while it is out: NEGATIVE + it advances. Say it with a room ('shadow in the kitchen') - wrong room = NEGATIVE." },
+                steps = "Spawn: Shadow Blob. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'shadow in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'shadow' = WHICH ROOM? (not filed, no penalty); only 'in bedroom' = WHAT DID YOU SEE?; wrong word or wrong room = NEGATIVE + it advances." },
             new QaItem { id = "demon", title = "Demon needs a shout",
-                steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon' at normal volume: STATIC - SPEAK UP, nothing else happens. Shout it: COPY THAT and it leaves." },
+                steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: STATIC - SPEAK UP, nothing else happens. Shout it: COPY THAT and it leaves." },
             new QaItem { id = "stealth", title = "Hooded Figure stealth mic",
-                steps = "Spawn: Hooded Figure. Mic opens by itself (open click), HUD: MIC LIVE - WHISPER ONLY n. Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper 'figure' = it leaves via report; (c) speak/shout = full-screen jumpscare then Result (night lost). V press during it only clicks." },
+                steps = "Spawn: Hooded Figure. Mic opens by itself (open click), HUD: MIC LIVE - WHISPER ONLY n. Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper 'figure in <room>' = it leaves via report; (c) speak/shout = full-screen jumpscare then Result (night lost). V press during it only clicks." },
             new QaItem { id = "radio", title = "Radio Check pass / fail / noise",
                 steps = "Radio Check > Normal. Answer 'SEC-04 copy': COPY THAT shown ~2.5s. Run it again and stay silent: NO RESPONSE (NOISE +25) + 'Missed n/3', Noise bar jumps. Miss 3 in a row: HQ sends someone = next scheduled haunt fires immediately." },
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
@@ -255,6 +255,36 @@ namespace GameLogic.DebugTools
                     },
                 });
             }
+
+            foreach (WhisperMicInput.VoiceLanguage language in Enum.GetValues(typeof(WhisperMicInput.VoiceLanguage)))
+            {
+                var captured = language;
+                list.Add(new DebugEntry
+                {
+                    group = VoiceGroup,
+                    label = $"Voice model: switch to {captured}  (reloads, a few seconds)",
+                    run = () =>
+                    {
+                        var mic = UnityEngine.Object.FindFirstObjectByType<WhisperMicInput>();
+                        if (mic == null) { info("No WhisperMicInput in this scene (open GamePlay)."); return; }
+
+                        mic.SwitchLanguage(captured);
+                        info($"Loading voice model: {mic.CurrentModelLabel}. Hold V works again once it finishes (HUD says VOICE MODEL LOADING until then).");
+                    },
+                });
+            }
+
+            list.Add(new DebugEntry
+            {
+                group = VoiceGroup,
+                label = "Voice model: show which is loaded",
+                run = () =>
+                {
+                    var mic = UnityEngine.Object.FindFirstObjectByType<WhisperMicInput>();
+                    info(mic == null ? "No WhisperMicInput in this scene."
+                        : $"{mic.CurrentModelLabel}  -  {(mic.IsModelReady ? "ready" : "loading...")}");
+                },
+            });
 
             foreach (float amount in new[] { 25f, 50f })
             {
