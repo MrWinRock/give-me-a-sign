@@ -607,7 +607,7 @@ namespace GameLogic.DebugTools
             layoutElement.preferredHeight = height;
         }
 
-        // ── Small UI factory helpers (same pattern as DayEventPlayer/DeathSequenceHud) ─────
+        // ── Small UI factory helpers (same pattern as DayEventPlayer) ─────
 
         private static Image CreateImage(Transform parent, string name, Color color)
         {
@@ -687,7 +687,7 @@ namespace GameLogic.DebugTools
         /// rect and whichever is assigned last wins in ways that aren't obvious from the call site.
         ///
         /// <paramref name="topOffset"/> is a POSITIVE distance down from the parent's top edge
-        /// (not the negative-anchoredPosition convention DeathSequenceHud-style code sometimes
+        /// (not the negative-anchoredPosition convention older HUD code sometimes
         /// uses), so callers just add heights as they stack elements downward.
         /// </summary>
         private static void SetTopStretch(RectTransform rect, float topOffset, float height, float left, float right)

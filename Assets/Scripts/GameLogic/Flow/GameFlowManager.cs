@@ -58,8 +58,8 @@ namespace GameLogic.Flow
         [Header("Pacing")]
         [Tooltip("Pause after surviving to 6:00 AM before moving on to the day-end event.")]
         [SerializeField] private float delayAfterSurviving = 1f;
-        [Tooltip("Total time the death sequence (fade + cause-of-death line, see DeathSequenceHud) holds before the day restarts.")]
-        [SerializeField] private float delayAfterDeath = 2.5f;
+        [Tooltip("How long the Demon jumpscare holds on a loss before cutting to the lose screen.")]
+        [SerializeField] private float delayAfterDeath = 1.8f;
 
         // Concrete subclass, not UnityEvent<int> directly: Unity only serializes a generic
         // UnityEvent through a named [Serializable] type, and without it these would compile but
@@ -595,61 +595,22 @@ namespace GameLogic.Flow
         /// </summary>
         private IEnumerator FinishDayFromOutcome(NightOutcome outcome)
         {
-            if (outcome == NightOutcome.Survived)
+            bool won = LastResult != null && LastResult.Won;
+
+            if (won)
             {
                 if (delayAfterSurviving > 0f)
                     yield return new WaitForSeconds(delayAfterSurviving);
-            }
-            else
-            {
-                yield return PlayDeathSequence(outcome);
-            }
 
-            if (LastResult != null && LastResult.Won)
-            {
                 EndDayGameplay(true);
                 yield break;
             }
 
+            // Every loss - killed, overrun, or surviving without enough reports - ends on the Demon,
+            // then cuts straight to the lose screen.
+            yield return DemonLossJumpscare.Play(delayAfterDeath);
+
             LoadSceneByName(resultSceneName, "result");
-        }
-
-        private IEnumerator PlayDeathSequence(NightOutcome outcome)
-        {
-            var hud = DeathSequenceHud.Create();
-
-            const float fadeDuration = 0.6f;
-            yield return hud.PlayFadeIn(DescribeCause(outcome), fadeDuration).WaitForCompletion();
-
-            float hold = Mathf.Max(0f, delayAfterDeath - fadeDuration);
-            if (hold > 0f)
-                yield return new WaitForSecondsRealtime(hold);
-
-            hud.Destroy();
-        }
-
-        private string DescribeCause(NightOutcome outcome)
-        {
-            switch (outcome)
-            {
-                case NightOutcome.KilledByDemon:
-                    return "THE DEMON FOUND YOU.";
-
-                case NightOutcome.Negligence:
-                    if (LastResult == null) return "NEGLIGENCE.";
-                    if (LastResult.killedByAnomalyId == "silence_protocol") return "IT HEARD YOU.";
-                    if (LastResult.killedByAnomalyId == AnomalyOverloadWatcher.OverloadCauseId)
-                        return "YOU LET TOO MANY IN.";
-                    return "NEGLIGENCE.";
-
-                case NightOutcome.KilledByAnomaly:
-                    return LastResult != null && !string.IsNullOrEmpty(LastResult.killedInRoomId)
-                        ? $"IT CAUGHT YOU IN THE {LastResult.killedInRoomId.ToUpperInvariant()}."
-                        : "IT CAUGHT YOU.";
-
-                default:
-                    return "YOU DID NOT SURVIVE.";
-            }
         }
 
         public static void ClearLastResult() => LastResult = null;

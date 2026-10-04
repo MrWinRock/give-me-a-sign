@@ -1,18 +1,15 @@
 using System.Collections.Generic;
-using Audio;
-using DG.Tweening;
 using GameLogic;
 using GameLogic.Data;
 using GameLogic.Flow;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Whisper
 {
     /// <summary>
     /// Stealth anomalies: while one is out, the game holds the radio mic open. Whispering (or saying
     /// nothing) is safe - a whispered report with the right words banishes it like any other, and
-    /// 8 quiet seconds make it leave. Speaking louder than a whisper is heard: jumpscare, night lost.
+    /// 8 quiet seconds make it leave. Speaking louder than a whisper is heard: night lost.
     /// </summary>
     public class QuietResponse : MonoBehaviour
     {
@@ -24,11 +21,6 @@ namespace Whisper
 
         [Tooltip("Seconds after the mic is forced open before sound can catch the player (the open-mic click, reaching for the desk).")]
         [Min(0f)] [SerializeField] private float graceSeconds = 1f;
-
-        [Tooltip("How long the jumpscare shows before the night ends.")]
-        [Min(0f)] [SerializeField] private float jumpScareSeconds = 0.9f;
-
-        [SerializeField] private string jumpScareSound = "JumpScare";
 
         private readonly Dictionary<Anomaly, float> _quietSince = new Dictionary<Anomaly, float>();
         private readonly List<Anomaly> _pending = new List<Anomaly>();
@@ -149,59 +141,10 @@ namespace Whisper
             _caught = true;
             Release();
 
-            var audio = AudioManager.Instance;
-            audio?.Play(jumpScareSound);
-
+            // The Demon jumpscare + cut to the lose screen is GameFlowManager's job on every loss.
             var def = anomaly.Definition;
-            ShowJumpScare(def != null ? def.manualImage : null);
-
             string roomId = anomaly.AssignedRoom != null ? anomaly.AssignedRoom.roomId : null;
-            DOVirtual.DelayedCall(jumpScareSeconds, () =>
-                GameFlowManager.Instance?.EndNight(NightOutcome.KilledByAnomaly, def != null ? def.anomalyId : anomaly.name, roomId))
-                .SetUpdate(true);
-        }
-
-        private void ShowJumpScare(Sprite face)
-        {
-            var root = new GameObject("SilenceJumpScare", typeof(RectTransform));
-            var canvas = root.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 900;
-            root.AddComponent<CanvasScaler>();
-
-            var black = NewImage(root.transform, "Black", Color.black);
-            Stretch(black.rectTransform);
-
-            if (face != null)
-            {
-                var image = NewImage(root.transform, "Face", Color.white);
-                image.sprite = face;
-                image.preserveAspect = true;
-                Stretch(image.rectTransform);
-                image.rectTransform.localScale = Vector3.one * 0.6f;
-                image.rectTransform.DOScale(1.25f, jumpScareSeconds * 0.4f).SetEase(Ease.OutExpo).SetUpdate(true);
-                image.rectTransform.DOShakeAnchorPos(jumpScareSeconds, 40f, 40).SetUpdate(true);
-            }
-
-            Destroy(root, jumpScareSeconds + 1f);
-        }
-
-        private static Image NewImage(Transform parent, string name, Color color)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            var image = go.GetComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
-            return image;
-        }
-
-        private static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            GameFlowManager.Instance?.EndNight(NightOutcome.KilledByAnomaly, def != null ? def.anomalyId : anomaly.name, roomId);
         }
 
         private void SetHint(string text)

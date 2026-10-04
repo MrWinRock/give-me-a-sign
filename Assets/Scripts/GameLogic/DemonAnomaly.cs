@@ -58,6 +58,11 @@ namespace GameLogic
         private static int _revealedCount;
         public static bool AnyRevealed => _revealedCount > 0;
 
+        // The jumpscare art, reused by DemonLossJumpscare for every loss.
+        public VideoClip JumpscareVideo => jumpscareVideo;
+        public Sprite JumpscareSprite =>
+            overlayRoot != null ? overlayRoot.GetComponentInChildren<SpriteRenderer>(true)?.sprite : null;
+
         private Anomaly _anomaly;
         private GlitchDirector _glitchDirector;
         private Camera _camera;
