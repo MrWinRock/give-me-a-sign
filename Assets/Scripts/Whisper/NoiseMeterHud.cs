@@ -79,7 +79,8 @@ namespace Whisper
                 _pulse = _fill.DOFade(0.35f, 0.35f)
                     .SetEase(Ease.InOutSine)
                     .SetLoops(-1, LoopType.Yoyo)
-                    .SetUpdate(true);
+                    .SetUpdate(true)
+                    .SetLink(_fill.gameObject);
             }
             else if (!danger && _pulse != null)
             {

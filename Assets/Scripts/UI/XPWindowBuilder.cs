@@ -113,7 +113,8 @@ namespace UI
                 }, theme);
 
             var tween = DOTween.To(() => dot.color.a, a => dot.color = new Color(dot.color.r, dot.color.g, dot.color.b, a), 0.25f, 0.6f);
-            tween.SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo).SetUpdate(true).SetTarget(dot);
+            // SetLink kills the loop when the window is destroyed; SetTarget alone only tags it.
+            tween.SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo).SetUpdate(true).SetLink(dot.gameObject);
         }
 
         // Cheap scanline look: a repeating 1px-on/off horizontal stripe texture generated once,
