@@ -403,3 +403,11 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 เริ่มนับเมื่อเกินจำนวน → HUD กลางบนขึ้น `TOO MANY ANOMALIES (n) - REPORT THEM BEFORE THE BUILDING FALLS` (กะพริบ) + ตัวเลขนับถอยหลัง; ลดลงถึงเกณฑ์ = รีเซ็ตและซ่อนข้อความ
 
 **ฉากแพ้ (อัปเดต):** ทุกการแพ้ — โดน Hooded Figure จับ, Demon หมดเวลา, anomaly ล้นฉาก, รอดถึง 6:00 แต่คะแนนไม่ถึง — จบด้วย **Demon jumpscare เต็มจอ + เสียงกรีด (`JumpScare`) แล้วตัดไปหน้า Result ทันที** (`Flow/DemonLossJumpscare.cs`, ใช้รูป/วิดีโอจาก DemonAnomaly prefab เอง เปลี่ยนที่ Demon ที่เดียว; ระยะเวลาปรับที่ `Delay After Death` ใน GameFlowManager ค่าเริ่มต้น 1.8 วิ). เอา `DeathSequenceHud` (fade + ข้อความสาเหตุ) และ jumpscare หน้าตัวผีของ QuietResponse ออก
+
+---
+
+## 12. รอบ Demon / Hooded Figure / ข้อความ
+
+- **Demon เปิดตัวแล้วขยับ** (`DemonAnomaly.PlayRevealMotion`): พุ่งเข้าใส่ (scale 0.5→1.12 + สั่นหน้าจอ + กะพริบสั้นๆ) แล้ว**ค่อยๆ ขยับเข้ามาใกล้ตลอด** (ซูมเข้า-ออกช้าๆ) พร้อม twitch (สั่น+กะพริบ) สุ่มทุก 1.2-3.2 วิ จนกว่าจะถูกจัดการ; ฉากแพ้ใช้ภาพ/วิดีโอของ Demon ตัวเดียวกัน
+- **Hooded Figure ต้อง "เจอ" ก่อน** (`QuietResponse`): โผล่แล้วนิ่งอยู่เฉยๆ — ผู้เล่นต้องเลื่อนกล้องไปห้องของมันและ**เลื่อนเมาส์ไปทับตัวมัน** (เทียบกับ bounds ของ renderer) ถึงจะเริ่ม: ตัวมัน punch ทีหนึ่ง, ไมค์เปิดเอง (เสียงเปิดไมค์), เริ่มนับ 8 วิ, สไลเดอร์โซนเงียบสว่าง — เหมือนผู้เล่นเจอแล้วถึงโดนหลอก. Debug: `Debug/Pretend I found the stealth anomaly` บน QuietResponse
+- **ข้อความที่ขึ้นบอกผู้เล่น แก้ได้ทั้งหมด + ติ๊กให้กะพริบได้:** `Assets/Resources/PlayerMessages.asset` (Inspector: แต่ละข้อความมี `Text` และ `Blink`; `{0}`/`{1}` คือจำนวน/วินาทีที่เกมใส่ให้ เช่น `TOO MANY ANOMALIES ({0}) ...`, `MIC LIVE - WHISPER ONLY... {0}`) ครอบคลุม: เตือน anomaly ล้นฉาก, hint ตอน stealth, ผลรายงาน (COPY THAT / NEGATIVE / WHICH ROOM? / WHAT DID YOU SEE?), Radio Check (ผ่าน/พลาด/ตัวหลอก + บรรทัดรายละเอียด), voice model loading. ค่าเริ่มต้นกะพริบ: เตือนล้นฉาก, stealth hint, Radio Check พลาด/ตัวหลอก. รีเซ็ตค่า: คลิกขวา component > Reset To Defaults. (ข้อความ call line ของ Radio Check แก้ที่ RadioCheckHaunt ตามเดิม)

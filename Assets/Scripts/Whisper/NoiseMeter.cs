@@ -116,13 +116,8 @@ namespace Whisper
         {
             if (DemonAnomaly.AnyRevealed) return Requirement.BeLoud;
 
-            foreach (var anomaly in Anomaly.ActiveAnomalies)
-            {
-                if (anomaly != null && anomaly.State != AnomalyState.Resolved && !anomaly.IsReported
-                    && anomaly.Definition != null && anomaly.Definition.voiceResponse == VoiceResponse.Silence)
-                    return Requirement.StayQuiet;
-            }
-            return Requirement.None;
+            // Only once the player has found the stealth anomaly and the countdown is running.
+            return QuietResponse.Engaged ? Requirement.StayQuiet : Requirement.None;
         }
     }
 }

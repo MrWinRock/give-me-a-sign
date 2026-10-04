@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a98ffaec4dc56845a558045e8ee008e, type: 3}
+  m_Name: PlayerMessages
+  m_EditorClassIdentifier: Assembly-CSharp::UI.PlayerMessages
+  messages:
+  - id: 0
+    text: TOO MANY ANOMALIES ({0}) - REPORT THEM BEFORE THE BUILDING FALLS
+    blink: 1
+  - id: 1
+    text: MIC LIVE - WHISPER ONLY... {0}
+    blink: 1
+  - id: 2
+    text: COPY THAT
+    blink: 0
+  - id: 3
+    text: NEGATIVE
+    blink: 0
+  - id: 4
+    text: WHICH ROOM?
+    blink: 0
+  - id: 5
+    text: WHAT DID YOU SEE?
+    blink: 0
+  - id: 6
+    text: (nothing heard)
+    blink: 0
+  - id: 7
+    text: VOICE MODEL LOADING...
+    blink: 0
+  - id: 8
+    text: COPY THAT
+    blink: 0
+  - id: 9
+    text: GOOD CALL
+    blink: 0
+  - id: 10
+    text: NO RESPONSE
+    blink: 1
+  - id: 11
+    text: IT HEARD YOU
+    blink: 1
+  - id: 12
+    text: WRONG SIGN-IN
+    blink: 1
+  - id: 13
+    text: HQ is satisfied.
+    blink: 0
+  - id: 14
+    text: That wasn't HQ.
+    blink: 0
+  - id: 15
+    text: Another anomaly got in.
+    blink: 0

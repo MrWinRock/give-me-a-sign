@@ -242,7 +242,7 @@ namespace GameLogic
             {
                 VoiceResponse.Whisper => "\n<b>Whisper it.</b> Speak quietly.",
                 VoiceResponse.Shout => "\n<b>Shout it.</b> Speak loudly.",
-                VoiceResponse.Silence => "\n<b>Whisper only.</b> The mic goes live - anything louder finds you.",
+                VoiceResponse.Silence => "\n<b>Find it with the cursor.</b> The moment you do, the mic goes live - whisper the report or keep silent; anything louder finds you.",
                 _ => ""
             };
 

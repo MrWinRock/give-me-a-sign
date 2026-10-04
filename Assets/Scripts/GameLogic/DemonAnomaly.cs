@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using DG.Tweening;
+using System.Collections.Generic;
+using DG.Tweening;
 using GameLogic.Data;
 using GameLogic.Flow;
 using Report;
@@ -73,6 +77,7 @@ namespace GameLogic
         private GameObject _videoOverlayObject;
 
         private float _revealedAt;
+        private readonly List<Tween> _motion = new List<Tween>();
         private bool _revealed;
         private bool _resolved;
         private bool _reportWasOpen;
@@ -144,6 +149,8 @@ namespace GameLogic
 
         void OnDestroy()
         {
+            KillMotion();
+
             if (_anomaly != null)
                 _anomaly.OnAnomalyDisappeared -= OnResolved;
 
@@ -215,6 +222,7 @@ namespace GameLogic
             _anomaly.enabled = true;
 
             ShowOverlay();
+            PlayRevealMotion();
 
             if (jumpscareAudio != null)
                 jumpscareAudio.Play();
@@ -364,8 +372,75 @@ namespace GameLogic
                 _room != null ? _room.roomId : null);
         }
 
+        // Lunge in with a shake and a flicker, then keep creeping closer and twitching so the
+        // face never sits still while the player scrambles to report it.
+        private void PlayRevealMotion()
+        {
+            KillMotion();
+
+            Transform face = null;
+            if (jumpscareVideo != null && _videoOverlayObject != null)
+                face = _videoOverlayObject.transform;
+            else if (overlayRoot != null)
+            {
+                var sprite = overlayRoot.GetComponentInChildren<SpriteRenderer>(true);
+                if (sprite != null) face = sprite.transform;
+            }
+            if (face == null) return;
+
+            var spriteRenderer = face.GetComponent<SpriteRenderer>();
+            Vector3 baseScale = face.localScale;
+            float camHeight = _camera != null && _camera.orthographic ? _camera.orthographicSize * 2f : 10f;
+            float shake = camHeight * 0.035f;
+
+            if (spriteRenderer != null)
+                spriteRenderer.color = Color.white;
+            face.localScale = baseScale * 0.5f;
+
+            var lunge = DOTween.Sequence().SetLink(overlayRoot);
+            lunge.Append(face.DOScale(baseScale * 1.12f, 0.14f).SetEase(Ease.OutExpo));
+            lunge.Join(face.DOShakePosition(0.7f, new Vector3(shake, shake * 0.6f, 0f), 60, 90f, false, true));
+            if (spriteRenderer != null)
+                lunge.Join(spriteRenderer.DOFade(0.2f, 0.04f).SetLoops(6, LoopType.Yoyo));
+            lunge.OnComplete(() => StartCreep(face, spriteRenderer, baseScale, shake));
+            _motion.Add(lunge);
+        }
+
+        private void StartCreep(Transform face, SpriteRenderer spriteRenderer, Vector3 baseScale, float shake)
+        {
+            if (_resolved || face == null) return;
+
+            _motion.Add(face.DOScale(baseScale * 1.07f, 1.3f).SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo).SetLink(overlayRoot));
+
+            ScheduleTwitch(face, spriteRenderer, shake);
+        }
+
+        private void ScheduleTwitch(Transform face, SpriteRenderer spriteRenderer, float shake)
+        {
+            _motion.Add(DOVirtual.DelayedCall(Random.Range(1.2f, 3.2f), () =>
+            {
+                if (_resolved || face == null) return;
+
+                _motion.Add(face.DOShakePosition(0.3f, new Vector3(shake * 1.3f, shake * 0.8f, 0f), 40, 90f, false, true)
+                    .SetLink(overlayRoot));
+                if (spriteRenderer != null)
+                    _motion.Add(spriteRenderer.DOFade(0.3f, 0.05f).SetLoops(4, LoopType.Yoyo).SetLink(overlayRoot));
+
+                ScheduleTwitch(face, spriteRenderer, shake);
+            }).SetLink(overlayRoot));
+        }
+
+        private void KillMotion()
+        {
+            foreach (var tween in _motion)
+                tween?.Kill();
+            _motion.Clear();
+        }
+
         private void EndThreat()
         {
+            KillMotion();
             if (!_revealed) return;
 
             _revealedCount = Mathf.Max(0, _revealedCount - 1);

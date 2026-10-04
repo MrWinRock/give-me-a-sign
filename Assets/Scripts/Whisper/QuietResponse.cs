@@ -1,8 +1,13 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using GameLogic;
 using GameLogic.Data;
 using GameLogic.Flow;
+using UI;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Whisper
 {
@@ -13,6 +18,9 @@ namespace Whisper
     /// </summary>
     public class QuietResponse : MonoBehaviour
     {
+        // True once the player has found a stealth anomaly and the quiet countdown is running.
+        public static bool Engaged { get; private set; }
+
         [Tooltip("Seconds of unbroken silence needed after the anomaly appears.")]
         [Min(1f)] [SerializeField] private float quietSeconds = 8f;
 
@@ -29,6 +37,7 @@ namespace Whisper
         private float _soundSeconds;
         private bool _caught;
         private string _lastHint;
+        private readonly HashSet<Anomaly> _found = new HashSet<Anomaly>();
 
         void OnEnable() => WhisperMicInput.OnSpeechChunk += HandleSpeechChunk;
 
@@ -50,11 +59,17 @@ namespace Whisper
             {
                 if (!NeedsSilence(anomaly)) continue;
 
-                if (!_quietSince.TryGetValue(anomaly, out float since))
+                // It lurks until the player finds it with the cursor - only then does the mic go live and the countdown start.
+                if (!_found.Contains(anomaly))
                 {
-                    since = Time.time;
-                    _quietSince[anomaly] = since;
+                    if (!PointerOver(anomaly)) continue;
+
+                    _found.Add(anomaly);
+                    _quietSince[anomaly] = Time.time;
+                    anomaly.transform.DOPunchScale(Vector3.one * 0.12f, 0.5f, 8).SetLink(anomaly.gameObject);
                 }
+
+                float since = _quietSince[anomaly];
 
                 float remaining = quietSeconds - (Time.time - since);
                 if (remaining <= 0f)
@@ -71,19 +86,44 @@ namespace Whisper
             foreach (var anomaly in _pending)
             {
                 _quietSince.Remove(anomaly);
+                _found.Remove(anomaly);
                 anomaly.MarkReported();
                 anomaly.ResolveByReport();
             }
 
+            Engaged = soonestAnomaly != null;
+
             if (soonestAnomaly != null)
             {
                 Hold(soonestAnomaly);
-                SetHint($"MIC LIVE - WHISPER ONLY... {Mathf.CeilToInt(soonest)}");
+                SetHint(PlayerMessages.Text(MessageId.StealthHint, Mathf.CeilToInt(soonest)), PlayerMessages.Blink(MessageId.StealthHint));
             }
             else
             {
                 Release();
             }
+        }
+
+        private static bool PointerOver(Anomaly anomaly)
+        {
+#if ENABLE_INPUT_SYSTEM
+            var cam = Camera.main;
+            var mouse = Mouse.current;
+            if (cam == null || mouse == null) return false;
+
+            Vector2 screen = mouse.position.ReadValue();
+            Vector3 world = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, Mathf.Abs(cam.transform.position.z)));
+
+            foreach (var r in anomaly.GetComponentsInChildren<Renderer>(false))
+            {
+                if (r == null || !r.enabled) continue;
+
+                var bounds = r.bounds;
+                world.z = bounds.center.z;
+                if (bounds.Contains(world)) return true;
+            }
+#endif
+            return false;
         }
 
         private void Hold(Anomaly anomaly)
@@ -99,6 +139,7 @@ namespace Whisper
 
         private void Release()
         {
+            Engaged = false;
             _watched = null;
             GlobalPushToTalk.Instance?.SetForcedOpen(false);
             SetHint(null);
@@ -130,6 +171,17 @@ namespace Whisper
                 Caught(_watched);
         }
 
+        [ContextMenu("Debug/Pretend I found the stealth anomaly")]
+        public void DebugFindAll()
+        {
+            foreach (var anomaly in Anomaly.ActiveAnomalies)
+            {
+                if (!NeedsSilence(anomaly) || _found.Contains(anomaly)) continue;
+                _found.Add(anomaly);
+                _quietSince[anomaly] = Time.time;
+            }
+        }
+
         [ContextMenu("Debug/Get Caught Now")]
         public void DebugGetCaughtNow()
         {
@@ -147,11 +199,11 @@ namespace Whisper
             GameFlowManager.Instance?.EndNight(NightOutcome.KilledByAnomaly, def != null ? def.anomalyId : anomaly.name, roomId);
         }
 
-        private void SetHint(string text)
+        private void SetHint(string text, bool blink = false)
         {
             if (text == _lastHint) return;
             _lastHint = text;
-            GlobalPushToTalk.Instance?.ShowHint(text);
+            GlobalPushToTalk.Instance?.ShowHint(text, blink);
         }
     }
 }

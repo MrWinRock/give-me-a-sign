@@ -1,3 +1,4 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +18,7 @@ namespace Report
         private readonly TextMeshProUGUI _callText;
         private readonly TextMeshProUGUI _hintText;
         private readonly Image _countdownFill;
+        private Tween _blink;
 
         public static RadioCheckHud Create() => new RadioCheckHud();
 
@@ -84,16 +86,22 @@ namespace Report
                 _panel.color = good ? new Color(0.1f, 0.4f, 0.15f, 0.7f) : new Color(0.45f, 0.05f, 0.05f, 0.7f);
         }
 
-        public void ShowOutcome(bool good, string headline, string detail)
+        public void ShowOutcome(bool good, string headline, string detail, bool blink = false)
         {
             FlashResult(good);
             SetCall(headline);
             SetHint(detail);
+            if (blink && _callText != null) _blink = UI.TextBlink.Start(_callText);
             if (_countdownFill != null) _countdownFill.transform.parent.gameObject.SetActive(false);
         }
 
         public void Destroy(float delay = 0f)
         {
+            if (delay <= 0f)
+            {
+                _blink?.Kill();
+                _blink = null;
+            }
             if (_root != null) Object.Destroy(_root, delay);
         }
 

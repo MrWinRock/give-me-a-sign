@@ -3,6 +3,7 @@ using Audio;
 using GameLogic;
 using GameLogic.Story;
 using Report;
+using UI;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -93,7 +94,7 @@ namespace Whisper
             else if (!_talking && IsKeyDown() && !IsBlocked())
             {
                 if (mic.IsModelLoading)
-                    _hud?.ShowStatus("VOICE MODEL LOADING...", new Color(0.8f, 0.8f, 0.8f));
+                    _hud?.ShowStatus(PlayerMessages.Text(MessageId.ModelLoading), new Color(0.8f, 0.8f, 0.8f), PlayerMessages.Blink(MessageId.ModelLoading));
                 else
                     StartTalking();
             }
@@ -102,7 +103,7 @@ namespace Whisper
                 FileTransmission();
         }
 
-        public void ShowHint(string text) => _hud?.SetHint(text);
+        public void ShowHint(string text, bool blink = false) => _hud?.SetHint(text, blink);
 
         // The game holds the mic live (V can't close it). Speech is still filed as reports, one per pause.
         public void SetForcedOpen(bool forced)
@@ -195,7 +196,7 @@ namespace Whisper
             var outcome = reports.FileRadioReport(spoken, level);
             Debug.Log($"[Walkie] heard '{spoken}' ({level}) -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
 
-            string heard = string.IsNullOrWhiteSpace(spoken) ? "(nothing heard)" : $"heard: \"{Trim(spoken, 55)}\"";
+            string heard = string.IsNullOrWhiteSpace(spoken) ? PlayerMessages.Text(MessageId.NothingHeard) : $"heard: \"{Trim(spoken, 55)}\"";
 
             switch (outcome)
             {
@@ -203,20 +204,20 @@ namespace Whisper
                     _hud?.ShowStatus(heard, new Color(1f, 1f, 1f, 0.8f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
-                    _hud?.ShowStatus("COPY THAT", new Color(0.4f, 0.9f, 0.4f));
+                    _hud?.ShowStatus(PlayerMessages.Text(MessageId.ReportConfirmed), new Color(0.4f, 0.9f, 0.4f), PlayerMessages.Blink(MessageId.ReportConfirmed));
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedRoom:
-                    _hud?.ShowStatus($"WHICH ROOM?  {heard}", new Color(0.95f, 0.85f, 0.4f));
+                    _hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedRoom)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedRoom));
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedWhat:
-                    _hud?.ShowStatus($"WHAT DID YOU SEE?  {heard}", new Color(0.95f, 0.85f, 0.4f));
+                    _hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedWhat)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedWhat));
                     break;
                 // Wrong volume for the threat: no words - the volume slider is how the player learns it.
                 case IncidentReportManager.RadioReportOutcome.TooLoud:
                 case IncidentReportManager.RadioReportOutcome.TooQuiet:
                     break;
                 case IncidentReportManager.RadioReportOutcome.Negative:
-                    _hud?.ShowStatus($"NEGATIVE  {heard}", new Color(0.95f, 0.6f, 0.2f));
+                    _hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNegative)}  {heard}", new Color(0.95f, 0.6f, 0.2f), PlayerMessages.Blink(MessageId.ReportNegative));
                     break;
             }
         }

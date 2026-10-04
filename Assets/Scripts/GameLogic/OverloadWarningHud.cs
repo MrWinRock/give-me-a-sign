@@ -42,15 +42,13 @@ namespace GameLogic
         {
             _root.SetActive(true);
             _lastSeconds = -1;
-            _title.text = $"TOO MANY ANOMALIES ({unresolved}) - REPORT THEM BEFORE THE BUILDING FALLS";
+            _title.text = PlayerMessages.Text(MessageId.OverloadWarning, unresolved, limit);
 
-            // Flash the title a few times so the start of the countdown is impossible to miss.
             _flash?.Kill();
+            _flash = null;
             _title.alpha = 1f;
-            _flash = DOTween.To(() => _title.alpha, a => _title.alpha = a, 0.25f, 0.25f)
-                .SetLoops(8, LoopType.Yoyo)
-                .SetEase(Ease.InOutSine)
-                .SetLink(_root);
+            if (PlayerMessages.Blink(MessageId.OverloadWarning))
+                _flash = TextBlink.Start(_title);
         }
 
         public void SetSecondsLeft(float seconds)

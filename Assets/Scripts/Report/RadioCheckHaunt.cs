@@ -4,6 +4,7 @@ using GameLogic.Data;
 using GameLogic.Flow;
 using GameLogic.Night;
 using GameLogic.SpawnAndTime;
+using UI;
 using UnityEngine;
 using Whisper;
 
@@ -181,24 +182,19 @@ namespace Report
             if (showDebugInfo)
                 Debug.Log($"RadioCheckHaunt: variant={variant} calledId={calledId} answered={matched} passed={passed}.", this);
 
-            string headline, detail;
+            MessageId headlineId, detailId;
             if (passed)
             {
-                headline = decoy ? "GOOD CALL" : "COPY THAT";
-                detail = decoy ? "That wasn't HQ." : "HQ is satisfied.";
-            }
-            else if (decoy)
-            {
-                headline = variant == Variant.Mimic ? "IT HEARD YOU" : "WRONG SIGN-IN";
-                detail = "Another anomaly got in.";
+                headlineId = decoy ? MessageId.RadioPassDecoy : MessageId.RadioPass;
+                detailId = decoy ? MessageId.RadioDetailPassDecoy : MessageId.RadioDetailPass;
             }
             else
             {
-                headline = "NO RESPONSE";
-                detail = "Another anomaly got in.";
+                headlineId = !decoy ? MessageId.RadioFailMiss : variant == Variant.Mimic ? MessageId.RadioFailMimic : MessageId.RadioFailWrongId;
+                detailId = MessageId.RadioDetailFail;
             }
 
-            EndEncounter(passed, decoy, headline, detail);
+            EndEncounter(passed, decoy, PlayerMessages.Text(headlineId), PlayerMessages.Text(detailId), PlayerMessages.Blink(headlineId));
         }
 
         private CallScript PickScript(Variant variant)
@@ -259,7 +255,7 @@ namespace Report
             return wrongIds[Random.Range(0, wrongIds.Length)];
         }
 
-        private void EndEncounter(bool passed = false, bool decoy = false, string headline = null, string detail = null, bool silent = false)
+        private void EndEncounter(bool passed = false, bool decoy = false, string headline = null, string detail = null, bool blink = false, bool silent = false)
         {
             IsActive = false;
 
@@ -272,7 +268,7 @@ namespace Report
             if (_hud != null)
             {
                 // Linger so the player can actually read whether the check passed.
-                if (!silent) _hud.ShowOutcome(passed, headline ?? (passed ? "COPY THAT" : "NO RESPONSE"), detail ?? "");
+                if (!silent) _hud.ShowOutcome(passed, headline ?? (passed ? "COPY THAT" : "NO RESPONSE"), detail ?? "", blink);
                 _hud.Destroy(silent ? 0f : outcomeDisplaySeconds);
                 _hud = null;
             }

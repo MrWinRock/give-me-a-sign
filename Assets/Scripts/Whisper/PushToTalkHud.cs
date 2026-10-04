@@ -19,6 +19,7 @@ namespace Whisper
         private readonly TextMeshProUGUI _hint;
         private Tween _pulse;
         private Tween _statusFade;
+        private Tween _hintBlink;
 
         public static PushToTalkHud Create() => new PushToTalkHud();
 
@@ -72,9 +73,20 @@ namespace Whisper
             SetTalking(false);
         }
 
-        public void SetHint(string text)
+        // The stealth countdown re-sends its text every second - only restart the flash when the blink state changes.
+        public void SetHint(string text, bool blink = false)
         {
-            if (_hint != null) _hint.text = text ?? "";
+            if (_hint == null) return;
+
+            _hint.text = text ?? "";
+
+            bool shouldBlink = blink && !string.IsNullOrEmpty(text);
+            if (shouldBlink == (_hintBlink != null)) return;
+
+            _hintBlink?.Kill();
+            _hintBlink = null;
+            _hint.alpha = 1f;
+            if (shouldBlink) _hintBlink = TextBlink.Start(_hint);
         }
 
         public void SetTalking(bool talking, string suffix = null)
@@ -98,7 +110,7 @@ namespace Whisper
             }
         }
 
-        public void ShowStatus(string text, Color color)
+        public void ShowStatus(string text, Color color, bool blink = false)
         {
             if (_status == null) return;
 
@@ -106,15 +118,29 @@ namespace Whisper
             _status.text = text;
             _status.color = color;
 
+            if (blink)
+            {
+                // Flash for ~2.5s, then fade out like a normal message.
+                var seq = DOTween.Sequence().SetUpdate(true).SetLink(_status.gameObject);
+                seq.Append(DOTween.To(() => _status.alpha, a => _status.alpha = a, 0.15f, TextBlink.DefaultPeriod)
+                    .SetEase(Ease.InOutSine).SetLoops(8, LoopType.Yoyo));
+                seq.Append(DOTween.To(() => _status.alpha, a => _status.alpha = a, 0f, 0.5f));
+                _statusFade = seq;
+                return;
+            }
+
             _statusFade = DOTween.To(() => _status.color.a, a => _status.color = new Color(color.r, color.g, color.b, a), 0f, 0.8f)
                 .SetDelay(1.5f)
-                .SetUpdate(true);
+                .SetUpdate(true)
+                .SetLink(_status.gameObject);
         }
 
         public void Destroy()
         {
             _pulse?.Kill();
             _pulse = null;
+            _hintBlink?.Kill();
+            _hintBlink = null;
             _statusFade?.Kill();
             _statusFade = null;
             if (_root != null) Object.Destroy(_root);

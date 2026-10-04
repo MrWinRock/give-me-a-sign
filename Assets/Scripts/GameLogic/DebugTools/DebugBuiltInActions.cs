@@ -47,7 +47,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "demon", title = "Demon needs a shout",
                 steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: nothing happens (no text - watch the slider's red zone). Shout it: COPY THAT and it leaves." },
             new QaItem { id = "stealth", title = "Hooded Figure stealth mic",
-                steps = "Spawn: Hooded Figure. Mic opens by itself (open click), HUD: MIC LIVE - WHISPER ONLY n. Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper 'figure in <room>' = it leaves via report; (c) speak/shout = full-screen jumpscare then Result (night lost). V press during it only clicks." },
+                steps = "Spawn: Hooded Figure. NOTHING happens until you move the mouse over it (pan to its room first). Then the mic opens by itself (open click), HUD: MIC LIVE - WHISPER ONLY n (blinks), slider quiet zone lights up. Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper 'figure in <room>' = it leaves via report; (c) speak/shout = full-screen jumpscare then Result (night lost). V press during it only clicks." },
             new QaItem { id = "radio", title = "Radio Check pass / fail",
                 steps = "Radio Check > Normal. Say exactly what the card says ('SEC-04 copy'): COPY THAT shown ~2.5s. Only noise, only 'copy', or the wrong call sign must NOT pass. Run again and stay silent: NO RESPONSE and a penalty anomaly appears in the scene." },
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
