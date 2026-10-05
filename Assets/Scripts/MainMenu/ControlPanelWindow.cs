@@ -40,6 +40,8 @@ namespace MainMenu
         [SerializeField] private Slider micGainSlider;
         [SerializeField] private Toggle subtitlesToggle;
         [SerializeField] private Toggle reduceFlashingToggle;
+        [Tooltip("Lets a camera glitch show the player's own desktop wallpaper (read locally, never saved or sent).")]
+        [SerializeField] private Toggle mirrorWallpaperToggle;
 
         [Header("Display Tab")]
         [SerializeField] private TMP_Dropdown resolutionDropdown;
@@ -63,7 +65,7 @@ namespace MainMenu
         private struct Snapshot
         {
             public float master, ambience, micGain;
-            public bool subtitles, reduceFlashing, fullscreen;
+            public bool subtitles, reduceFlashing, mirrorWallpaper, fullscreen;
             public int resWidth, resHeight;
             public string pttKey, micDevice;
         }
@@ -192,6 +194,7 @@ namespace MainMenu
                 micGain = MicGain,
                 subtitles = SubtitlesEnabled,
                 reduceFlashing = ReduceFlashingEffects,
+                mirrorWallpaper = Report.PlayerWallpaper.Enabled,
                 fullscreen = PlayerPrefs.GetInt(FullscreenKey, Screen.fullScreen ? 1 : 0) == 1,
                 resWidth = PlayerPrefs.GetInt(ResWidthKey, Screen.width),
                 resHeight = PlayerPrefs.GetInt(ResHeightKey, Screen.height),
@@ -212,6 +215,7 @@ namespace MainMenu
             if (micGainSlider != null) micGainSlider.SetValueWithoutNotify(snap.micGain);
             if (subtitlesToggle != null) subtitlesToggle.SetIsOnWithoutNotify(snap.subtitles);
             if (reduceFlashingToggle != null) reduceFlashingToggle.SetIsOnWithoutNotify(snap.reduceFlashing);
+            if (mirrorWallpaperToggle != null) mirrorWallpaperToggle.SetIsOnWithoutNotify(snap.mirrorWallpaper);
             if (fullscreenToggle != null) fullscreenToggle.SetIsOnWithoutNotify(snap.fullscreen);
 
             if (resolutionDropdown != null)
@@ -273,6 +277,7 @@ namespace MainMenu
                 micGain = micGainSlider != null ? micGainSlider.value : _openSnapshot.micGain,
                 subtitles = subtitlesToggle != null ? subtitlesToggle.isOn : _openSnapshot.subtitles,
                 reduceFlashing = reduceFlashingToggle != null ? reduceFlashingToggle.isOn : _openSnapshot.reduceFlashing,
+                mirrorWallpaper = mirrorWallpaperToggle != null ? mirrorWallpaperToggle.isOn : _openSnapshot.mirrorWallpaper,
                 fullscreen = fullscreenToggle != null ? fullscreenToggle.isOn : _openSnapshot.fullscreen,
                 resWidth = _openSnapshot.resWidth,
                 resHeight = _openSnapshot.resHeight,
@@ -309,6 +314,7 @@ namespace MainMenu
             PlayerPrefs.SetFloat(MicGainKey, snap.micGain);
             PlayerPrefs.SetInt(SubtitlesKey, snap.subtitles ? 1 : 0);
             PlayerPrefs.SetInt(ReduceFlashingKey, snap.reduceFlashing ? 1 : 0);
+            PlayerPrefs.SetInt(Report.PlayerWallpaper.PrefKey, snap.mirrorWallpaper ? 1 : 0);
             PlayerPrefs.SetInt(FullscreenKey, snap.fullscreen ? 1 : 0);
             PlayerPrefs.SetInt(ResWidthKey, snap.resWidth);
             PlayerPrefs.SetInt(ResHeightKey, snap.resHeight);

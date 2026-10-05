@@ -1,6 +1,7 @@
 using GameLogic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Report
 {
@@ -37,6 +38,8 @@ namespace Report
         [SerializeField] private TextMeshProUGUI labelText;
         [Tooltip("Full-screen black cover shown by the Blackout glitch. Keep it inactive and BEHIND the label.")]
         [SerializeField] private GameObject blackout;
+        [Tooltip("Full-screen picture shown by the Mirror glitch (the player's wallpaper). Keep it inactive and BEHIND the label.")]
+        [SerializeField] private RawImage mirrorImage;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
@@ -60,6 +63,7 @@ namespace Report
             _instance = this;
 
             if (blackout != null) blackout.SetActive(false);
+            if (mirrorImage != null) mirrorImage.gameObject.SetActive(false);
         }
 
         void Start()
@@ -107,6 +111,25 @@ namespace Report
         // The label stops following the camera: it keeps naming the room the player just left.
         public void FreezeLabel() => _labelFrozen = true;
         public void UnfreezeLabel() => _labelFrozen = false;
+
+        // Shows a texture full-screen (cropped to fill, never stretched); null hides it again.
+        public void SetMirrorImage(Texture texture)
+        {
+            if (mirrorImage == null) return;
+
+            mirrorImage.gameObject.SetActive(texture != null);
+            mirrorImage.texture = texture;
+            if (texture == null) return;
+
+            var rect = mirrorImage.rectTransform.rect;
+            float screenAspect = rect.height > 0f ? rect.width / rect.height : 16f / 9f;
+            float textureAspect = (float)texture.width / texture.height;
+
+            // Crop the longer side so the picture covers the screen.
+            mirrorImage.uvRect = textureAspect > screenAspect
+                ? new Rect((1f - screenAspect / textureAspect) * 0.5f, 0f, screenAspect / textureAspect, 1f)
+                : new Rect(0f, (1f - textureAspect / screenAspect) * 0.5f, 1f, textureAspect / screenAspect);
+        }
 
         public void SetBlackout(bool on)
         {

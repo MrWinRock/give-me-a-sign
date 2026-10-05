@@ -31,11 +31,15 @@ namespace Report
         };
         [SerializeField] private string mirrorLabel = "CAM 00 — SECURITY OFFICE";
         [SerializeField] private string mirrorHintText = "...someone is sitting there.";
+        [Tooltip("Mirror shows the player's own Windows wallpaper behind the label. The player can still turn it off in Control Panel; off here removes the feature entirely.")]
+        [SerializeField] private bool useWallpaper = true;
 
         [Header("Debug")]
         [SerializeField] private bool verboseLogging;
 
         private readonly Dictionary<CameraGlitchType, Coroutine> _running = new Dictionary<CameraGlitchType, Coroutine>();
+
+        private Texture2D _mirrorTexture;
 
         public bool IsGlitchActive => _running.Count > 0;
 
@@ -90,6 +94,8 @@ namespace Report
                 hud.ClearLabelOverride();
                 hud.SetBlackout(false);
             }
+
+            ReleaseMirror(hud);
         }
 
         void OnDisable() => CancelAllGlitches();
@@ -135,13 +141,29 @@ namespace Report
             _running.Remove(CameraGlitchType.GhostRoom);
         }
 
-        // Mirror - the feed claims to be looking at the security office itself, i.e. the player.
+        // Mirror - the feed claims to be looking at the security office itself, i.e. the player. When the player
+        // allows it, the "feed" is their own desktop wallpaper (read locally, kept only while this runs).
         private IEnumerator MirrorRoutine(CameraFeedHud hud, float duration)
         {
+            if (useWallpaper && PlayerWallpaper.Enabled)
+            {
+                _mirrorTexture = PlayerWallpaper.TryLoad();
+                hud.SetMirrorImage(_mirrorTexture);
+            }
+
             hud.SetLabelOverride($"{mirrorLabel}\n{mirrorHintText}");
             yield return new WaitForSecondsRealtime(duration);
+
+            ReleaseMirror(hud);
             hud.ClearLabelOverride();
             _running.Remove(CameraGlitchType.Mirror);
+        }
+
+        private void ReleaseMirror(CameraFeedHud hud)
+        {
+            if (hud != null) hud.SetMirrorImage(null);
+            if (_mirrorTexture != null) Destroy(_mirrorTexture);
+            _mirrorTexture = null;
         }
 
         private static string PickRandom(List<string> pool)
