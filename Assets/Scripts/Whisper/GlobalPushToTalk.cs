@@ -36,7 +36,12 @@ namespace Whisper
 
         private float _lastSpeechAt;
 
-        private PushToTalkHud _hud;
+        [Tooltip("The PushToTalkHud prefab in the gameplay Canvas. Auto-found if left empty; without one V still works, just with no on-screen indicator.")]
+        [SerializeField] private PushToTalkHud hud;
+
+        // Unity-null aware, so "Hud?.X()" is safe even if the HUD was destroyed with its scene.
+        private PushToTalkHud Hud => hud != null ? hud : null;
+
         private bool _talking;
         private bool _forcedOpen;
         private float _fileAt = -1f;
@@ -52,7 +57,9 @@ namespace Whisper
         void OnEnable()
         {
             Instance = this;
-            _hud = PushToTalkHud.Create();
+            if (hud == null) hud = FindFirstObjectByType<PushToTalkHud>(FindObjectsInactive.Include);
+            if (hud == null)
+                Debug.LogWarning("GlobalPushToTalk: no PushToTalkHud in the scene - drag Assets/Prefabs/Gameplay/PushToTalkHud.prefab into the gameplay Canvas.", this);
             WhisperMicInput.OnSpeechChunk += HandleSpeechChunk;
         }
 
@@ -60,8 +67,7 @@ namespace Whisper
         {
             WhisperMicInput.OnSpeechChunk -= HandleSpeechChunk;
             StopTalking(playClick: false);
-            _hud?.Destroy();
-            _hud = null;
+            Hud?.SetHint(null);
             if (Instance == this) Instance = null;
         }
 
@@ -94,7 +100,7 @@ namespace Whisper
             else if (!_talking && IsKeyDown() && !IsBlocked())
             {
                 if (mic.IsModelLoading)
-                    _hud?.ShowStatus(PlayerMessages.Text(MessageId.ModelLoading), new Color(0.8f, 0.8f, 0.8f), PlayerMessages.Blink(MessageId.ModelLoading));
+                    Hud?.ShowStatus(PlayerMessages.Text(MessageId.ModelLoading), new Color(0.8f, 0.8f, 0.8f), PlayerMessages.Blink(MessageId.ModelLoading));
                 else
                     StartTalking();
             }
@@ -103,7 +109,7 @@ namespace Whisper
                 FileTransmission();
         }
 
-        public void ShowHint(string text, bool blink = false) => _hud?.SetHint(text, blink);
+        public void ShowHint(string text, bool blink = false) => Hud?.SetHint(text, blink);
 
         // The game holds the mic live (V can't close it). Speech is still filed as reports, one per pause.
         public void SetForcedOpen(bool forced)
@@ -162,7 +168,7 @@ namespace Whisper
             var audio = AudioManager.Instance;
             audio?.Play(OpenCloseSound);
             audio?.PlayLoop(HoldSound);
-            _hud?.SetTalking(true);
+            Hud?.SetTalking(true);
         }
 
         private void StopTalking(bool playClick)
@@ -175,7 +181,7 @@ namespace Whisper
             var audio = AudioManager.Instance;
             audio?.StopLoop(HoldSound);
             if (playClick) audio?.Play(OpenCloseSound);
-            _hud?.SetTalking(false);
+            Hud?.SetTalking(false);
 
             // Whisper's final segment lands shortly after release, so file after a grace period.
             if (playClick) _fileAt = Time.unscaledTime + finalizeGraceSeconds;
@@ -201,23 +207,23 @@ namespace Whisper
             switch (outcome)
             {
                 case IncidentReportManager.RadioReportOutcome.NotAReport:
-                    _hud?.ShowStatus(heard, new Color(1f, 1f, 1f, 0.8f));
+                    Hud?.ShowStatus(heard, new Color(1f, 1f, 1f, 0.8f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
-                    _hud?.ShowStatus(PlayerMessages.Text(MessageId.ReportConfirmed), new Color(0.4f, 0.9f, 0.4f), PlayerMessages.Blink(MessageId.ReportConfirmed));
+                    Hud?.ShowStatus(PlayerMessages.Text(MessageId.ReportConfirmed), new Color(0.4f, 0.9f, 0.4f), PlayerMessages.Blink(MessageId.ReportConfirmed));
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedRoom:
-                    _hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedRoom)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedRoom));
+                    Hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedRoom)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedRoom));
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedWhat:
-                    _hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedWhat)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedWhat));
+                    Hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedWhat)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedWhat));
                     break;
                 // Wrong volume for the threat: no words - the volume slider is how the player learns it.
                 case IncidentReportManager.RadioReportOutcome.TooLoud:
                 case IncidentReportManager.RadioReportOutcome.TooQuiet:
                     break;
                 case IncidentReportManager.RadioReportOutcome.Negative:
-                    _hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNegative)}  {heard}", new Color(0.95f, 0.6f, 0.2f), PlayerMessages.Blink(MessageId.ReportNegative));
+                    Hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNegative)}  {heard}", new Color(0.95f, 0.6f, 0.2f), PlayerMessages.Blink(MessageId.ReportNegative));
                     break;
             }
         }
