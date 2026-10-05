@@ -53,7 +53,7 @@ namespace Report
         {
             HauntDirector.Instance?.Register(this);
 
-            // Touch CameraFeedHud.Instance eagerly so the watermark/timestamp is already running
+            // Touch CameraFeedHud.Instance eagerly so the camera label is already running
             // from the start of the night - if it only spawned lazily on the first glitch, the
             // player would have no "known-good" baseline to notice a frozen clock against.
             _ = CameraFeedHud.Instance;

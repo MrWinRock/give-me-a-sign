@@ -15,7 +15,7 @@ namespace Report
     }
 
     /// <summary>
-    /// "Camera Betrayal" executor (HL-5) - the single camera feed's own watermark/timestamp lies
+    /// "Camera Betrayal" executor (HL-5) - the single camera feed's own camera label lies
     /// for a beat, then always reverts. Same pure-executor split as FormGlitchController: this
     /// class only knows HOW to run each variant; <see cref="CameraBetrayalHaunt"/> decides WHEN
     /// and WHICH.
@@ -92,7 +92,7 @@ namespace Report
             var hud = CameraFeedHud.ExistingInstance;
             if (hud != null)
             {
-                hud.UnfreezeTimestamp();
+                hud.UnfreezeLabel();
                 hud.ClearLabelOverride();
                 hud.SetBlackout(false);
             }
@@ -103,25 +103,21 @@ namespace Report
         private static float ResolveDuration(Vector2 range, float overrideDuration) =>
             overrideDuration > 0f ? overrideDuration : Random.Range(range.x, range.y);
 
-        // Loop - the feed is quietly replaying old footage. Nothing visibly changes except the
-        // corner timestamp, which stops advancing - the one tell the roadmap calls out by name
-        // ("timestamp มุมจอไม่เดิน"). Camera navigation still works normally; the lie is passive.
+        // Loop - the feed is quietly replaying old footage. The only tell: the corner label stops
+        // following the camera, so it keeps naming the room the player just left.
         private IEnumerator LoopRoutine(CameraFeedHud hud, float overrideDuration)
         {
-            hud.FreezeTimestamp();
+            hud.FreezeLabel();
             yield return new WaitForSecondsRealtime(ResolveDuration(loopDurationRange, overrideDuration));
-            hud.UnfreezeTimestamp();
+            hud.UnfreezeLabel();
             _running.Remove(CameraGlitchType.Loop);
         }
 
-        // Frozen - same stuck timestamp as Loop, but announced outright via the label, for a more
-        // overt "something is wrong" beat than Loop's quiet version.
+        // Frozen - announced outright via the label, a more overt "something is wrong" beat than Loop's quiet version.
         private IEnumerator FrozenRoutine(CameraFeedHud hud, float overrideDuration)
         {
-            hud.FreezeTimestamp();
             hud.SetLabelOverride("● REC — SIGNAL FROZEN");
             yield return new WaitForSecondsRealtime(ResolveDuration(frozenDurationRange, overrideDuration));
-            hud.UnfreezeTimestamp();
             hud.ClearLabelOverride();
             _running.Remove(CameraGlitchType.Frozen);
         }

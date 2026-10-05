@@ -5,9 +5,9 @@ using UnityEngine;
 namespace Report
 {
     /// <summary>
-    /// Always-on camera watermark: "CAM 0X — ROOM NAME" plus a running timestamp (the CameraFeedHud prefab in the
-    /// gameplay Canvas). Besides security-camera flavour it is the "tell" Camera Betrayal lies through - a stuck
-    /// timestamp or a wrong label only reads as wrong if it has been running correctly all night.
+    /// Always-on camera label: "CAM 0X — ROOM NAME" (the CameraFeedHud prefab in the gameplay Canvas). Besides
+    /// security-camera flavour it is the "tell" Camera Betrayal lies through - a stuck or wrong label only reads
+    /// as wrong if it has been tracking the room correctly all night.
     /// </summary>
     public class CameraFeedHud : MonoBehaviour
     {
@@ -35,8 +35,7 @@ namespace Report
 
         [Header("Refs (set in the prefab)")]
         [SerializeField] private TextMeshProUGUI labelText;
-        [SerializeField] private TextMeshProUGUI timestampText;
-        [Tooltip("Full-screen black cover shown by the Blackout glitch. Keep it inactive and BEHIND the texts.")]
+        [Tooltip("Full-screen black cover shown by the Blackout glitch. Keep it inactive and BEHIND the label.")]
         [SerializeField] private GameObject blackout;
 
         [Header("Debug")]
@@ -46,12 +45,9 @@ namespace Report
         private int _camIndex = 1;
 
         private string _labelOverride;
-        private bool _timestampFrozen;
-        private float _frozenElapsed;
-        private float _elapsed;
+        private bool _labelFrozen;
 
-        // What the labels currently show, so Update() only rebuilds TMP text when the value changes.
-        private int _lastDisplayedSecond = -1;
+        // What the label currently shows, so Update() only rebuilds TMP text when the value changes.
         private string _lastDisplayedLabel;
 
         void Awake()
@@ -76,35 +72,11 @@ namespace Report
             if (_instance == this) _instance = null;
         }
 
-        void Update()
-        {
-            // Unscaled so it ignores timeScale quirks, but it must still stand still while the pause menu is open.
-            if (!_timestampFrozen && Time.timeScale > 0f)
-                _elapsed += Time.unscaledDeltaTime;
-
-            UpdateTimestampText();
-            UpdateLabelText();
-        }
-
-        private void UpdateTimestampText()
-        {
-            if (timestampText == null) return;
-
-            float shown = _timestampFrozen ? _frozenElapsed : _elapsed;
-            int totalSeconds = Mathf.FloorToInt(shown);
-
-            if (totalSeconds == _lastDisplayedSecond) return;
-            _lastDisplayedSecond = totalSeconds;
-
-            int h = totalSeconds / 3600;
-            int m = (totalSeconds % 3600) / 60;
-            int s = totalSeconds % 60;
-            timestampText.text = $"{h:00}:{m:00}:{s:00}";
-        }
+        void Update() => UpdateLabelText();
 
         private void UpdateLabelText()
         {
-            if (labelText == null) return;
+            if (labelText == null || _labelFrozen) return;
 
             string label;
             if (!string.IsNullOrEmpty(_labelOverride))
@@ -132,20 +104,14 @@ namespace Report
         public void SetLabelOverride(string text) => _labelOverride = text;
         public void ClearLabelOverride() => _labelOverride = null;
 
-        public void FreezeTimestamp()
-        {
-            if (_timestampFrozen) return;
-            _timestampFrozen = true;
-            _frozenElapsed = _elapsed;
-        }
-
-        public void UnfreezeTimestamp() => _timestampFrozen = false;
+        // The label stops following the camera: it keeps naming the room the player just left.
+        public void FreezeLabel() => _labelFrozen = true;
+        public void UnfreezeLabel() => _labelFrozen = false;
 
         public void SetBlackout(bool on)
         {
             if (blackout != null) blackout.SetActive(on);
             if (labelText != null) labelText.gameObject.SetActive(!on);
-            if (timestampText != null) timestampText.gameObject.SetActive(!on);
         }
     }
 }
