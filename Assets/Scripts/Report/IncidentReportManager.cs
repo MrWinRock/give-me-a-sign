@@ -114,7 +114,8 @@ namespace Report
 
         // Walkie-talkie path (hold V): no form. Same observation matching and bookkeeping as SubmitReport.
         // A volume mismatch is "static on the line" - the report is not filed and nothing is penalised.
-        public RadioReportOutcome FileRadioReport(string spoken, VoiceLevel level = VoiceLevel.Normal)
+        // ignoreVolume: no microphone, so nobody can be asked to whisper or shout.
+        public RadioReportOutcome FileRadioReport(string spoken, VoiceLevel level = VoiceLevel.Normal, bool ignoreVolume = false)
         {
             if (IsReportOpen || string.IsNullOrWhiteSpace(spoken)) return RadioReportOutcome.NotAReport;
 
@@ -166,12 +167,12 @@ namespace Report
                 var required = anomaly.Definition != null ? anomaly.Definition.voiceResponse : VoiceResponse.None;
                 if (required == VoiceResponse.Silence) required = VoiceResponse.Whisper; // stealth: must be whispered
 
-                if (required == VoiceResponse.Whisper && level != VoiceLevel.Whisper)
+                if (!ignoreVolume && required == VoiceResponse.Whisper && level != VoiceLevel.Whisper)
                 {
                     if (volumeMiss == RadioReportOutcome.NotAReport) volumeMiss = RadioReportOutcome.TooLoud;
                     continue;
                 }
-                if (required == VoiceResponse.Shout && level != VoiceLevel.Shout)
+                if (!ignoreVolume && required == VoiceResponse.Shout && level != VoiceLevel.Shout)
                 {
                     if (volumeMiss == RadioReportOutcome.NotAReport) volumeMiss = RadioReportOutcome.TooQuiet;
                     continue;

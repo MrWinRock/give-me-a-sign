@@ -30,6 +30,7 @@ namespace GameLogic.DebugTools
         private const string HauntGroup = "Fire haunt now  (ignores tutorial night)";
         private const string RadioGroup = "Radio Check  (force a call type)";
         private const string CameraGroup = "Camera feed  (Camera Betrayal glitches)";
+        private const string NoiseGroup = "Noise meter  (CCTV OSD)";
         private const string VoiceGroup = "Voice / Noise / Field Manual";
 
         private struct QaItem
@@ -53,8 +54,8 @@ namespace GameLogic.DebugTools
                 steps = "Radio Check > Normal. Say exactly what the card says ('SEC-04 copy'): COPY THAT shown ~2.5s. Only noise, only 'copy', or the wrong call sign must NOT pass. Run again and stay silent: NO RESPONSE and a penalty anomaly appears in the scene." },
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
                 steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears. Same for Wrong ID (saying 'copy' = WRONG SIGN-IN + penalty anomaly, silence = GOOD CALL). OwnVoice: your recorded voice plays - speaking over it must not count; answer after it ends." },
-            new QaItem { id = "noise", title = "Volume slider (bottom-left)",
-                steps = "Hold V and speak: the bar slides right as you get louder; coloured zones = quiet / normal / loud, no words. Spawn Hooded Figure: quiet zone lights up - stay in it (loud = jumpscare). Reveal the Demon: loud zone lights up - shout until you reach it. Mic closed: slider is faded." },
+            new QaItem { id = "noise", title = "Noise meter (bottom-centre OSD)",
+                steps = "Hold V and speak: the 20 segments light left to right, the header shows LOW / NORMAL / LOUD, the highest recent segment stays lit briefly. Mic closed: dim STANDBY. Spawn Hooded Figure: LOW zone is tinted - stay in it (loud = jumpscare). Reveal the Demon: LOUD zone tinted - shout. Say the right words at the wrong volume: the header flashes TOO LOUD / TOO QUIET and nothing is penalised. Noise meter > 'Feed the meter' and 'Toggle the tuning overlay' help tune without speaking." },
             new QaItem { id = "manual", title = "Field Manual locks + entry points",
                 steps = "Field Manual > Lock all pages, press TAB: every page '???'. Spawn an anomaly: its page unlocks (Demon only when it reveals). TAB opens/closes it, but not while paused, in a cutscene, or while the Demon is out. The MainMenu icon 'Field Manual.exe' opens it too." },
             new QaItem { id = "matcher", title = "Short words don't match everything",
@@ -73,6 +74,7 @@ namespace GameLogic.DebugTools
             AddHaunts(list, info);
             AddRadio(list, info);
             AddCamera(list, info);
+            AddNoise(list, info);
             AddVoice(list, typedText, info);
             return list;
         }
@@ -300,6 +302,57 @@ namespace GameLogic.DebugTools
 
                     controller.CancelAllGlitches();
                     info("Camera glitches cleared.");
+                },
+            });
+        }
+
+        // ── Noise Meter ──────────────────────────────────────────────────────────────────
+
+        private static void AddNoise(List<DebugEntry> list, Action<string> info)
+        {
+            foreach (var level in new[] { VoiceLevel.Whisper, VoiceLevel.Normal, VoiceLevel.Shout })
+            {
+                var captured = level;
+                list.Add(new DebugEntry
+                {
+                    group = NoiseGroup,
+                    label = $"Feed the meter: {captured} (5s)",
+                    run = () =>
+                    {
+                        var meter = NoiseMeter.Instance;
+                        if (meter == null) { info("No NoiseMeter in this scene (open GamePlay)."); return; }
+
+                        meter.DebugFeed(captured, 5f);
+                        info($"Meter held at a {captured} level for 5s (as if V were held).");
+                    },
+                });
+            }
+
+            list.Add(new DebugEntry
+            {
+                group = NoiseGroup,
+                label = "Flash TOO LOUD",
+                run = () => { NoiseMeter.Instance?.NotifyVolumeMiss(true); info("TOO LOUD feedback sent to the meter."); },
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = NoiseGroup,
+                label = "Flash TOO QUIET",
+                run = () => { NoiseMeter.Instance?.NotifyVolumeMiss(false); info("TOO QUIET feedback sent to the meter."); },
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = NoiseGroup,
+                label = "Toggle the tuning overlay (value, zone, last utterance)",
+                run = () =>
+                {
+                    var hud = UnityEngine.Object.FindFirstObjectByType<NoiseMeterHud>(FindObjectsInactive.Include);
+                    if (hud == null) { info("No NoiseMeterHud in this scene."); return; }
+
+                    hud.ShowDebugOverlay = !hud.ShowDebugOverlay;
+                    info($"Noise meter overlay {(hud.ShowDebugOverlay ? "ON" : "OFF")}.");
                 },
             });
         }

@@ -36,6 +36,9 @@ namespace Whisper
 
         private float _lastSpeechAt;
 
+        [Tooltip("With no microphone, reports are not judged on volume (so a Demon or Hooded Figure can still be reported by typing).")]
+        [SerializeField] private bool typedInputBypassesNoiseRequirement = true;
+
         [Tooltip("The PushToTalkHud prefab in the gameplay Canvas. Auto-found if left empty; without one V still works, just with no on-screen indicator.")]
         [SerializeField] private PushToTalkHud hud;
 
@@ -199,7 +202,11 @@ namespace Whisper
             var reports = IncidentReportManager.Instance;
             if (reports == null) return;
 
-            var outcome = reports.FileRadioReport(spoken, level);
+            // No microphone at all (typed fallback): volume cannot be judged, so it must never lock the player out.
+            var meter = NoiseMeter.Instance;
+            bool ignoreVolume = typedInputBypassesNoiseRequirement && meter != null && !meter.HasMicrophone;
+
+            var outcome = reports.FileRadioReport(spoken, level, ignoreVolume);
             Debug.Log($"[Walkie] heard '{spoken}' ({level}) -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
 
             string heard = string.IsNullOrWhiteSpace(spoken) ? PlayerMessages.Text(MessageId.NothingHeard) : $"heard: \"{Trim(spoken, 55)}\"";
@@ -218,9 +225,12 @@ namespace Whisper
                 case IncidentReportManager.RadioReportOutcome.NeedWhat:
                     Hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedWhat)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedWhat));
                     break;
-                // Wrong volume for the threat: no words - the volume slider is how the player learns it.
+                // Right words, wrong volume: nothing is filed or penalised; the Noise Meter flashes TOO LOUD / TOO QUIET.
                 case IncidentReportManager.RadioReportOutcome.TooLoud:
+                    meter?.NotifyVolumeMiss(tooLoud: true);
+                    break;
                 case IncidentReportManager.RadioReportOutcome.TooQuiet:
+                    meter?.NotifyVolumeMiss(tooLoud: false);
                     break;
                 case IncidentReportManager.RadioReportOutcome.Negative:
                     Hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNegative)}  {heard}", new Color(0.95f, 0.6f, 0.2f), PlayerMessages.Blink(MessageId.ReportNegative));

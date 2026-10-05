@@ -22,6 +22,8 @@ namespace UI
         RadioDetailPass,
         RadioDetailPassDecoy,
         RadioDetailFail,
+        ReportTooLoud,
+        ReportTooQuiet,
     }
 
     /// <summary>
@@ -117,6 +119,8 @@ namespace UI
             new Message { id = MessageId.RadioDetailPass, text = "HQ is satisfied." },
             new Message { id = MessageId.RadioDetailPassDecoy, text = "That wasn't HQ." },
             new Message { id = MessageId.RadioDetailFail, text = "Another anomaly got in." },
+            new Message { id = MessageId.ReportTooLoud, text = "TOO LOUD", blink = true },
+            new Message { id = MessageId.ReportTooQuiet, text = "TOO QUIET", blink = true },
         };
     }
 }
