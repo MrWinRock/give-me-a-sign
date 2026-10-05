@@ -27,7 +27,7 @@ namespace Report
             public string callLine;
             [Tooltip("The instruction under the card. {id} / {wrong} work here too.")]
             public string hint;
-            [Tooltip("Every entry must be heard for the answer to count. A word or short phrase ('copy', 'all clear'); '{id}' means your call sign (SEC-04, 'sec zero four' ...).")]
+            [Tooltip("Every entry must be heard for the answer to count. A word or short phrase ('copy', 'all clear'); '{id}' means your call sign. EMPTY = any reply counts (good for decoys like 'Who are you?').")]
             public string[] answerAllOf;
         }
 
@@ -214,16 +214,33 @@ namespace Report
         private string Fill(string text, string calledId) =>
             (text ?? "").Replace("{id}", radioId).Replace("{wrong}", calledId);
 
-        // Every configured phrase must be heard. An empty list can never be answered (nothing to say).
+        // Every configured phrase must be heard. An empty list means ANY reply counts - the natural
+        // setup for a decoy like "Who are you?", where answering at all is the mistake.
         private bool Heard(string text)
         {
-            if (_answerAllOf == null || _answerAllOf.Length == 0) return false;
+            if (_answerAllOf == null || _answerAllOf.Length == 0) return SaidAnything(text);
 
             foreach (var phrase in _answerAllOf)
             {
                 if (!RadioPhrases.SaidPhrase(text, phrase, radioId)) return false;
             }
             return true;
+        }
+
+        // A real word, not Whisper's noise tags ("[BLANK_AUDIO]", "(wind)") or a stray letter.
+        private static bool SaidAnything(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+
+            string trimmed = text.Trim();
+            if (trimmed.StartsWith("[") || trimmed.StartsWith("(")) return false;
+
+            int letters = 0;
+            foreach (char c in trimmed)
+            {
+                if (char.IsLetter(c) && ++letters >= 2) return true;
+            }
+            return false;
         }
 
         private Variant PickVariant()
