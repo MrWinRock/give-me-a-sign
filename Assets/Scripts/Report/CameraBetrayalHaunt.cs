@@ -22,7 +22,7 @@ namespace Report
             public bool enabled = true;
             [Tooltip("How likely this effect is picked, relative to the others (not a duration). 0 = never.")]
             [Min(0f)] public float weight = 1f;
-            [Tooltip("How long the effect lasts, in seconds - a random value between the two ends each time.")]
+            [Tooltip("How long the effect lasts, in seconds - a random value between the two ends each time. NOT used by Ghost Room: it lasts until the player changes room.")]
             [GG.MinMaxSlider(0.5f, 15f, true)] public Vector2 durationRange = new Vector2(2f, 4f);
         }
 
@@ -91,24 +91,27 @@ namespace Report
             return _controller.PlayGlitch(type, Mathf.Max(0.1f, duration));
         }
 
-        // Mirror needs the player's wallpaper; without one (not Windows, nothing found, or switched off) it never rolls.
-        private static bool IsEligible(VariantWeight v, bool mirrorOk) =>
-            v != null && v.enabled && (v.type != CameraGlitchType.Mirror || mirrorOk);
+        // Mirror needs the player's wallpaper (not Windows, nothing found or switched off = never rolls); Ghost Room needs 2+ rooms.
+        private bool IsEligible(VariantWeight v)
+        {
+            if (v == null || !v.enabled) return false;
+            if (v.type == CameraGlitchType.Mirror) return _controller.MirrorAvailable;
+            if (v.type == CameraGlitchType.GhostRoom) return _controller.GhostRoomAvailable;
+            return true;
+        }
 
         private VariantWeight PickVariant()
         {
-            bool mirrorOk = _controller.MirrorAvailable;
-
             float total = 0f;
             foreach (var v in variants)
-                if (IsEligible(v, mirrorOk)) total += Mathf.Max(0f, v.weight);
+                if (IsEligible(v)) total += Mathf.Max(0f, v.weight);
 
             if (total <= 0f) return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };
 
             float roll = Random.value * total;
             foreach (var v in variants)
             {
-                if (!IsEligible(v, mirrorOk)) continue;
+                if (!IsEligible(v)) continue;
                 roll -= Mathf.Max(0f, v.weight);
                 if (roll <= 0f) return v;
             }
@@ -116,7 +119,7 @@ namespace Report
             // Floating-point slack only; walk back to the last eligible entry.
             for (int i = variants.Count - 1; i >= 0; i--)
             {
-                if (IsEligible(variants[i], mirrorOk)) return variants[i];
+                if (IsEligible(variants[i])) return variants[i];
             }
 
             return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };

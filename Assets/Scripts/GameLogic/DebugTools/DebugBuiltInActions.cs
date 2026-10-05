@@ -60,7 +60,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "matcher", title = "Short words don't match everything",
                 steps = "Radio Check > Normal. Say just 'a' or 'in' or 'on': must NOT count as an answer. 'SEC-04 copy' (or 'copy') should." },
             new QaItem { id = "camera", title = "Camera Betrayal glitches + Mirror wallpaper",
-                steps = "Camera feed > Glitch: Loop (change room: the top-left label keeps the OLD room), Frozen (label says SIGNAL FROZEN), Blackout (feed dies, label hidden), GhostRoom (fake CAM label), Mirror (black screen with YOUR wallpaper at its own size + 'SECURITY OFFICE' label). 'Which picture would be used?' shows Wallpaper Engine first, else the Windows wallpaper. Toggle the Control Panel switch OFF: Mirror must refuse to start. All of them end by themselves and the HUD returns to normal." },
+                steps = "Camera feed > Glitch: Loop (change room: the top-left label keeps the OLD room), Frozen (label says SIGNAL FROZEN), Blackout (feed dies, label hidden), GhostRoom (arms itself: the NEXT room you move to shows a ghost picture + fake CAM label until you change room again; coming back is normal), Mirror (black screen with YOUR wallpaper at its own size + 'SECURITY OFFICE' label). 'Which picture would be used?' shows Wallpaper Engine first, else the Windows wallpaper. Toggle the Control Panel switch OFF: Mirror must refuse to start. All of them end by themselves and the HUD returns to normal." },
             new QaItem { id = "levels", title = "Mic levels feel right (your mic)",
                 steps = "Hold V and watch the slider: a whisper should stay in the green zone, normal speech reach yellow, a shout reach red. If not, calibrate the mic (Debug > Mic: calibrate) or adjust the Whisper/Shout Band Multipliers on NoiseMeter." },
         };
@@ -253,7 +253,13 @@ namespace GameLogic.DebugTools
                         var haunt = UnityEngine.Object.FindFirstObjectByType<CameraBetrayalHaunt>(FindObjectsInactive.Include);
                         if (haunt == null) { info("No CameraBetrayalHaunt in this scene (open GamePlay)."); return; }
 
-                        if (haunt.DebugTrigger(captured)) { info($"Camera glitch {captured} started (duration from its Duration Range)."); return; }
+                        if (haunt.DebugTrigger(captured))
+                        {
+                            info(captured == CameraGlitchType.GhostRoom
+                                ? "Ghost Room armed: it springs on the NEXT room you move to (use the < > buttons). It ends when you change room again."
+                                : $"Camera glitch {captured} started (duration from its Duration Range).");
+                            return;
+                        }
 
                         info(captured == CameraGlitchType.Mirror
                             ? "Mirror did not start - it needs the player's picture. " + PlayerWallpaper.Describe()

@@ -40,6 +40,8 @@ namespace Report
         [SerializeField] private GameObject blackout;
         [Tooltip("Picture shown by the Mirror glitch (the player's wallpaper), at its own pixel size in the centre. Keep it inactive and BEHIND the label.")]
         [SerializeField] private RawImage mirrorImage;
+        [Tooltip("Full-screen picture that replaces the room view during Ghost Room. Keep it inactive and BEHIND the label.")]
+        [SerializeField] private RawImage ghostRoomImage;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
@@ -66,6 +68,7 @@ namespace Report
 
             if (blackout != null) blackout.SetActive(false);
             if (mirrorImage != null) mirrorImage.gameObject.SetActive(false);
+            if (ghostRoomImage != null) ghostRoomImage.gameObject.SetActive(false);
         }
 
         void Start()
@@ -113,6 +116,24 @@ namespace Report
         // The label stops following the camera: it keeps naming the room the player just left.
         public void FreezeLabel() => _labelFrozen = true;
         public void UnfreezeLabel() => _labelFrozen = false;
+
+        // Replaces the room view with a picture that fills the screen (cropped, never stretched); null hides it again.
+        public void SetGhostRoomImage(Texture texture)
+        {
+            if (ghostRoomImage == null) return;
+
+            ghostRoomImage.gameObject.SetActive(texture != null);
+            ghostRoomImage.texture = texture;
+            if (texture == null) return;
+
+            var rect = ghostRoomImage.rectTransform.rect;
+            float screenAspect = rect.height > 0f ? rect.width / rect.height : 16f / 9f;
+            float textureAspect = (float)texture.width / texture.height;
+
+            ghostRoomImage.uvRect = textureAspect > screenAspect
+                ? new Rect((1f - screenAspect / textureAspect) * 0.5f, 0f, screenAspect / textureAspect, 1f)
+                : new Rect(0f, (1f - textureAspect / screenAspect) * 0.5f, 1f, textureAspect / screenAspect);
+        }
 
         // Shows a texture at its own pixel size, centred - never scaled, cropped or stretched; null hides it again.
         public void SetMirrorImage(Texture texture)
