@@ -47,13 +47,19 @@ namespace GameLogic
             }
         }
 
+        // Held by effects that pin the camera to the current room (Camera Betrayal "Frozen"); counted so overlaps release cleanly.
+        private int _cameraLocks;
+
+        public void LockCamera() => _cameraLocks++;
+        public void UnlockCamera() => _cameraLocks = Mathf.Max(0, _cameraLocks - 1);
+
         public void OnNextClick() => StepRoom(+1);
 
         public void OnPreviousClick() => StepRoom(-1);
 
         private void StepRoom(int direction)
         {
-            if (inputLocked || DemonAnomaly.AnyRevealed) return;
+            if (inputLocked || _cameraLocks > 0 || DemonAnomaly.AnyRevealed) return;
 
             int roomCount = RoomRegistry.Count;
             if (roomCount == 0)

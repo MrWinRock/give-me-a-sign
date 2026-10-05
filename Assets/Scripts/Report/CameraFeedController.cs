@@ -51,6 +51,7 @@ namespace Report
 
         private Texture2D _mirrorTexture;
         private GameManager _gameManager;
+        private GameManager _frozenManager; // set while Frozen holds the camera lock
         private int _lastGhostImage = -1;
 
         public bool IsGlitchActive => _running.Count > 0;
@@ -114,6 +115,7 @@ namespace Report
                     StopCoroutine(routine);
             }
             _running.Clear();
+            ReleaseFrozenLock();
 
             var hud = CameraFeedHud.ExistingInstance;
             if (hud != null)
@@ -139,13 +141,25 @@ namespace Report
             _running.Remove(CameraGlitchType.Loop);
         }
 
-        // Frozen - announced outright via the label, a more overt "something is wrong" beat than Loop's quiet version.
+        // Frozen - the feed sticks: the player cannot switch rooms until the time runs out. Scaled time on purpose,
+        // so pausing the game does not burn the lock.
         private IEnumerator FrozenRoutine(CameraFeedHud hud, float duration)
         {
+            _frozenManager = Manager();
+            if (_frozenManager != null) _frozenManager.LockCamera();
+
             hud.SetLabelOverride("● REC — SIGNAL FROZEN");
-            yield return new WaitForSecondsRealtime(duration);
+            yield return new WaitForSeconds(duration);
+
+            ReleaseFrozenLock();
             hud.ClearLabelOverride();
             _running.Remove(CameraGlitchType.Frozen);
+        }
+
+        private void ReleaseFrozenLock()
+        {
+            if (_frozenManager != null) _frozenManager.UnlockCamera();
+            _frozenManager = null;
         }
 
         // Blackout - the feed just dies for a beat. CameraFeedHud.SetBlackout doubles as a
