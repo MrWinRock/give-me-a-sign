@@ -31,7 +31,7 @@ namespace Report
         };
         [SerializeField] private string mirrorLabel = "CAM 00 — SECURITY OFFICE";
         [SerializeField] private string mirrorHintText = "...someone is sitting there.";
-        [Tooltip("Mirror shows the player's own Windows wallpaper behind the label. The player can still turn it off in Control Panel; off here removes the feature entirely.")]
+        [Tooltip("Mirror shows the player's own desktop picture behind the label (Wallpaper Engine first, else the Windows wallpaper). Off here removes the Mirror glitch entirely. The player can also turn it off in Control Panel.")]
         [SerializeField] private bool useWallpaper = true;
 
         [Header("Debug")]
@@ -43,6 +43,9 @@ namespace Report
 
         public bool IsGlitchActive => _running.Count > 0;
 
+        // Mirror needs the player's picture (Wallpaper Engine, else the Windows wallpaper); without one it never happens.
+        public bool MirrorAvailable => useWallpaper && PlayerWallpaper.CanShow;
+
         public bool PlayGlitch(CameraGlitchType type, float duration)
         {
             if (_running.ContainsKey(type))
@@ -53,6 +56,14 @@ namespace Report
 
             var hud = CameraFeedHud.Instance;
             if (hud == null) return false;
+
+            if (type == CameraGlitchType.Mirror)
+            {
+                if (!MirrorAvailable) return false;
+
+                _mirrorTexture = PlayerWallpaper.TryLoad();
+                if (_mirrorTexture == null) return false;
+            }
 
             IEnumerator routine;
             switch (type)
@@ -141,16 +152,11 @@ namespace Report
             _running.Remove(CameraGlitchType.GhostRoom);
         }
 
-        // Mirror - the feed claims to be looking at the security office itself, i.e. the player. When the player
-        // allows it, the "feed" is their own desktop wallpaper (read locally, kept only while this runs).
+        // Mirror - the feed claims to be looking at the security office itself, i.e. the player: the "feed" is their
+        // own desktop picture (loaded in PlayGlitch, kept only while this runs).
         private IEnumerator MirrorRoutine(CameraFeedHud hud, float duration)
         {
-            if (useWallpaper && PlayerWallpaper.Enabled)
-            {
-                _mirrorTexture = PlayerWallpaper.TryLoad();
-                hud.SetMirrorImage(_mirrorTexture);
-            }
-
+            hud.SetMirrorImage(_mirrorTexture);
             hud.SetLabelOverride($"{mirrorLabel}\n{mirrorHintText}");
             yield return new WaitForSecondsRealtime(duration);
 

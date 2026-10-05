@@ -78,26 +78,32 @@ namespace Report
                 Debug.Log($"CameraBetrayalHaunt: fired {variant.type} for {duration:0.0}s (started={started}).", this);
         }
 
+        // Mirror needs the player's wallpaper; without one (not Windows, nothing found, or switched off) it never rolls.
+        private static bool IsEligible(VariantWeight v, bool mirrorOk) =>
+            v != null && v.enabled && (v.type != CameraGlitchType.Mirror || mirrorOk);
+
         private VariantWeight PickVariant()
         {
+            bool mirrorOk = _controller.MirrorAvailable;
+
             float total = 0f;
             foreach (var v in variants)
-                if (v != null && v.enabled) total += Mathf.Max(0f, v.weight);
+                if (IsEligible(v, mirrorOk)) total += Mathf.Max(0f, v.weight);
 
             if (total <= 0f) return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };
 
             float roll = Random.value * total;
             foreach (var v in variants)
             {
-                if (v == null || !v.enabled) continue;
+                if (!IsEligible(v, mirrorOk)) continue;
                 roll -= Mathf.Max(0f, v.weight);
                 if (roll <= 0f) return v;
             }
 
-            // Floating-point slack only; walk back to the last enabled entry.
+            // Floating-point slack only; walk back to the last eligible entry.
             for (int i = variants.Count - 1; i >= 0; i--)
             {
-                if (variants[i] != null && variants[i].enabled) return variants[i];
+                if (IsEligible(variants[i], mirrorOk)) return variants[i];
             }
 
             return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };
