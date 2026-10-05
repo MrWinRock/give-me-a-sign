@@ -56,6 +56,8 @@ namespace Report
         private GameManager _gameManager;
         private GameManager _frozenManager; // set while Frozen holds the camera lock
         private int _lastGhostImage = -1;
+        private bool _mirrorArmed;          // Mirror is waiting for the player to change room
+        private int _mirrorSpringFrame = -1; // the frame Mirror sprang, so a Ghost Room springing on that same room change yields
 
         public bool IsGlitchActive => _running.Count > 0;
 
@@ -86,7 +88,8 @@ namespace Report
                 case CameraGlitchType.Blackout:  routine = BlackoutRoutine(hud, duration); break;
 
                 case CameraGlitchType.GhostRoom:
-                    if (!GhostRoomAvailable) return false;
+                    // Mirror is the rarer effect, so it wins: no Ghost Room while a Mirror is waiting.
+                    if (!GhostRoomAvailable || _mirrorArmed) return false;
                     routine = RoomEffectRoutine(type, () => ShowGhostRoom(hud), shown => HideGhostRoom(hud, shown));
                     break;
 
@@ -123,6 +126,7 @@ namespace Report
                     StopCoroutine(routine);
             }
             _running.Clear();
+            _mirrorArmed = false;
             ReleaseFrozenLock();
 
             var hud = CameraFeedHud.ExistingInstance;
@@ -188,11 +192,22 @@ namespace Report
             var manager = Manager();
             var startRoom = manager.CurrentRoom;
             float giveUpAt = Time.time + roomEffectArmTimeoutSeconds;
+            if (type == CameraGlitchType.Mirror) _mirrorArmed = true;
 
             while (manager != null && manager.CurrentRoom == startRoom && Time.time <= giveUpAt)
                 yield return null;
 
-            bool shown = manager != null && manager.CurrentRoom != startRoom;
+            bool sprang = manager != null && manager.CurrentRoom != startRoom;
+            if (type == CameraGlitchType.Mirror)
+            {
+                _mirrorArmed = false;
+                if (sprang) _mirrorSpringFrame = Time.frameCount;
+            }
+
+            // Both armed for the same room change: Mirror (the rarer one) plays, Ghost Room steps aside.
+            bool ghostYields = type == CameraGlitchType.GhostRoom && (_mirrorArmed || _mirrorSpringFrame == Time.frameCount);
+
+            bool shown = sprang && !ghostYields;
             if (shown)
             {
                 var room = manager.CurrentRoom;
