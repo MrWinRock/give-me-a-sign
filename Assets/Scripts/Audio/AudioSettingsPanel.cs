@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UI;
 using UnityEngine;
@@ -14,14 +15,23 @@ namespace Audio
         public enum Bus { Master, Music, Sfx }
 
         [System.Serializable]
+        public class Row
+        {
+            public Bus bus;
+            public Slider slider;
+            public TextMeshProUGUI valueText;
+        }
+
+        [System.Serializable]
         public class RowConfig
         {
             public string label = "Master volume";
             public Bus bus = Bus.Master;
         }
 
+        // Only used when Build() generates the rows (the prefab generator); an authored panel just uses its Rows.
         [System.Serializable]
-        public class Config
+        public class BuildConfig
         {
             public RowConfig[] rows =
             {
@@ -29,34 +39,40 @@ namespace Audio
                 new RowConfig { label = "Music", bus = Bus.Music },
                 new RowConfig { label = "Sound effects", bus = Bus.Sfx },
             };
-
-            [Tooltip("Slider range in percent.")]
-            public float min = 0f;
-            public float max = 100f;
-            [Tooltip("Values snap to multiples of this (1 = whole numbers).")]
-            [Min(1f)] public float step = 1f;
-
-            [Header("Row layout")]
             public float labelWidth = 104f;
             public float valueWidth = 38f;
             public float rowHeight = 22f;
             public float rowSpacing = 6f;
             public float thumbWidth = 11f;
             public float thumbHeight = 21f;
-            public string valueFormat = "{0}%";
         }
 
-        private class Row
+        [Tooltip("Slider range in percent.")]
+        [SerializeField] private float min = 0f;
+        [SerializeField] private float max = 100f;
+        [Tooltip("Values snap to multiples of this (1 = whole numbers).")]
+        [Min(1f)] [SerializeField] private float step = 1f;
+        [SerializeField] private string valueFormat = "{0}%";
+        [SerializeField] private List<Row> rows = new List<Row>();
+
+        void Awake()
         {
-            public Bus bus;
-            public Slider slider;
-            public TextMeshProUGUI valueText;
+            foreach (var row in rows)
+            {
+                if (row.slider == null) continue;
+
+                var captured = row;
+                row.slider.minValue = min;
+                row.slider.maxValue = max;
+                row.slider.wholeNumbers = true;
+                row.slider.onValueChanged.AddListener(v => OnSliderChanged(captured, v));
+            }
         }
 
-        private Config _config;
-        private readonly System.Collections.Generic.List<Row> _rows = new System.Collections.Generic.List<Row>();
+        // Every time the host window opens, show what is actually saved.
+        void OnEnable() => Refresh();
 
-        public static AudioSettingsPanel Build(Transform parent, Config config, XPControlStyle style, TMP_FontAsset font)
+        public static AudioSettingsPanel Build(Transform parent, BuildConfig config, XPControlStyle style, TMP_FontAsset font)
         {
             var go = new GameObject("AudioSettingsPanel", typeof(RectTransform), typeof(VerticalLayoutGroup));
             go.transform.SetParent(parent, false);
@@ -70,20 +86,17 @@ namespace Audio
             layout.childForceExpandHeight = false;
 
             var panel = go.AddComponent<AudioSettingsPanel>();
-            panel._config = config;
-
             foreach (var rowConfig in config.rows)
-                panel.AddRow(rowConfig, style, font);
+                panel.rows.Add(CreateRow(go.transform, rowConfig, config, style, font, panel.min, panel.max));
 
-            panel.Refresh();
             return panel;
         }
 
-        private void AddRow(RowConfig rowConfig, XPControlStyle style, TMP_FontAsset font)
+        private static Row CreateRow(Transform parent, RowConfig rowConfig, BuildConfig config, XPControlStyle style, TMP_FontAsset font, float min, float max)
         {
             var rowGo = new GameObject($"Row_{rowConfig.label}", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-            rowGo.transform.SetParent(transform, false);
-            XPControls.SetPreferred(rowGo, height: _config.rowHeight);
+            rowGo.transform.SetParent(parent, false);
+            XPControls.SetPreferred(rowGo, height: config.rowHeight);
 
             var layout = rowGo.GetComponent<HorizontalLayoutGroup>();
             layout.spacing = 8f;
@@ -94,28 +107,27 @@ namespace Audio
             layout.childForceExpandHeight = false;
 
             var label = XPControls.Text(rowGo.transform, "Label", font, rowConfig.label, style.labelSize, style.label, false, TextAlignmentOptions.MidlineLeft);
-            XPControls.SetPreferred(label.gameObject, width: _config.labelWidth);
+            XPControls.SetPreferred(label.gameObject, width: config.labelWidth);
 
-            var slider = XPControls.CreateSlider(rowGo.transform, style, _config.min, _config.max, _config.rowHeight, _config.thumbWidth, _config.thumbHeight);
+            var slider = XPControls.CreateSlider(rowGo.transform, style, min, max, config.rowHeight, config.thumbWidth, config.thumbHeight);
 
-            var value = XPControls.Text(rowGo.transform, "Value", font, "", style.labelSize, style.value, true, TextAlignmentOptions.MidlineRight);
-            XPControls.SetPreferred(value.gameObject, width: _config.valueWidth);
+            var value = XPControls.Text(rowGo.transform, "Value", font, "0%", style.labelSize, style.value, true, TextAlignmentOptions.MidlineRight);
+            XPControls.SetPreferred(value.gameObject, width: config.valueWidth);
 
-            var row = new Row { bus = rowConfig.bus, slider = slider, valueText = value };
-            slider.onValueChanged.AddListener(v => OnSliderChanged(row, v));
-            _rows.Add(row);
+            return new Row { bus = rowConfig.bus, slider = slider, valueText = value };
         }
 
-        // Pull the saved volumes into the sliders (call whenever the host window opens).
         public void Refresh()
         {
             var audio = AudioManager.Instance;
-            foreach (var row in _rows)
+            foreach (var row in rows)
             {
+                if (row.slider == null) continue;
+
                 row.slider.interactable = audio != null;
-                float percent = audio != null ? Get(audio, row.bus) * 100f : _config.min;
+                float percent = audio != null ? Get(audio, row.bus) * 100f : min;
                 row.slider.SetValueWithoutNotify(Snap(percent));
-                row.valueText.text = audio != null ? Format(row.slider.value) : "-";
+                if (row.valueText != null) row.valueText.text = audio != null ? Format(row.slider.value) : "-";
             }
         }
 
@@ -125,7 +137,7 @@ namespace Audio
             if (!Mathf.Approximately(snapped, value))
                 row.slider.SetValueWithoutNotify(snapped);
 
-            row.valueText.text = Format(snapped);
+            if (row.valueText != null) row.valueText.text = Format(snapped);
 
             var audio = AudioManager.Instance;
             if (audio == null) return;
@@ -135,11 +147,11 @@ namespace Audio
 
         private float Snap(float value)
         {
-            float step = Mathf.Max(1f, _config.step);
-            return Mathf.Clamp(Mathf.Round(value / step) * step, _config.min, _config.max);
+            float s = Mathf.Max(1f, step);
+            return Mathf.Clamp(Mathf.Round(value / s) * s, min, max);
         }
 
-        private string Format(float value) => string.Format(_config.valueFormat, Mathf.RoundToInt(value));
+        private string Format(float value) => string.Format(valueFormat, Mathf.RoundToInt(value));
 
         private static float Get(AudioManager audio, Bus bus) =>
             bus == Bus.Master ? audio.MasterVolume : bus == Bus.Music ? audio.MusicVolume : audio.SfxVolume;
