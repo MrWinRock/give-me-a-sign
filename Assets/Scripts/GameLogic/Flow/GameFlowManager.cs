@@ -244,6 +244,24 @@ namespace GameLogic.Flow
             LoadSceneByName(gameplaySceneName, "gameplay");
         }
 
+        // True from the moment a night is decided (win or loss) until the next scene takes over.
+        public bool IsNightEnding => _ending;
+
+        /// <summary>Leaves the current night for the main menu from the pause menu. Writes no save: the day counter stays where the last checkpoint put it.</summary>
+        public void AbandonNight()
+        {
+            _ending = false;
+            State = GameFlowState.MainMenu;
+            NightPlanProvider.Clear();
+            NightPlanProvider.ForcedSeed = null;
+            ClearLastResult();
+
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: abandoned day {CurrentDay}, back to the menu.", this);
+
+            LoadSceneByName(mainMenuSceneName, "main menu");
+        }
+
         /// <summary>
         /// Moves to the next day, checkpoints the save, and returns to the menu. On the final day
         /// this hands over to the ending instead.
