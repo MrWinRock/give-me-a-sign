@@ -60,8 +60,35 @@ namespace Report
         // On by default; the Control Panel toggle writes 0/1.
         public static bool Enabled => PlayerPrefs.GetInt(PrefKey, 1) == 1;
 
+        public static bool IsSupported
+        {
+            get
+            {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         // True when the player allows it AND an image was found - the Mirror glitch only happens then.
         public static bool CanShow => Enabled && Candidates().Count > 0;
+
+        // Debug panel: what the game would use right now (searches again, ignoring the cache).
+        public static string Describe()
+        {
+            _candidates = null;
+            var sb = new StringBuilder();
+            sb.Append(IsSupported ? "Windows build/editor: yes" : "Not Windows: Mirror never happens");
+            sb.Append(Enabled ? " | player switch: ON" : " | player switch: OFF (no Mirror)");
+
+            var list = Candidates();
+            if (list.Count == 0) sb.Append(" | no picture found: Mirror will not happen");
+            for (int i = 0; i < list.Count; i++)
+                sb.Append(i == 0 ? " | USING " : " | fallback ").Append(list[i].source).Append(": ").Append(list[i].path);
+            return sb.ToString();
+        }
 
         // Returns a texture the caller must Destroy, or null.
         public static Texture2D TryLoad()

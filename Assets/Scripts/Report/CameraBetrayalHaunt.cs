@@ -78,6 +78,19 @@ namespace Report
                 Debug.Log($"CameraBetrayalHaunt: fired {variant.type} for {duration:0.0}s (started={started}).", this);
         }
 
+        // Debug panel: runs one effect now with its configured duration range, ignoring weights and the haunt schedule.
+        public bool DebugTrigger(CameraGlitchType type)
+        {
+            var range = new Vector2(2f, 4f);
+            foreach (var v in variants)
+            {
+                if (v != null && v.type == type) { range = v.durationRange; break; }
+            }
+
+            float duration = Random.Range(Mathf.Min(range.x, range.y), Mathf.Max(range.x, range.y));
+            return _controller.PlayGlitch(type, Mathf.Max(0.1f, duration));
+        }
+
         // Mirror needs the player's wallpaper; without one (not Windows, nothing found, or switched off) it never rolls.
         private static bool IsEligible(VariantWeight v, bool mirrorOk) =>
             v != null && v.enabled && (v.type != CameraGlitchType.Mirror || mirrorOk);

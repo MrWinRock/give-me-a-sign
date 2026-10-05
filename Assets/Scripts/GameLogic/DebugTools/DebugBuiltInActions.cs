@@ -29,6 +29,7 @@ namespace GameLogic.DebugTools
         private const string SpawnGroup = "Spawn anomaly  (random room, instant)";
         private const string HauntGroup = "Fire haunt now  (ignores tutorial night)";
         private const string RadioGroup = "Radio Check  (force a call type)";
+        private const string CameraGroup = "Camera feed  (Camera Betrayal glitches)";
         private const string VoiceGroup = "Voice / Noise / Field Manual";
 
         private struct QaItem
@@ -58,6 +59,8 @@ namespace GameLogic.DebugTools
                 steps = "Field Manual > Lock all pages, press TAB: every page '???'. Spawn an anomaly: its page unlocks (Demon only when it reveals). TAB opens/closes it, but not while paused, in a cutscene, or while the Demon is out. The MainMenu icon 'Field Manual.exe' opens it too." },
             new QaItem { id = "matcher", title = "Short words don't match everything",
                 steps = "Radio Check > Normal. Say just 'a' or 'in' or 'on': must NOT count as an answer. 'SEC-04 copy' (or 'copy') should." },
+            new QaItem { id = "camera", title = "Camera Betrayal glitches + Mirror wallpaper",
+                steps = "Camera feed > Glitch: Loop (change room: the top-left label keeps the OLD room), Frozen (label says SIGNAL FROZEN), Blackout (feed dies, label hidden), GhostRoom (fake CAM label), Mirror (black screen with YOUR wallpaper at its own size + 'SECURITY OFFICE' label). 'Which picture would be used?' shows Wallpaper Engine first, else the Windows wallpaper. Toggle the Control Panel switch OFF: Mirror must refuse to start. All of them end by themselves and the HUD returns to normal." },
             new QaItem { id = "levels", title = "Mic levels feel right (your mic)",
                 steps = "Hold V and watch the slider: a whisper should stay in the green zone, normal speech reach yellow, a shout reach red. If not, calibrate the mic (Debug > Mic: calibrate) or adjust the Whisper/Shout Band Multipliers on NoiseMeter." },
         };
@@ -69,6 +72,7 @@ namespace GameLogic.DebugTools
             AddSpawn(list, info);
             AddHaunts(list, info);
             AddRadio(list, info);
+            AddCamera(list, info);
             AddVoice(list, typedText, info);
             return list;
         }
@@ -231,6 +235,66 @@ namespace GameLogic.DebugTools
                     },
                 });
             }
+        }
+
+        // ── Camera Betrayal ──────────────────────────────────────────────────────────────
+
+        private static void AddCamera(List<DebugEntry> list, Action<string> info)
+        {
+            foreach (CameraGlitchType type in Enum.GetValues(typeof(CameraGlitchType)))
+            {
+                var captured = type;
+                list.Add(new DebugEntry
+                {
+                    group = CameraGroup,
+                    label = $"Glitch: {captured}",
+                    run = () =>
+                    {
+                        var haunt = UnityEngine.Object.FindFirstObjectByType<CameraBetrayalHaunt>(FindObjectsInactive.Include);
+                        if (haunt == null) { info("No CameraBetrayalHaunt in this scene (open GamePlay)."); return; }
+
+                        if (haunt.DebugTrigger(captured)) { info($"Camera glitch {captured} started (duration from its Duration Range)."); return; }
+
+                        info(captured == CameraGlitchType.Mirror
+                            ? "Mirror did not start - it needs the player's picture. " + PlayerWallpaper.Describe()
+                            : $"{captured} did not start (already running, or no CameraFeedHud in the scene).");
+                    },
+                });
+            }
+
+            list.Add(new DebugEntry
+            {
+                group = CameraGroup,
+                label = "Mirror: which picture would be used?",
+                run = () => info(PlayerWallpaper.Describe()),
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = CameraGroup,
+                label = "Mirror: toggle the player's Control Panel switch",
+                run = () =>
+                {
+                    bool now = !PlayerWallpaper.Enabled;
+                    PlayerPrefs.SetInt(PlayerWallpaper.PrefKey, now ? 1 : 0);
+                    PlayerPrefs.Save();
+                    info($"Wallpaper switch is now {(now ? "ON" : "OFF - Mirror will not happen")}.");
+                },
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = CameraGroup,
+                label = "Clear all camera glitches",
+                run = () =>
+                {
+                    var controller = UnityEngine.Object.FindFirstObjectByType<CameraFeedController>(FindObjectsInactive.Include);
+                    if (controller == null) { info("No CameraFeedController in this scene."); return; }
+
+                    controller.CancelAllGlitches();
+                    info("Camera glitches cleared.");
+                },
+            });
         }
 
         // ── Voice, noise, Field Manual ───────────────────────────────────────────────────
