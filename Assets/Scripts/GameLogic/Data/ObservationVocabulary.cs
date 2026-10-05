@@ -29,7 +29,17 @@ namespace GameLogic.Data
         [Tooltip("Words shorter than this must be heard exactly - fuzzy matching tiny words ('a', 'in') matches almost anything.")]
         [Min(1)] [SerializeField] private int minFuzzyWordLength = 4;
 
-        [Range(0.5f, 1f)] [SerializeField] private float wordSimilarity = 0.75f;
+        [Tooltip("How close a heard word must be to a vocabulary word (1 = exact). LOWER = more forgiving of accents and mishearings.")]
+        [Range(0.5f, 1f)] [SerializeField] private float wordSimilarity = 0.65f;
+
+        [Tooltip("Same, for room names (Kitchen, Hallway, Bedroom).")]
+        [Range(0.5f, 1f)] [SerializeField] private float roomSimilarity = 0.6f;
+
+        [Tooltip("Same, for the Radio Check answer words ('copy', 'all clear' ...).")]
+        [Range(0.5f, 1f)] [SerializeField] private float phraseSimilarity = 0.65f;
+
+        [Tooltip("Also accept a word with the same first letter and the same consonants ('kichen' for 'kitchen') - helps speakers whose vowels differ from the model's English.")]
+        [SerializeField] private bool useSoundAlike = true;
 
         [SerializeField] private List<Entry> entries = DefaultEntries();
 
@@ -37,6 +47,11 @@ namespace GameLogic.Data
         private static ObservationVocabulary _fallback;
 
         public IReadOnlyList<Entry> Entries => entries;
+
+        public float WordSimilarity => wordSimilarity;
+        public float RoomSimilarity => roomSimilarity;
+        public float PhraseSimilarity => phraseSimilarity;
+        public bool UseSoundAlike => useSoundAlike;
 
         public static ObservationVocabulary Load()
         {
@@ -118,6 +133,9 @@ namespace GameLogic.Data
                     return true;
 
                 if (Whisper.PhraseMatcher.Similarity(word, target) >= wordSimilarity)
+                    return true;
+
+                if (useSoundAlike && Whisper.PhraseMatcher.SoundsAlike(word, target))
                     return true;
             }
             return false;

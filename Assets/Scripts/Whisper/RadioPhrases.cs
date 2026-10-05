@@ -1,4 +1,5 @@
 using System.Text;
+using GameLogic.Data;
 using UnityEngine;
 
 namespace Whisper
@@ -89,7 +90,11 @@ namespace Whisper
             foreach (var word in text.ToLowerInvariant().Split(Separators, System.StringSplitOptions.RemoveEmptyEntries))
             {
                 if (word == target) return true;
-                if (minSimilarity < 1f && word.Length >= 4 && PhraseMatcher.Similarity(word, target) >= minSimilarity) return true;
+                if (minSimilarity >= 1f || word.Length < 4 || target.Length < 4) continue;
+
+                var vocabulary = ObservationVocabulary.Load();
+                if (PhraseMatcher.Similarity(word, target) >= vocabulary.PhraseSimilarity) return true;
+                if (vocabulary.UseSoundAlike && PhraseMatcher.SoundsAlike(word, target)) return true;
             }
             return false;
         }

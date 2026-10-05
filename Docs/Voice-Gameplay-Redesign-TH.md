@@ -413,3 +413,18 @@ GameObject `FieldManualEntryButton(Clone)` ตัวหนึ่งถูก **s
 - **ข้อความที่ขึ้นบอกผู้เล่น แก้ได้ทั้งหมด + ติ๊กให้กะพริบได้:** `Assets/Resources/PlayerMessages.asset` (Inspector: แต่ละข้อความมี `Text` และ `Blink`; `{0}`/`{1}` คือจำนวน/วินาทีที่เกมใส่ให้ เช่น `TOO MANY ANOMALIES ({0}) ...`, `MIC LIVE - WHISPER ONLY... {0}`) ครอบคลุม: เตือน anomaly ล้นฉาก, hint ตอน stealth, ผลรายงาน (COPY THAT / NEGATIVE / WHICH ROOM? / WHAT DID YOU SEE?), Radio Check (ผ่าน/พลาด/ตัวหลอก + บรรทัดรายละเอียด), voice model loading. ค่าเริ่มต้นกะพริบ: เตือนล้นฉาก, stealth hint, Radio Check พลาด/ตัวหลอก. รีเซ็ตค่า: คลิกขวา component > Reset To Defaults. (ข้อความ call line ของ Radio Check แก้ที่ RadioCheckHaunt ตามเดิม)
 
 **หน่วงฉากแพ้แยกตัว:** `Delay After Death` (1.8 วิ) = แพ้ทั่วไป (ภาพ Demon + เสียงกรีด); `Delay After Demon Death` (0.8 วิ) = แพ้เพราะ Demon เอง (ดำ + เสียงกรีดอย่างเดียว) — ตั้งใน GameFlowManager. ทุกการแพ้ตอนนี้ **หยุดเสียงอื่นทั้งหมดก่อน** แล้วค่อยเล่นเสียงกรีด (ตอน anomaly ล้นฉาก มี anomaly หลายตัวเล่นเสียง loop/sting ของตัวเองอยู่ อาจกลบเสียงกรีด)
+
+---
+
+## 13. ผ่อนการตรวจคำ + จำครึ่งรายงาน
+
+**ความผ่อนปรนของการตรวจคำ** (ผู้เล่นที่ไม่ได้ใช้อังกฤษเป็นภาษาหลัก) — อยู่ที่ `Assets/Resources/ObservationVocabulary.asset`:
+- `Word Similarity` (คำ anomaly, 0.75→**0.65**), `Room Similarity` (ชื่อห้อง, **0.6**), `Phrase Similarity` (คำตอบ Radio Check เช่น copy/all clear, **0.65**) — **ยิ่งต่ำยิ่งผ่อน** (1 = ต้องตรงเป๊ะ)
+- `Use Sound Alike` (เปิดไว้): ยอมรับคำที่ตัวอักษรแรกเหมือนและโครงพยัญชนะเหมือน ("kichen"≈"kitchen") — สระเพี้ยนตามสำเนียงไม่เป็นไร
+- คำสั้นกว่า 4 ตัวอักษรยังต้องตรงเป๊ะ (กัน "a", "in" ไป match ทุกอย่าง)
+
+**จำครึ่งรายงาน (1 ข้อความ)** (`IncidentReportManager`): รายงาน = "อะไร + ที่ไหน"
+- พูดแค่ห้อง → ขึ้น `YOU SEE WHAT?` แล้วพูดแค่ชื่อ anomaly ก็ครบ; พูดแค่ชื่อ anomaly → ขึ้น `WHICH ROOM?` แล้วพูดแค่ชื่อห้องก็ครบ
+- ความจำอยู่ 20 วิ (`Partial Report Memory Seconds`) และ **รีเซ็ตเมื่อ**: ยื่นรายงานแล้ว (ถูก/ผิด), anomaly หายไป (`OnAnyAnomalyDisappeared`), หรือหมดเวลา — กันค้างข้ามรายงาน
+- ถ้าพูดคำถูกแต่ระดับเสียงผิด (Demon/Hooded Figure) ความจำคงไว้ให้ลองใหม่โดยไม่ต้องพูดซ้ำทั้งหมด
+- ข้อความถามกลับแก้ได้ใน `PlayerMessages` (ตอนนี้ `YOU SEE WHAT?` / `WHICH ROOM?`)

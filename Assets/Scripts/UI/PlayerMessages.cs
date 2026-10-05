@@ -106,7 +106,7 @@ namespace UI
             new Message { id = MessageId.ReportConfirmed, text = "COPY THAT" },
             new Message { id = MessageId.ReportNegative, text = "NEGATIVE" },
             new Message { id = MessageId.ReportNeedRoom, text = "WHICH ROOM?" },
-            new Message { id = MessageId.ReportNeedWhat, text = "WHAT DID YOU SEE?" },
+            new Message { id = MessageId.ReportNeedWhat, text = "YOU SEE WHAT?" },
             new Message { id = MessageId.NothingHeard, text = "(nothing heard)" },
             new Message { id = MessageId.ModelLoading, text = "VOICE MODEL LOADING..." },
             new Message { id = MessageId.RadioPass, text = "COPY THAT" },

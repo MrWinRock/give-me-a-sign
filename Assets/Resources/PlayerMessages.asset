@@ -29,7 +29,7 @@ MonoBehaviour:
     text: WHICH ROOM?
     blink: 0
   - id: 5
-    text: WHAT DID YOU SEE?
+    text: YOU SEE WHAT?
     blink: 0
   - id: 6
     text: (nothing heard)

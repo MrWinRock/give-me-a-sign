@@ -28,6 +28,9 @@ namespace Report
         [Tooltip("Off = Spacebar no longer opens the report form; reports are called in over the walkie-talkie (hold V).")]
         [SerializeField] private bool reportFormEnabled;
 
+        [Tooltip("How long a half report (only the room, or only the anomaly) is remembered while waiting for the other half.")]
+        [Min(1f)] [SerializeField] private float partialReportMemorySeconds = 20f;
+
         [Header("Matching Settings")]
         [Tooltip("If true, the selected LOCATION must also match the anomaly's actual room for the report to succeed. If false, only what the player said they saw is checked.")]
         [SerializeField] private bool requireCorrectLocation;
@@ -55,6 +58,14 @@ namespace Report
         public int ReportsFiled { get; private set; }
 
         public int ReportsFailed { get; private set; }
+
+        private string _pendingWhat;
+        private string _pendingRoom;
+        private float _pendingAt;
+
+        void OnEnable() => Anomaly.OnAnyAnomalyDisappeared += HandleAnomalyGone;
+
+        void OnDisable() => Anomaly.OnAnyAnomalyDisappeared -= HandleAnomalyGone;
 
         void Awake()
         {
@@ -109,13 +120,40 @@ namespace Report
 
             var vocabulary = ObservationVocabulary.Load();
             string room = FindSpokenRoom(spoken);
+            bool mentionsWhat = MentionsAnyObservation(vocabulary, spoken);
+            if (!mentionsWhat && room == null) return RadioReportOutcome.NotAReport;
 
-            // A report is "what + where" ("shadow in bedroom"); half of one is bounced back, not filed.
-            if (!MentionsAnyObservation(vocabulary, spoken))
-                return room != null ? RadioReportOutcome.NeedWhat : RadioReportOutcome.NotAReport;
-            if (room == null) return RadioReportOutcome.NeedRoom;
+            // A report is "what + where". Half of one is asked back and remembered, so the other half
+            // alone completes it ("kitchen" ... "You see what?" ... "shadow").
+            bool fresh = Time.unscaledTime - _pendingAt <= partialReportMemorySeconds;
+            string whatText = spoken;
 
-            _recognizedKeyword = spoken.Trim();
+            if (mentionsWhat && room == null)
+            {
+                if (fresh && _pendingRoom != null)
+                {
+                    room = _pendingRoom;
+                }
+                else
+                {
+                    RememberPartial(spoken.Trim(), null);
+                    return RadioReportOutcome.NeedRoom;
+                }
+            }
+            else if (!mentionsWhat)
+            {
+                if (fresh && _pendingWhat != null)
+                {
+                    whatText = _pendingWhat;
+                }
+                else
+                {
+                    RememberPartial(null, room);
+                    return RadioReportOutcome.NeedWhat;
+                }
+            }
+
+            _recognizedKeyword = whatText.Trim();
 
             Anomaly matched = null;
             RadioReportOutcome volumeMiss = RadioReportOutcome.NotAReport;
@@ -144,7 +182,12 @@ namespace Report
             }
 
             if (matched == null && volumeMiss != RadioReportOutcome.NotAReport)
+            {
+                RememberPartial(whatText.Trim(), room); // right words, wrong volume: the retry needs no repeating
                 return volumeMiss;
+            }
+
+            ClearPartialReport();
 
             bool success = matched != null;
             ReportsFiled++;
@@ -176,6 +219,22 @@ namespace Report
             return success ? RadioReportOutcome.Confirmed : RadioReportOutcome.Negative;
         }
 
+        public void ClearPartialReport()
+        {
+            _pendingWhat = null;
+            _pendingRoom = null;
+        }
+
+        private void RememberPartial(string what, string room)
+        {
+            _pendingWhat = what;
+            _pendingRoom = room;
+            _pendingAt = Time.unscaledTime;
+        }
+
+        // Once the anomaly the half-report was about is gone, nothing should linger to complete a stale report.
+        private void HandleAnomalyGone(Anomaly _) => ClearPartialReport();
+
         private static bool MentionsAnyObservation(ObservationVocabulary vocabulary, string spoken)
         {
             foreach (ObservationType type in Enum.GetValues(typeof(ObservationType)))
@@ -188,6 +247,7 @@ namespace Report
         // Spaces/punctuation ignored so "bed room" or "Bedroom." both hear as Bedroom.
         private static string FindSpokenRoom(string spoken)
         {
+            var vocabulary = ObservationVocabulary.Load();
             string squashed = Squash(spoken);
             var names = RoomRegistry.DisplayNames();
 
@@ -196,12 +256,12 @@ namespace Report
                 if (squashed.Contains(Squash(name))) return name;
             }
 
-            // The tiny model mishears ("kitchin", "kitten"): accept a close-enough single word.
+            // Mishearings and accents ("kitchin", "kichen"): accept a close-enough single word (leniency is set on the vocabulary asset).
             string best = null;
-            float bestScore = 0.7f;
+            float bestScore = vocabulary.RoomSimilarity;
             foreach (var word in spoken.ToLowerInvariant().Split(new[] { ' ', ',', '.', '!', '?', '-' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (word.Length < 5) continue;
+                if (word.Length < 4) continue;
 
                 foreach (var name in names)
                 {
@@ -209,6 +269,7 @@ namespace Report
                     if (target.Length < 5) continue;
 
                     float score = PhraseMatcher.Similarity(word, target);
+                    if (vocabulary.UseSoundAlike && PhraseMatcher.SoundsAlike(word, target)) score = Mathf.Max(score, 0.99f);
                     if (score >= bestScore) { bestScore = score; best = name; }
                 }
             }

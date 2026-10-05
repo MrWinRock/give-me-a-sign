@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: ObservationVocabulary
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.ObservationVocabulary
   minFuzzyWordLength: 4
-  wordSimilarity: 0.75
+  wordSimilarity: 0.65
+  roomSimilarity: 0.6
+  phraseSimilarity: 0.65
+  useSoundAlike: 1
   entries:
   - type: 0
     label: Intruder

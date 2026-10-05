@@ -43,7 +43,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "ptt", title = "Hold V = walkie-talkie",
                 steps = "Run a night (GamePlay). Hold V: mic-open click, then MicHold loop, HUD bottom-right shows REC (no loudness text - that is the slider's job). Release: click again. Pause menu / cutscene: V does nothing." },
             new QaItem { id = "report", title = "Report an anomaly by voice",
-                steps = "Spawn: Shadow Blob. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'shadow in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'shadow' = WHICH ROOM? (not filed, no penalty); only 'in bedroom' = WHAT DID YOU SEE?; wrong word or wrong room = NEGATIVE + it advances." },
+                steps = "Spawn: Shadow Blob. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'shadow in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'shadow' = WHICH ROOM? then say just the room (it remembers 'shadow') = COPY THAT; only 'in bedroom' = YOU SEE WHAT? then say just 'shadow'. Memory lasts 20s and resets once filed or the anomaly is gone. Mispronounce on purpose ('shado', 'kichen'): near-words count. Wrong word or room = NEGATIVE + it advances." },
             new QaItem { id = "demon", title = "Demon needs a shout",
                 steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: nothing happens (no text - watch the slider's red zone). Shout it: COPY THAT and it leaves." },
             new QaItem { id = "stealth", title = "Hooded Figure stealth mic",

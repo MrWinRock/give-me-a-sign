@@ -569,16 +569,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11354f7eb1df4b942aa81cf3ca195918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Report.RadioCheckHaunt
-  radioId: SEC-04
+  radioId: Section 4
   wrongIds:
-  - SEC-01
-  - SEC-02
-  - SEC-03
+  - Section 1
+  - Section 2
+  - Section 3
   normalScripts:
-  - callLine: '"{id}, radio check."'
-    hint: 'say: "{id}, copy"'
+  - callLine: '"Section 4, radio check."'
+    hint: 'say: "Section 4, copy"'
     answerAllOf:
-    - '{id}'
+    - Section 4
     - copy
   wrongIdScripts:
   - callLine: '"{wrong}, radio check."'
@@ -5836,8 +5836,6 @@ MonoBehaviour:
   quietSeconds: 8
   toleranceSeconds: 0.3
   graceSeconds: 1
-  jumpScareSeconds: 0.9
-  jumpScareSound: JumpScare
 --- !u!1 &1367956995
 GameObject:
   m_ObjectHideFlags: 0

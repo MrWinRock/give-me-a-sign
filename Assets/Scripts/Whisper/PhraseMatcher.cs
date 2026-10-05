@@ -73,6 +73,30 @@ namespace Whisper
             return true;
         }
 
+        // Same first letter and same consonant skeleton ("kichen" / "kitchen"): accents mostly move the vowels.
+        public static bool SoundsAlike(string a, string b)
+        {
+            if (a == null || b == null || a.Length < 4 || b.Length < 4 || a[0] != b[0]) return false;
+
+            string skeletonA = Skeleton(a);
+            return skeletonA.Length >= 3 && skeletonA == Skeleton(b);
+        }
+
+        private static string Skeleton(string word)
+        {
+            var sb = new System.Text.StringBuilder(word.Length);
+            sb.Append(word[0]);
+            char previous = word[0];
+            for (int i = 1; i < word.Length; i++)
+            {
+                char c = word[i];
+                if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || c == previous) continue;
+                sb.Append(c);
+                previous = c;
+            }
+            return sb.ToString();
+        }
+
         public static float Similarity(string a, string b)
         {
             if (a.Length == 0 && b.Length == 0) return 1f;
