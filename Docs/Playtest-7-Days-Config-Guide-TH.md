@@ -24,8 +24,8 @@
 
 | เรื่อง | ผลต่อการเล่น | วิธีแก้ถ้าต้องการ |
 |---|---|---|
-| ทุก RoomAnchor มี `Spawn Points` = 0 | anomaly ในห้องเดียวกันเกิดจุดเดียว → **ทับกัน** | เพิ่ม Transform ลง `Spawn Points` (ดูข้อ 5.2) |
-| ฟอร์ม Incident Report ปิดอยู่ | Form Glitch (`Glitch Count` คืน 2-7) และ haunt **Impostor Case** (คืน 4+) ไม่มีผลบนจอ แต่ Impostor ยังกินโควตา haunt | ปิด `Enabled` ของ ImpostorCase ใน HauntProfile |
+| ~~RoomAnchor ไม่มี Spawn Points~~ แก้แล้ว: ทุกห้องมี 3 จุด (ซ้าย -4 / กลาง / ขวา +4 จากกึ่งกลางห้อง) | ลากจุดใน GamePlay → Rooms → */SpawnPoint_N ให้ตรงตำแหน่งที่อยากให้เกิด |
+| ฟอร์ม Incident Report ปิดอยู่ | Form Glitch (`Glitch Count`) ไม่มีผลบนจอ (Impostor Case ปิดใน HauntProfile แล้ว) | - |
 | Wrong ID hint เขียน `say: "{wrong}, copy"` | hint ชวนให้ตอบ ซึ่งการตอบ = โดนลงโทษ | ถ้าตั้งใจเป็นกับดัก ใช้ได้เลย |
 | `Delay After Death` ในซีน MainMenu = 2.5 | ค่าในซีนชนะค่าในโค้ด (1.8) | แก้ที่ GameFlowManager ใน MainMenu |
 | ไม่มีเสียง `RadioCall` / `RadioMissed` ใน Sound Library | สาย Radio Check เงียบ เห็นแค่การ์ด | เพิ่มชื่อนี้ใน `Assets/Resources/AudioManager` prefab |

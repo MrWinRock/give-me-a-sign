@@ -22,7 +22,7 @@ MonoBehaviour:
     weight: 1
     minNightIndex: 3
   - loop: 4
-    enabled: 1
+    enabled: 0
     weight: 0.8
     minNightIndex: 4
   baseHauntCount: 1
