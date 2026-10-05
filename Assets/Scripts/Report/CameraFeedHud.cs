@@ -1,21 +1,18 @@
 using GameLogic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Report
 {
     /// <summary>
-    /// Always-on camera watermark: "CAM 0X — ROOM NAME" plus a running timestamp, built entirely
-    /// from script like <see cref="RadioCheckHud"/>. It exists for
-    /// its own sake as a bit of security-camera flavour, but its real job is being the "tell" HL-5
-    /// Camera Betrayal lies through - a stuck timestamp or a wrong label only reads as wrong if the
-    /// player has already learned what right looks like, which means this has to run the whole
-    /// night, not just during a glitch.
+    /// Always-on camera watermark: "CAM 0X — ROOM NAME" plus a running timestamp (the CameraFeedHud prefab in the
+    /// gameplay Canvas). Besides security-camera flavour it is the "tell" Camera Betrayal lies through - a stuck
+    /// timestamp or a wrong label only reads as wrong if it has been running correctly all night.
     /// </summary>
     public class CameraFeedHud : MonoBehaviour
     {
         private static CameraFeedHud _instance;
+        private static bool _warnedMissing;
 
         public static CameraFeedHud Instance
         {
@@ -24,11 +21,11 @@ namespace Report
                 if (_instance != null) return _instance;
                 if (!Application.isPlaying) return null;
 
-                _instance = FindFirstObjectByType<CameraFeedHud>();
-                if (_instance == null)
+                _instance = FindFirstObjectByType<CameraFeedHud>(FindObjectsInactive.Include);
+                if (_instance == null && !_warnedMissing)
                 {
-                    var host = new GameObject("CameraFeedHud (auto-created)");
-                    _instance = host.AddComponent<CameraFeedHud>();
+                    _warnedMissing = true;
+                    Debug.LogWarning("CameraFeedHud: no CameraFeedHud prefab in the scene - drag Assets/Prefabs/Gameplay/CameraFeedHud.prefab into the gameplay Canvas.");
                 }
                 return _instance;
             }
@@ -36,12 +33,14 @@ namespace Report
 
         public static CameraFeedHud ExistingInstance => _instance;
 
+        [Header("Refs (set in the prefab)")]
+        [SerializeField] private TextMeshProUGUI labelText;
+        [SerializeField] private TextMeshProUGUI timestampText;
+        [Tooltip("Full-screen black cover shown by the Blackout glitch. Keep it inactive and BEHIND the texts.")]
+        [SerializeField] private GameObject blackout;
+
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
-
-        private TextMeshProUGUI _labelText;
-        private TextMeshProUGUI _clockText;
-        private Image _blackout;
 
         private GameManager _gameManager;
         private int _camIndex = 1;
@@ -51,9 +50,7 @@ namespace Report
         private float _frozenElapsed;
         private float _elapsed;
 
-        // Caches of what the labels currently show, so Update() only touches the TMP text (a
-        // real layout/mesh rebuild, not a cheap field write) when the visible value actually
-        // changes - same fix NightTimer already applies to its own clock, see CLAUDE.md.
+        // What the labels currently show, so Update() only rebuilds TMP text when the value changes.
         private int _lastDisplayedSecond = -1;
         private string _lastDisplayedLabel;
 
@@ -66,7 +63,7 @@ namespace Report
             }
             _instance = this;
 
-            BuildUi();
+            if (blackout != null) blackout.SetActive(false);
         }
 
         void Start()
@@ -81,20 +78,17 @@ namespace Report
 
         void Update()
         {
-            if (!_timestampFrozen)
+            // Unscaled so it ignores timeScale quirks, but it must still stand still while the pause menu is open.
+            if (!_timestampFrozen && Time.timeScale > 0f)
                 _elapsed += Time.unscaledDeltaTime;
 
-            UpdateClockText();
+            UpdateTimestampText();
             UpdateLabelText();
         }
 
-        /// <summary>
-        /// The displayed clock only shows whole seconds, so only rebuild the TMP string (and
-        /// re-layout its mesh) when the shown second actually changes instead of every frame.
-        /// </summary>
-        private void UpdateClockText()
+        private void UpdateTimestampText()
         {
-            if (_clockText == null) return;
+            if (timestampText == null) return;
 
             float shown = _timestampFrozen ? _frozenElapsed : _elapsed;
             int totalSeconds = Mathf.FloorToInt(shown);
@@ -105,17 +99,12 @@ namespace Report
             int h = totalSeconds / 3600;
             int m = (totalSeconds % 3600) / 60;
             int s = totalSeconds % 60;
-            _clockText.text = $"{h:00}:{m:00}:{s:00}";
+            timestampText.text = $"{h:00}:{m:00}:{s:00}";
         }
 
-        /// <summary>
-        /// The label only changes on an override or a room switch (both rare), so only rebuild
-        /// the TMP string when the computed label actually differs from what is already shown -
-        /// same reasoning as UpdateClockText.
-        /// </summary>
         private void UpdateLabelText()
         {
-            if (_labelText == null) return;
+            if (labelText == null) return;
 
             string label;
             if (!string.IsNullOrEmpty(_labelOverride))
@@ -125,9 +114,7 @@ namespace Report
             else
             {
                 var room = _gameManager != null ? _gameManager.CurrentRoom : null;
-                // Prefer the room's own cameraOrder (its real position in the Next/Previous cycle)
-                // over the manually-set _camIndex fallback, so the number on screen always matches
-                // which room is actually showing without needing anyone to keep it in sync by hand.
+                // The room's own cameraOrder keeps the number matching the room actually showing.
                 int camIndex = room != null ? room.cameraOrder + 1 : _camIndex;
                 string roomLabel = room != null ? room.Label.ToUpperInvariant() : "NO SIGNAL";
                 label = $"CAM 0{camIndex} — {roomLabel}";
@@ -135,7 +122,7 @@ namespace Report
 
             if (label == _lastDisplayedLabel) return;
             _lastDisplayedLabel = label;
-            _labelText.text = label;
+            labelText.text = label;
         }
 
         // ── public API used by CameraFeedController ─────────────────────────────────────────
@@ -156,69 +143,9 @@ namespace Report
 
         public void SetBlackout(bool on)
         {
-            if (_blackout != null) _blackout.gameObject.SetActive(on);
-            if (_labelText != null) _labelText.gameObject.SetActive(!on);
-            if (_clockText != null) _clockText.gameObject.SetActive(!on);
-        }
-
-        // ── UI build ─────────────────────────────────────────────────────────────────────
-
-        private void BuildUi()
-        {
-            var root = new GameObject("CameraFeedHudCanvas", typeof(RectTransform));
-            root.transform.SetParent(transform, false);
-
-            var canvas = root.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 400; // below Radio Check (480) and Silence Protocol (500)
-
-            var scaler = root.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-
-            var raycaster = root.AddComponent<GraphicRaycaster>();
-            raycaster.enabled = false;
-
-            _labelText = CreateText(root.transform, "Label", 20f, new Vector2(0.02f, 0.97f));
-            _labelText.color = new Color(0.85f, 0.9f, 0.85f, 0.75f);
-
-            _clockText = CreateText(root.transform, "Clock", 20f, new Vector2(0.02f, 0.935f));
-            _clockText.color = new Color(0.85f, 0.9f, 0.85f, 0.6f);
-
-            var blackoutGo = new GameObject("Blackout", typeof(RectTransform), typeof(Image));
-            blackoutGo.transform.SetParent(root.transform, false);
-            _blackout = blackoutGo.GetComponent<Image>();
-            _blackout.color = Color.black;
-            _blackout.raycastTarget = false;
-
-            var rect = blackoutGo.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            blackoutGo.SetActive(false);
-        }
-
-        private static TextMeshProUGUI CreateText(Transform parent, string name, float fontSize, Vector2 anchor)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-
-            var text = go.AddComponent<TextMeshProUGUI>();
-            text.font = TMP_Settings.defaultFontAsset;
-            text.fontSize = fontSize;
-            text.alignment = TextAlignmentOptions.TopLeft;
-            text.enableWordWrapping = false;
-            text.raycastTarget = false;
-
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = anchor;
-            rect.anchorMax = anchor;
-            rect.pivot = new Vector2(0f, 1f);
-            rect.sizeDelta = new Vector2(500f, 30f);
-            rect.anchoredPosition = Vector2.zero;
-
-            return text;
+            if (blackout != null) blackout.SetActive(on);
+            if (labelText != null) labelText.gameObject.SetActive(!on);
+            if (timestampText != null) timestampText.gameObject.SetActive(!on);
         }
     }
 }
