@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using GameLogic.Data;
 using GameLogic.Night;
 using UnityEngine;
+// Aliased, not imported: this file uses UnityEngine's [Min], and a plain `using Gaskellgames;` makes it ambiguous (CS0104).
+using GG = Gaskellgames;
 
 namespace Report
 {
@@ -18,18 +20,21 @@ namespace Report
         {
             public CameraGlitchType type;
             public bool enabled = true;
+            [Tooltip("How likely this effect is picked, relative to the others (not a duration). 0 = never.")]
             [Min(0f)] public float weight = 1f;
+            [Tooltip("How long the effect lasts, in seconds - a random value between the two ends each time.")]
+            [GG.MinMaxSlider(0.5f, 15f, true)] public Vector2 durationRange = new Vector2(2f, 4f);
         }
 
-        [Header("Variant weights")]
+        [Header("Variants: chance (Weight) and how long each lasts (Duration Range, seconds)")]
         [SerializeField]
         private List<VariantWeight> variants = new List<VariantWeight>
         {
-            new VariantWeight { type = CameraGlitchType.Loop,      weight = 1.2f },
-            new VariantWeight { type = CameraGlitchType.Frozen,    weight = 1f },
-            new VariantWeight { type = CameraGlitchType.Blackout,  weight = 1f },
-            new VariantWeight { type = CameraGlitchType.GhostRoom, weight = 0.7f },
-            new VariantWeight { type = CameraGlitchType.Mirror,    weight = 0.5f },
+            new VariantWeight { type = CameraGlitchType.Loop,      weight = 1.2f, durationRange = new Vector2(4f, 8f) },
+            new VariantWeight { type = CameraGlitchType.Frozen,    weight = 1f,   durationRange = new Vector2(2f, 4f) },
+            new VariantWeight { type = CameraGlitchType.Blackout,  weight = 1f,   durationRange = new Vector2(1.5f, 3f) },
+            new VariantWeight { type = CameraGlitchType.GhostRoom, weight = 0.7f, durationRange = new Vector2(3f, 6f) },
+            new VariantWeight { type = CameraGlitchType.Mirror,    weight = 0.5f, durationRange = new Vector2(3f, 6f) },
         };
 
         [Header("Debug")]
@@ -65,36 +70,37 @@ namespace Report
         {
             if (IsActive) return; // HauntDirector already guards this - belt and braces
 
-            var type = PickVariant();
-            bool started = _controller.PlayGlitch(type);
+            var variant = PickVariant();
+            float duration = Random.Range(Mathf.Min(variant.durationRange.x, variant.durationRange.y), Mathf.Max(variant.durationRange.x, variant.durationRange.y));
+            bool started = _controller.PlayGlitch(variant.type, Mathf.Max(0.1f, duration));
 
             if (showDebugInfo)
-                Debug.Log($"CameraBetrayalHaunt: fired {type} (started={started}).", this);
+                Debug.Log($"CameraBetrayalHaunt: fired {variant.type} for {duration:0.0}s (started={started}).", this);
         }
 
-        private CameraGlitchType PickVariant()
+        private VariantWeight PickVariant()
         {
             float total = 0f;
             foreach (var v in variants)
                 if (v != null && v.enabled) total += Mathf.Max(0f, v.weight);
 
-            if (total <= 0f) return CameraGlitchType.Blackout;
+            if (total <= 0f) return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };
 
             float roll = Random.value * total;
             foreach (var v in variants)
             {
                 if (v == null || !v.enabled) continue;
                 roll -= Mathf.Max(0f, v.weight);
-                if (roll <= 0f) return v.type;
+                if (roll <= 0f) return v;
             }
 
             // Floating-point slack only; walk back to the last enabled entry.
             for (int i = variants.Count - 1; i >= 0; i--)
             {
-                if (variants[i] != null && variants[i].enabled) return variants[i].type;
+                if (variants[i] != null && variants[i].enabled) return variants[i];
             }
 
-            return CameraGlitchType.Blackout;
+            return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };
         }
     }
 }

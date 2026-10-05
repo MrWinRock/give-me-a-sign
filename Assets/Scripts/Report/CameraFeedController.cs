@@ -22,13 +22,7 @@ namespace Report
     /// </summary>
     public class CameraFeedController : MonoBehaviour
     {
-        [Header("Durations")]
-        [SerializeField] private Vector2 loopDurationRange = new Vector2(4f, 8f);
-        [SerializeField] private Vector2 frozenDurationRange = new Vector2(2f, 4f);
-        [SerializeField] private Vector2 blackoutDurationRange = new Vector2(1.5f, 3f);
-        [SerializeField] private Vector2 ghostRoomDurationRange = new Vector2(3f, 6f);
-        [SerializeField] private Vector2 mirrorDurationRange = new Vector2(3f, 6f);
-
+        // How long each effect lasts is set per variant on CameraBetrayalHaunt (Duration Range).
         [Header("Ghost Room / Mirror text (best-effort - purely a HUD watermark trick, no new art required)")]
         [SerializeField]
         private List<string> ghostRoomLabels = new List<string>
@@ -45,7 +39,7 @@ namespace Report
 
         public bool IsGlitchActive => _running.Count > 0;
 
-        public bool PlayGlitch(CameraGlitchType type, float overrideDuration = 0f)
+        public bool PlayGlitch(CameraGlitchType type, float duration)
         {
             if (_running.ContainsKey(type))
             {
@@ -59,11 +53,11 @@ namespace Report
             IEnumerator routine;
             switch (type)
             {
-                case CameraGlitchType.Loop:      routine = LoopRoutine(hud, overrideDuration); break;
-                case CameraGlitchType.Frozen:    routine = FrozenRoutine(hud, overrideDuration); break;
-                case CameraGlitchType.Blackout:  routine = BlackoutRoutine(hud, overrideDuration); break;
-                case CameraGlitchType.GhostRoom: routine = GhostRoomRoutine(hud, overrideDuration); break;
-                case CameraGlitchType.Mirror:    routine = MirrorRoutine(hud, overrideDuration); break;
+                case CameraGlitchType.Loop:      routine = LoopRoutine(hud, duration); break;
+                case CameraGlitchType.Frozen:    routine = FrozenRoutine(hud, duration); break;
+                case CameraGlitchType.Blackout:  routine = BlackoutRoutine(hud, duration); break;
+                case CameraGlitchType.GhostRoom: routine = GhostRoomRoutine(hud, duration); break;
+                case CameraGlitchType.Mirror:    routine = MirrorRoutine(hud, duration); break;
                 default: return false;
             }
 
@@ -100,34 +94,31 @@ namespace Report
 
         void OnDisable() => CancelAllGlitches();
 
-        private static float ResolveDuration(Vector2 range, float overrideDuration) =>
-            overrideDuration > 0f ? overrideDuration : Random.Range(range.x, range.y);
-
         // Loop - the feed is quietly replaying old footage. The only tell: the corner label stops
         // following the camera, so it keeps naming the room the player just left.
-        private IEnumerator LoopRoutine(CameraFeedHud hud, float overrideDuration)
+        private IEnumerator LoopRoutine(CameraFeedHud hud, float duration)
         {
             hud.FreezeLabel();
-            yield return new WaitForSecondsRealtime(ResolveDuration(loopDurationRange, overrideDuration));
+            yield return new WaitForSecondsRealtime(duration);
             hud.UnfreezeLabel();
             _running.Remove(CameraGlitchType.Loop);
         }
 
         // Frozen - announced outright via the label, a more overt "something is wrong" beat than Loop's quiet version.
-        private IEnumerator FrozenRoutine(CameraFeedHud hud, float overrideDuration)
+        private IEnumerator FrozenRoutine(CameraFeedHud hud, float duration)
         {
             hud.SetLabelOverride("● REC — SIGNAL FROZEN");
-            yield return new WaitForSecondsRealtime(ResolveDuration(frozenDurationRange, overrideDuration));
+            yield return new WaitForSecondsRealtime(duration);
             hud.ClearLabelOverride();
             _running.Remove(CameraGlitchType.Frozen);
         }
 
         // Blackout - the feed just dies for a beat. CameraFeedHud.SetBlackout doubles as a
         // full-screen cover, so the player has to make a call (switch camera or wait) blind.
-        private IEnumerator BlackoutRoutine(CameraFeedHud hud, float overrideDuration)
+        private IEnumerator BlackoutRoutine(CameraFeedHud hud, float duration)
         {
             hud.SetBlackout(true);
-            yield return new WaitForSecondsRealtime(ResolveDuration(blackoutDurationRange, overrideDuration));
+            yield return new WaitForSecondsRealtime(duration);
             hud.SetBlackout(false);
             _running.Remove(CameraGlitchType.Blackout);
         }
@@ -135,20 +126,20 @@ namespace Report
         // Ghost Room - the label briefly claims a camera/room that does not exist anywhere in
         // RoomRegistry. A real extra room is Sprint 3+ art/content work; the watermark lie is what
         // this system can honestly deliver today.
-        private IEnumerator GhostRoomRoutine(CameraFeedHud hud, float overrideDuration)
+        private IEnumerator GhostRoomRoutine(CameraFeedHud hud, float duration)
         {
             string label = PickRandom(ghostRoomLabels) ?? "CAM 0? — ??????";
             hud.SetLabelOverride(label);
-            yield return new WaitForSecondsRealtime(ResolveDuration(ghostRoomDurationRange, overrideDuration));
+            yield return new WaitForSecondsRealtime(duration);
             hud.ClearLabelOverride();
             _running.Remove(CameraGlitchType.GhostRoom);
         }
 
         // Mirror - the feed claims to be looking at the security office itself, i.e. the player.
-        private IEnumerator MirrorRoutine(CameraFeedHud hud, float overrideDuration)
+        private IEnumerator MirrorRoutine(CameraFeedHud hud, float duration)
         {
             hud.SetLabelOverride($"{mirrorLabel}\n{mirrorHintText}");
-            yield return new WaitForSecondsRealtime(ResolveDuration(mirrorDurationRange, overrideDuration));
+            yield return new WaitForSecondsRealtime(duration);
             hud.ClearLabelOverride();
             _running.Remove(CameraGlitchType.Mirror);
         }
