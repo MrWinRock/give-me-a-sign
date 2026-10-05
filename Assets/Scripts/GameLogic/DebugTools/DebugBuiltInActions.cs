@@ -60,7 +60,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "matcher", title = "Short words don't match everything",
                 steps = "Radio Check > Normal. Say just 'a' or 'in' or 'on': must NOT count as an answer. 'SEC-04 copy' (or 'copy') should." },
             new QaItem { id = "camera", title = "Camera Betrayal glitches + Mirror wallpaper",
-                steps = "Camera feed > Glitch: Loop (change room: the top-left label keeps the OLD room), Frozen (SIGNAL FROZEN label and you CANNOT change room until it times out; anomaly clicks still work), Blackout (feed dies, label hidden), GhostRoom (arms itself: the NEXT room you move to shows a ghost picture + fake CAM label until you change room again; coming back is normal), Mirror (black screen with YOUR wallpaper at its own size + 'SECURITY OFFICE' label). 'Which picture would be used?' shows Wallpaper Engine first, else the Windows wallpaper. Toggle the Control Panel switch OFF: Mirror must refuse to start. All of them end by themselves and the HUD returns to normal." },
+                steps = "Camera feed > Glitch: Loop (change room: the top-left label keeps the OLD room), Frozen (SIGNAL FROZEN label and you CANNOT change room until it times out; anomaly clicks still work), Blackout (feed dies, label hidden), GhostRoom (arms itself: the NEXT room you move to shows a ghost picture + fake CAM label until you change room again; coming back is normal), Mirror (arms itself like GhostRoom: the NEXT room you move to shows black + YOUR wallpaper at its own size + 'SECURITY OFFICE' label until you change room). 'Which picture would be used?' shows Wallpaper Engine first, else the Windows wallpaper. Toggle the Control Panel switch OFF: Mirror must refuse to start. All of them end by themselves and the HUD returns to normal." },
             new QaItem { id = "levels", title = "Mic levels feel right (your mic)",
                 steps = "Hold V and watch the slider: a whisper should stay in the green zone, normal speech reach yellow, a shout reach red. If not, calibrate the mic (Debug > Mic: calibrate) or adjust the Whisper/Shout Band Multipliers on NoiseMeter." },
         };
@@ -255,15 +255,16 @@ namespace GameLogic.DebugTools
 
                         if (haunt.DebugTrigger(captured))
                         {
-                            info(captured == CameraGlitchType.GhostRoom
-                                ? "Ghost Room armed: it springs on the NEXT room you move to (use the < > buttons). It ends when you change room again."
+                            bool armed = captured == CameraGlitchType.GhostRoom || captured == CameraGlitchType.Mirror;
+                            info(armed
+                                ? $"{captured} armed: it springs on the NEXT room you move to (use the < > buttons) and ends when you change room again."
                                 : $"Camera glitch {captured} started (duration from its Duration Range).");
                             return;
                         }
 
                         info(captured == CameraGlitchType.Mirror
-                            ? "Mirror did not start - it needs the player's picture. " + PlayerWallpaper.Describe()
-                            : $"{captured} did not start (already running, or no CameraFeedHud in the scene).");
+                            ? "Mirror did not start - it needs the player's picture and 2+ rooms. " + PlayerWallpaper.Describe()
+                            : $"{captured} did not start (already running, no CameraFeedHud, or fewer than 2 rooms).");
                     },
                 });
             }

@@ -22,6 +22,7 @@ namespace Report
         public const string PrefKey = "Opt_MirrorWallpaper";
 
         private const long MaxFileBytes = 60L * 1024 * 1024;
+        private const long MaxTextBytes = 8L * 1024 * 1024; // Steam / Wallpaper Engine config files
         private const float CacheSeconds = 60f;
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg" }; // what Texture2D.LoadImage can read
 
@@ -151,6 +152,13 @@ namespace Report
             }
         }
 
+        // Config files are small; an oversized one is treated as unreadable instead of stalling the game.
+        private static string ReadSmallText(string path)
+        {
+            if (new FileInfo(path).Length > MaxTextBytes) throw new IOException("file too large");
+            return File.ReadAllText(path);
+        }
+
         private static bool IsUsableFile(string path, bool allowNoExtension = false)
         {
             if (string.IsNullOrEmpty(path)) return false;
@@ -196,7 +204,7 @@ namespace Report
                 string vdf = Path.Combine(steam, "steamapps", "libraryfolders.vdf");
                 if (File.Exists(vdf))
                 {
-                    foreach (Match m in Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s+\"([^\"]+)\""))
+                    foreach (Match m in Regex.Matches(ReadSmallText(vdf), "\"path\"\\s+\"([^\"]+)\""))
                         libraries.Add(m.Groups[1].Value.Replace("\\\\", "\\"));
                 }
             }
@@ -224,7 +232,7 @@ namespace Report
         // config.json: { "<WindowsUser>": { "general": { "wallpaperconfig": { "selectedwallpapers": { "Monitor0": { "file": "..." } } } } } }
         private static string ReadSelectedWallpaper(string configPath)
         {
-            var root = MiniJson.Parse(File.ReadAllText(configPath)) as Dictionary<string, object>;
+            var root = MiniJson.Parse(ReadSmallText(configPath)) as Dictionary<string, object>;
             if (root == null) return null;
 
             var users = new List<string>();
@@ -264,7 +272,7 @@ namespace Report
             string projectFile = Path.Combine(folder, "project.json");
             if (File.Exists(projectFile))
             {
-                try { project = JsonUtility.FromJson<WallpaperProject>(File.ReadAllText(projectFile)) ?? project; }
+                try { project = JsonUtility.FromJson<WallpaperProject>(ReadSmallText(projectFile)) ?? project; }
                 catch (Exception) { /* fall through to the default preview names */ }
             }
 
@@ -293,6 +301,7 @@ namespace Report
             public static object Parse(string text)
             {
                 int i = 0;
+                _depth = 0;
                 try { return Value(text.TrimStart('\uFEFF'), ref i); }
                 catch (Exception) { return null; }
             }
@@ -312,13 +321,19 @@ namespace Report
                 while (i < s.Length && char.IsWhiteSpace(s[i])) i++;
             }
 
+            private const int MaxDepth = 64; // a stack overflow cannot be caught, so refuse absurd nesting
+            private static int _depth;
+
             private static object Value(string s, ref int i)
             {
                 Skip(s, ref i);
                 switch (s[i])
                 {
-                    case '{': return Obj(s, ref i);
-                    case '[': return Arr(s, ref i);
+                    case '{':
+                    case '[':
+                        if (++_depth > MaxDepth) { _depth = 0; throw new FormatException("too deep"); }
+                        try { return s[i] == '{' ? (object)Obj(s, ref i) : Arr(s, ref i); }
+                        finally { if (_depth > 0) _depth--; }
                     case '"': return Str(s, ref i);
                     default:
                         int start = i;

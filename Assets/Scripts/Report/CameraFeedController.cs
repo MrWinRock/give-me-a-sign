@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GameLogic;
 using GameLogic.Data;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Report
 {
@@ -17,15 +18,14 @@ namespace Report
     }
 
     /// <summary>
-    /// "Camera Betrayal" executor (HL-5) - the single camera feed's own camera label lies
-    /// for a beat, then always reverts. Same pure-executor split as FormGlitchController: this
-    /// class only knows HOW to run each variant; <see cref="CameraBetrayalHaunt"/> decides WHEN
-    /// and WHICH.
+    /// "Camera Betrayal" executor (HL-5) - the single camera feed lies for a beat, then always reverts. Same
+    /// pure-executor split as FormGlitchController: this class only knows HOW to run each variant;
+    /// <see cref="CameraBetrayalHaunt"/> decides WHEN and WHICH.
     /// </summary>
     public class CameraFeedController : MonoBehaviour
     {
-        // How long each effect lasts is set per variant on CameraBetrayalHaunt (Duration Range) - except Ghost Room,
-        // which lasts until the player changes room.
+        // How long Loop / Frozen / Blackout last is set per variant on CameraBetrayalHaunt (Duration Range).
+        // Ghost Room and Mirror have no timer: they spring on the next room the player visits and end when they change room.
         [Header("Ghost Room")]
         [Tooltip("Fake camera labels shown on the ghost room (one picked at random).")]
         [SerializeField]
@@ -35,14 +35,17 @@ namespace Report
         };
         [Tooltip("Pictures that replace the room view on the ghost room (one picked at random, never the same twice in a row). Empty = label only.")]
         [SerializeField] private List<Texture2D> ghostRoomImages = new List<Texture2D>();
-        [Tooltip("If the player never changes room, an armed Ghost Room gives up after this many seconds so it cannot block other haunts forever.")]
-        [Min(5f)] [SerializeField] private float ghostRoomArmTimeoutSeconds = 90f;
 
         [Header("Mirror")]
         [SerializeField] private string mirrorLabel = "CAM 00 — SECURITY OFFICE";
         [SerializeField] private string mirrorHintText = "...someone is sitting there.";
-        [Tooltip("Mirror shows the player's own desktop picture behind the label (Wallpaper Engine first, else the Windows wallpaper). Off here removes the Mirror glitch entirely. The player can also turn it off in Control Panel.")]
+        [Tooltip("Mirror shows the player's own desktop picture (Wallpaper Engine first, else the Windows wallpaper). Off here removes the Mirror glitch entirely. The player can also turn it off in Control Panel.")]
         [SerializeField] private bool useWallpaper = true;
+
+        [Header("Ghost Room + Mirror")]
+        [Tooltip("If the player never changes room, an armed Ghost Room / Mirror gives up after this many seconds. While armed, no other Camera Betrayal beat can start.")]
+        [FormerlySerializedAs("ghostRoomArmTimeoutSeconds")]
+        [Min(5f)] [SerializeField] private float roomEffectArmTimeoutSeconds = 90f;
 
         [Header("Debug")]
         [SerializeField] private bool verboseLogging;
@@ -56,11 +59,13 @@ namespace Report
 
         public bool IsGlitchActive => _running.Count > 0;
 
-        // Mirror needs the player's picture (Wallpaper Engine, else the Windows wallpaper); without one it never happens.
-        public bool MirrorAvailable => useWallpaper && PlayerWallpaper.CanShow;
+        // Ghost Room and Mirror need a camera that can move to another room.
+        public bool GhostRoomAvailable => CanChangeRooms;
 
-        // Ghost Room needs a camera that can move to another room.
-        public bool GhostRoomAvailable => Manager() != null && RoomRegistry.Count >= 2;
+        // Mirror also needs the player's picture (Wallpaper Engine, else the Windows wallpaper); without one it never happens.
+        public bool MirrorAvailable => useWallpaper && CanChangeRooms && PlayerWallpaper.CanShow;
+
+        private bool CanChangeRooms => Manager() != null && RoomRegistry.Count >= 2;
 
         public bool PlayGlitch(CameraGlitchType type, float duration)
         {
@@ -73,24 +78,27 @@ namespace Report
             var hud = CameraFeedHud.Instance;
             if (hud == null) return false;
 
-            if (type == CameraGlitchType.Mirror)
-            {
-                if (!MirrorAvailable) return false;
-
-                _mirrorTexture = PlayerWallpaper.TryLoad();
-                if (_mirrorTexture == null) return false;
-            }
-
-            if (type == CameraGlitchType.GhostRoom && !GhostRoomAvailable) return false;
-
             IEnumerator routine;
             switch (type)
             {
                 case CameraGlitchType.Loop:      routine = LoopRoutine(hud, duration); break;
                 case CameraGlitchType.Frozen:    routine = FrozenRoutine(hud, duration); break;
                 case CameraGlitchType.Blackout:  routine = BlackoutRoutine(hud, duration); break;
-                case CameraGlitchType.GhostRoom: routine = GhostRoomRoutine(hud); break;
-                case CameraGlitchType.Mirror:    routine = MirrorRoutine(hud, duration); break;
+
+                case CameraGlitchType.GhostRoom:
+                    if (!GhostRoomAvailable) return false;
+                    routine = RoomEffectRoutine(type, () => ShowGhostRoom(hud), shown => HideGhostRoom(hud, shown));
+                    break;
+
+                case CameraGlitchType.Mirror:
+                    if (!MirrorAvailable) return false;
+
+                    // Loaded now so a failed read means "no Mirror", never a half effect.
+                    _mirrorTexture = PlayerWallpaper.TryLoad();
+                    if (_mirrorTexture == null) return false;
+                    routine = RoomEffectRoutine(type, () => ShowMirror(hud), shown => HideMirror(hud, shown));
+                    break;
+
                 default: return false;
             }
 
@@ -172,35 +180,61 @@ namespace Report
             _running.Remove(CameraGlitchType.Blackout);
         }
 
-        // Ghost Room - armed now, it springs on the NEXT room the player moves to (never the one they are in): that
-        // room's view becomes a ghost picture with a fake camera label. No timer - it ends the moment the player
-        // changes room again, and coming back shows the real room. If they never move, it gives up quietly.
-        private IEnumerator GhostRoomRoutine(CameraFeedHud hud)
+        // Ghost Room / Mirror - armed now, they spring on the NEXT room the player moves to (never the one they are
+        // in) and last until the player changes room again; coming back shows the real room. No timer. If the player
+        // never moves it gives up quietly, and a Demon reveal ends it so its jumpscare is never hidden.
+        private IEnumerator RoomEffectRoutine(CameraGlitchType type, System.Action show, System.Action<bool> hide)
         {
             var manager = Manager();
             var startRoom = manager.CurrentRoom;
-            float giveUpAt = Time.time + ghostRoomArmTimeoutSeconds;
+            float giveUpAt = Time.time + roomEffectArmTimeoutSeconds;
 
-            while (manager.CurrentRoom == startRoom)
-            {
-                if (Time.time > giveUpAt)
-                {
-                    _running.Remove(CameraGlitchType.GhostRoom);
-                    yield break;
-                }
+            while (manager != null && manager.CurrentRoom == startRoom && Time.time <= giveUpAt)
                 yield return null;
+
+            bool shown = manager != null && manager.CurrentRoom != startRoom;
+            if (shown)
+            {
+                var room = manager.CurrentRoom;
+                show();
+
+                while (manager != null && manager.CurrentRoom == room && !DemonAnomaly.AnyRevealed)
+                    yield return null;
             }
 
-            var ghostRoom = manager.CurrentRoom;
+            hide(shown);
+            _running.Remove(type);
+        }
+
+        private void ShowGhostRoom(CameraFeedHud hud)
+        {
             hud.SetLabelOverride(PickRandom(ghostRoomLabels) ?? "CAM 0? — ??????");
             hud.SetGhostRoomImage(PickGhostImage());
+        }
 
-            while (manager.CurrentRoom == ghostRoom)
-                yield return null;
-
+        private void HideGhostRoom(CameraFeedHud hud, bool shown)
+        {
             hud.SetGhostRoomImage(null);
-            hud.ClearLabelOverride();
-            _running.Remove(CameraGlitchType.GhostRoom);
+            if (shown) hud.ClearLabelOverride();
+        }
+
+        private void ShowMirror(CameraFeedHud hud)
+        {
+            hud.SetMirrorImage(_mirrorTexture);
+            hud.SetLabelOverride($"{mirrorLabel}\n{mirrorHintText}");
+        }
+
+        private void HideMirror(CameraFeedHud hud, bool shown)
+        {
+            ReleaseMirror(hud);
+            if (shown) hud.ClearLabelOverride();
+        }
+
+        private void ReleaseMirror(CameraFeedHud hud)
+        {
+            if (hud != null) hud.SetMirrorImage(null);
+            if (_mirrorTexture != null) Destroy(_mirrorTexture);
+            _mirrorTexture = null;
         }
 
         private GameManager Manager()
@@ -218,26 +252,6 @@ namespace Report
             if (ghostRoomImages.Count > 1 && index == _lastGhostImage) index = (index + 1) % ghostRoomImages.Count;
             _lastGhostImage = index;
             return ghostRoomImages[index];
-        }
-
-        // Mirror - the feed claims to be looking at the security office itself, i.e. the player: the "feed" is their
-        // own desktop picture (loaded in PlayGlitch, kept only while this runs).
-        private IEnumerator MirrorRoutine(CameraFeedHud hud, float duration)
-        {
-            hud.SetMirrorImage(_mirrorTexture);
-            hud.SetLabelOverride($"{mirrorLabel}\n{mirrorHintText}");
-            yield return new WaitForSecondsRealtime(duration);
-
-            ReleaseMirror(hud);
-            hud.ClearLabelOverride();
-            _running.Remove(CameraGlitchType.Mirror);
-        }
-
-        private void ReleaseMirror(CameraFeedHud hud)
-        {
-            if (hud != null) hud.SetMirrorImage(null);
-            if (_mirrorTexture != null) Destroy(_mirrorTexture);
-            _mirrorTexture = null;
         }
 
         private static string PickRandom(List<string> pool)

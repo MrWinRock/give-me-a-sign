@@ -22,7 +22,7 @@ namespace Report
             public bool enabled = true;
             [Tooltip("How likely this effect is picked, relative to the others (not a duration). 0 = never.")]
             [Min(0f)] public float weight = 1f;
-            [Tooltip("How long the effect lasts, in seconds - a random value between the two ends each time. NOT used by Ghost Room: it lasts until the player changes room.")]
+            [Tooltip("How long the effect lasts, in seconds - a random value between the two ends each time. NOT used by Ghost Room or Mirror: they last until the player changes room.")]
             [GG.MinMaxSlider(0.5f, 15f, true)] public Vector2 durationRange = new Vector2(2f, 4f);
         }
 

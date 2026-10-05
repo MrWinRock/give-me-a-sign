@@ -70,7 +70,7 @@ namespace GiveMeASign.EditorTools
 
             var message = XPControls.Text(confirmBody, "Message", font, "Return to the main menu? Today's shift progress will be lost.",
                 style.labelSize, style.label, false, TextAlignmentOptions.TopLeft);
-            message.enableWordWrapping = true;
+            message.textWrappingMode = TextWrappingModes.Normal;
             XPControls.SetPreferred(message.gameObject, height: ConfirmHeight - TitlebarHeight - ButtonHeight - BodyPadding * 2f - SectionSpacing);
 
             var confirmRow = NewButtonRow(confirmBody, ButtonHeight, 0f);
