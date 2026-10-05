@@ -276,6 +276,14 @@ namespace Audio
             src.clip = def.clip;
             src.volume = def.volume; // authored level; RegisterSource captures it as base
             RegisterSource(src, def.channel);
+
+            // RegisterSource ignores an already-registered source, so from the second play on the line
+            // above would leave the loop at full authored volume. Re-apply the player's sliders.
+            if (_sources.TryGetValue(src, out var reg))
+            {
+                reg.baseVolume = def.volume;
+                ApplyTo(src, reg);
+            }
             src.Play();
             return src;
         }
