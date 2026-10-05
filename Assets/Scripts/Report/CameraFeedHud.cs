@@ -36,7 +36,7 @@ namespace Report
 
         [Header("Refs (set in the prefab)")]
         [SerializeField] private TextMeshProUGUI labelText;
-        [Tooltip("Full-screen black cover shown by the Blackout glitch. Keep it inactive and BEHIND the label.")]
+        [Tooltip("Full-screen black cover shown by the Blackout glitch and behind the Mirror picture. Keep it inactive and BEHIND the label.")]
         [SerializeField] private GameObject blackout;
         [Tooltip("Picture shown by the Mirror glitch (the player's wallpaper), at its own pixel size in the centre. Keep it inactive and BEHIND the label.")]
         [SerializeField] private RawImage mirrorImage;
@@ -49,6 +49,8 @@ namespace Report
 
         private string _labelOverride;
         private bool _labelFrozen;
+        private bool _blackoutOn;
+        private bool _mirrorShown;
 
         // What the label currently shows, so Update() only rebuilds TMP text when the value changes.
         private string _lastDisplayedLabel;
@@ -117,8 +119,10 @@ namespace Report
         {
             if (mirrorImage == null) return;
 
-            mirrorImage.gameObject.SetActive(texture != null);
+            _mirrorShown = texture != null;
+            mirrorImage.gameObject.SetActive(_mirrorShown);
             mirrorImage.texture = texture;
+            if (blackout != null) blackout.SetActive(_mirrorShown || _blackoutOn); // black backdrop behind the picture
             if (texture == null) return;
 
             // The Canvas scales with the screen, so divide by its scale factor to land on real pixels.
@@ -134,7 +138,8 @@ namespace Report
 
         public void SetBlackout(bool on)
         {
-            if (blackout != null) blackout.SetActive(on);
+            _blackoutOn = on;
+            if (blackout != null) blackout.SetActive(on || _mirrorShown);
             if (labelText != null) labelText.gameObject.SetActive(!on);
         }
     }
