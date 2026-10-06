@@ -16,4 +16,16 @@ MonoBehaviour:
   displayName: Hallway
   cameraX: 0
   cameraOrder: 0
+  mishearings:
+  - hall
+  - halway
+  - hollway
+  - holway
+  - holeway
+  - hall way
+  - hollow way
+  - hallways
+  - harway
+  - hallo way
+  - whole way
   manualNote: 

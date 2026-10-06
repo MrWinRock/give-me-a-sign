@@ -13,8 +13,65 @@ MonoBehaviour:
   m_Name: ObservationVocabulary
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.ObservationVocabulary
   minFuzzyWordLength: 3
-  wordSimilarity: 0.6
-  roomSimilarity: 0.5
+  wordSimilarity: 0.55
+  wordSimilarityWithRoom: 0.45
+  roomSimilarity: 0.45
+  ignoredWords:
+  - the
+  - a
+  - an
+  - in
+  - on
+  - at
+  - is
+  - it
+  - its
+  - i
+  - im
+  - see
+  - saw
+  - there
+  - theres
+  - here
+  - and
+  - to
+  - of
+  - this
+  - that
+  - with
+  - my
+  - room
+  - near
+  - by
+  - some
+  - something
+  - thing
+  - one
+  - please
+  - copy
+  - over
+  - hq
+  - hello
+  - hey
+  - yes
+  - no
+  - okay
+  - ok
+  - now
+  - just
+  - think
+  - look
+  - wall
+  - floor
+  - corner
+  - window
+  - table
+  - bed
+  - inside
+  - outside
+  - front
+  - behind
+  - next
   phraseSimilarity: 0.65
   useSoundAlike: 1
   entries:
@@ -22,35 +79,103 @@ MonoBehaviour:
     label: Figure
     phrases:
     - figure
+    mishearings:
+    - figger
+    - figur
+    - figa
+    - finger
+    - feature
+    - figures
+    - pigure
   - type: 1
     label: Shadow
     phrases:
     - shadow
+    mishearings:
+    - shado
+    - shadoe
+    - sadow
+    - chadow
+    - shallow
+    - shadows
+    - shatter
+    - shadowy
   - type: 2
     label: Furniture
     phrases:
     - furniture
+    mishearings:
+    - furnitur
+    - furniter
+    - funiture
+    - fernichure
+    - fur niture
+    - furnish
+    - furnished
   - type: 3
     label: Wardrobe
     phrases:
     - wardrobe
+    mishearings:
+    - wardrop
+    - word robe
+    - ward robe
+    - wad robe
+    - war drop
+    - ward rope
+    - wardrobes
   - type: 4
     label: Missing
     phrases:
     - missing
+    mishearings:
+    - mising
+    - messing
+    - missed
+    - misting
   - type: 5
     label: Door
     phrases:
     - door
+    mishearings:
+    - dor
+    - doa
+    - dore
+    - doors
+    - dour
+    - dorr
   - type: 6
     label: Light
     phrases:
     - light
+    mishearings:
+    - lite
+    - right
+    - lait
+    - rite
+    - lights
+    - lighting
   - type: 7
     label: Picture
     phrases:
     - picture
+    mishearings:
+    - pigture
+    - pitcher
+    - picher
+    - pikchur
+    - pick sure
+    - pictures
+    - pickture
   - type: 8
     label: Demon
     phrases:
     - demon
+    mishearings:
+    - daemon
+    - deamon
+    - deemon
+    - diamond
+    - damon
+    - demons
+    - lemon

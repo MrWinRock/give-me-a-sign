@@ -97,6 +97,45 @@ namespace Whisper
             return sb.ToString();
         }
 
+        // Accent-tolerant closeness, 0..1, for report words and room names.
+        // A weak match must at least start with the same sound, so "room" never reads as "bedroom".
+        public static float FuzzyScore(string heard, string target, bool useSoundAlike = true)
+        {
+            if (heard == target) return 1f;
+
+            string a = Fold(heard), b = Fold(target);
+            if (a == b) return 0.97f;
+
+            float score = Mathf.Max(Similarity(heard, target), Similarity(a, b) * 0.97f);
+            if (useSoundAlike && (SoundsAlike(heard, target) || SoundsAlike(a, b))) score = Mathf.Max(score, 0.9f);
+
+            if (score < 0.7f && (a.Length == 0 || b.Length == 0 || a[0] != b[0])) return 0f;
+            return score;
+        }
+
+        // Folds sounds Thai and other non-native speakers (and Whisper) commonly swap: r/l, v/w, sh/ch/s, th/t, silent gh, doubled letters.
+        public static string Fold(string word)
+        {
+            if (string.IsNullOrEmpty(word)) return "";
+
+            string s = word.ToLowerInvariant()
+                .Replace("tch", "ch").Replace("gh", "").Replace("ph", "f").Replace("th", "t")
+                .Replace("sh", "s").Replace("ch", "s").Replace("ck", "k").Replace("qu", "kw").Replace("x", "ks");
+
+            var sb = new System.Text.StringBuilder(s.Length);
+            char previous = '\0';
+            foreach (char raw in s)
+            {
+                char c = raw == 'r' ? 'l' : raw == 'v' ? 'w' : raw == 'z' ? 's' : raw == 'c' || raw == 'q' ? 'k' : raw == 'y' ? 'i' : raw;
+                if (c == previous) continue;
+                sb.Append(c);
+                previous = c;
+            }
+
+            if (sb.Length > 3 && sb[sb.Length - 1] == 'e') sb.Length--; // "lite" ~ "light"
+            return sb.ToString();
+        }
+
         public static float Similarity(string a, string b)
         {
             if (a.Length == 0 && b.Length == 0) return 1f;

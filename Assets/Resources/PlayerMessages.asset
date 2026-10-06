@@ -17,7 +17,7 @@ MonoBehaviour:
     text: TOO MANY ANOMALIES ({0}) - REPORT THEM BEFORE THE BUILDING FALLS
     blink: 1
   - id: 1
-    text: MIC LIVE - DO NOT SPEAK... {0}
+    text: "\u0E2B\u0E49\u0E32\u0E21\u0E1E\u0E39\u0E14... {0}"
     blink: 1
   - id: 2
     text: COPY THAT

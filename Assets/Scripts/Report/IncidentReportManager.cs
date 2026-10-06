@@ -119,16 +119,15 @@ namespace Report
         {
             if (IsReportOpen || string.IsNullOrWhiteSpace(spoken)) return RadioReportOutcome.NotAReport;
 
-            // Room first: its words are taken out before the anomaly name is looked for.
             var vocabulary = ObservationVocabulary.Load();
-            string room = FindSpokenRoom(spoken, out string withoutRoom);
-            bool mentionsWhat = MentionsAnyObservation(vocabulary, withoutRoom);
+            string room = FindSpokenRoom(spoken);
+            bool mentionsWhat = MentionsAnyObservation(vocabulary, spoken, room != null);
             if (!mentionsWhat && room == null) return RadioReportOutcome.NotAReport;
 
             // A report is "what + where". Half of one is asked back and remembered, so the other half
             // alone completes it ("kitchen" ... "You see what?" ... "shadow").
             bool fresh = Time.unscaledTime - _pendingAt <= partialReportMemorySeconds;
-            string whatText = withoutRoom;
+            string whatText = spoken;
 
             if (mentionsWhat && room == null)
             {
@@ -162,7 +161,7 @@ namespace Report
             RadioReportOutcome volumeMiss = RadioReportOutcome.NotAReport;
             foreach (var anomaly in Anomaly.ActiveAnomalies)
             {
-                if (anomaly == null || anomaly.IsReported || !IsReportable(anomaly, room)
+                if (anomaly == null || anomaly.IsReported || !IsReportable(anomaly, room, room != null)
                     || (room != null && !MatchesLocationStrict(anomaly, room)))
                     continue;
 
@@ -245,76 +244,77 @@ namespace Report
         // Once the anomaly the half-report was about is gone, nothing should linger to complete a stale report.
         private void HandleAnomalyGone(Anomaly _) => ClearPartialReport();
 
-        private static bool MentionsAnyObservation(ObservationVocabulary vocabulary, string spoken)
+        private static bool MentionsAnyObservation(ObservationVocabulary vocabulary, string spoken, bool roomKnown)
         {
             foreach (ObservationType type in Enum.GetValues(typeof(ObservationType)))
             {
-                if (vocabulary.Mentions(spoken, type)) return true;
+                if (vocabulary.Mentions(spoken, type, roomKnown)) return true;
             }
             return false;
         }
 
         private static readonly char[] SpokenSeparators = { ' ', ',', '.', '!', '?', '-', ':', ';', '"' };
 
-        // Room names come first: the best-matching word (or word pair, for "bed room" / "kit chen") is the room,
-        // and those words are removed from withoutRoom so they can never also count as the anomaly's name.
-        private static string FindSpokenRoom(string spoken, out string withoutRoom)
+        // The best-matching word (or word pair, for "bed room" / "kit chen") against each room's name AND its
+        // mishearings list on the RoomDefinition ("kichen", "bad room").
+        private static string FindSpokenRoom(string spoken)
         {
-            withoutRoom = spoken ?? "";
             if (string.IsNullOrWhiteSpace(spoken)) return null;
 
             var vocabulary = ObservationVocabulary.Load();
-            var names = RoomRegistry.DisplayNames();
             var words = spoken.ToLowerInvariant().Split(SpokenSeparators, StringSplitOptions.RemoveEmptyEntries);
 
             string best = null;
             float bestScore = vocabulary.RoomSimilarity;
-            int bestStart = -1, bestLength = 0;
 
+            foreach (var anchor in RoomRegistry.All)
+            {
+                var room = anchor != null ? anchor.Room : null;
+                if (room == null) continue;
+
+                float score = BestRoomScore(words, Squash(room.Label), vocabulary);
+                if (room.mishearings != null)
+                {
+                    foreach (var misheard in room.mishearings)
+                    {
+                        if (string.IsNullOrWhiteSpace(misheard)) continue;
+                        score = Mathf.Max(score, BestRoomScore(words, Squash(misheard), vocabulary));
+                    }
+                }
+
+                if (score >= bestScore && (best == null || score > bestScore))
+                {
+                    bestScore = score;
+                    best = room.Label;
+                }
+            }
+            return best;
+        }
+
+        private static float BestRoomScore(string[] words, string target, ObservationVocabulary vocabulary)
+        {
+            if (target.Length == 0) return 0f;
+
+            float best = 0f;
             for (int i = 0; i < words.Length; i++)
             {
                 for (int length = 1; length <= 2 && i + length <= words.Length; length++)
                 {
                     string candidate = Squash(length == 1 ? words[i] : words[i] + words[i + 1]);
-                    if (candidate.Length < 4) continue;
-
-                    foreach (var name in names)
-                    {
-                        float score = RoomScore(candidate, Squash(name), vocabulary);
-                        // Ties go to the single word, so "kitchen door" never swallows "door".
-                        if (score > bestScore || (score == bestScore && best == null))
-                        {
-                            bestScore = score;
-                            best = name;
-                            bestStart = i;
-                            bestLength = length;
-                        }
-                    }
+                    if (candidate.Length < 3) continue;
+                    best = Mathf.Max(best, RoomScore(candidate, target, vocabulary));
                 }
             }
-
-            if (best == null) return null;
-
-            var rest = new System.Text.StringBuilder();
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (i >= bestStart && i < bestStart + bestLength) continue;
-                if (rest.Length > 0) rest.Append(' ');
-                rest.Append(words[i]);
-            }
-            withoutRoom = rest.ToString();
             return best;
         }
 
-        // Exact or "kitchens" = 1; a clear start of the name ("hall", "kitch") is accepted; otherwise edit distance / sound-alike.
+        // Exact or "kitchens" = 1; a clear start of the name ("hall", "kitch") is accepted; otherwise accent-tolerant fuzzy score.
         private static float RoomScore(string candidate, string room, ObservationVocabulary vocabulary)
         {
             if (candidate == room || candidate.StartsWith(room, StringComparison.Ordinal)) return 1f;
-            if (room.StartsWith(candidate, StringComparison.Ordinal)) return 0.9f;
+            if (candidate.Length >= 4 && room.StartsWith(candidate, StringComparison.Ordinal)) return 0.9f;
 
-            float score = PhraseMatcher.Similarity(candidate, room);
-            if (vocabulary.UseSoundAlike && PhraseMatcher.SoundsAlike(candidate, room)) score = Mathf.Max(score, 0.95f);
-            return score;
+            return PhraseMatcher.FuzzyScore(candidate, room, vocabulary.UseSoundAlike);
         }
 
         private static string Squash(string text)
@@ -524,13 +524,13 @@ namespace Report
             return null;
         }
 
-        private bool IsReportable(Anomaly anomaly, string selectedRoom)
+        private bool IsReportable(Anomaly anomaly, string selectedRoom, bool roomKnown = false)
         {
             if (anomaly == null || !anomaly.isActiveAndEnabled || anomaly.State == AnomalyState.Resolved) return false;
-            return MatchesObservation(anomaly) && MatchesLocation(anomaly, selectedRoom);
+            return MatchesObservation(anomaly, roomKnown) && MatchesLocation(anomaly, selectedRoom);
         }
 
-        private bool MatchesObservation(Anomaly anomaly)
+        private bool MatchesObservation(Anomaly anomaly, bool roomKnown)
         {
             var definition = anomaly.Definition;
 
@@ -543,7 +543,7 @@ namespace Report
             }
 
             var vocabulary = ObservationVocabulary.Load();
-            if (vocabulary.Mentions(_recognizedKeyword, definition.observation)) return true;
+            if (vocabulary.Mentions(_recognizedKeyword, definition.observation, roomKnown)) return true;
 
             if (definition.correctKeywords == null) return false;
 

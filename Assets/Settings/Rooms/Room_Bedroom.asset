@@ -16,4 +16,15 @@ MonoBehaviour:
   displayName: Bedroom
   cameraX: 17.73
   cameraOrder: 1
+  mishearings:
+  - bed room
+  - bad room
+  - bedrom
+  - bedroon
+  - bet room
+  - bedloom
+  - bread room
+  - bedrooms
+  - bedrum
+  - bat room
   manualNote: 

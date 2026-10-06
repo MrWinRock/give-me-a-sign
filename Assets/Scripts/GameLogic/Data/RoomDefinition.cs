@@ -21,6 +21,9 @@ namespace GameLogic.Data
         [Tooltip("ลำดับในตัวสลับกล้อง. Rooms are cycled in this order by the Next/Previous buttons.")]
         public int cameraOrder;
 
+        [Tooltip("คำที่ผู้เล่นพูดเพี้ยนหรือ Whisper ได้ยินผิด แต่ให้นับเป็นห้องนี้ (เช่น 'kichen', 'bad room'). Spaces are ignored.")]
+        public string[] mishearings = System.Array.Empty<string>();
+
         [TextArea] public string manualNote;
 
         public string Label => string.IsNullOrWhiteSpace(displayName) ? roomId : displayName;

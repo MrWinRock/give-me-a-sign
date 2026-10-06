@@ -16,4 +16,16 @@ MonoBehaviour:
   displayName: Kitchen
   cameraX: 36.12
   cameraOrder: 2
+  mishearings:
+  - kichen
+  - kitchin
+  - kitchan
+  - kitshen
+  - ketchen
+  - kitten
+  - chicken
+  - kitching
+  - kit chen
+  - keechen
+  - kitsen
   manualNote: 
