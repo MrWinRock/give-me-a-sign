@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.CinematicData
   cinematicId: Cinematic_Act3_Transition
   kind: 1
-  clip: {fileID: 0}
+  clip: {fileID: 32900000, guid: e0c4790ce04c9434f9d6a557d22b63df, type: 3}
   skippableAfterSeconds: 2
   placeholderTitle: C.N.A. NEWS - AUTHORITY TRANSFERRED
   placeholderSubtitle: The Bureau now answers to no one.

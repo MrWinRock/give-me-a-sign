@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.CinematicData
   cinematicId: Cinematic_Training_Night4
   kind: 2
-  clip: {fileID: 0}
+  clip: {fileID: 32900000, guid: 0dde0ba6e67e0ac46bc55a7fd1179e74, type: 3}
   skippableAfterSeconds: 2
   placeholderTitle: TRAINING - NEW SUBJECTS DETECTED
   placeholderSubtitle: Update your field manual.
