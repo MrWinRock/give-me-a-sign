@@ -22,18 +22,18 @@ namespace GameLogic.Data
             [Tooltip("Shown to the player (Field Manual, report feedback).")]
             public string label;
 
-            [Tooltip("Any of these spoken counts. Multi-word phrases need every word heard. List likely mishearings too.")]
+            [Tooltip("The name the player says. Keep it to ONE word - each heard word counts for the closest name, so extra names only add false matches.")]
             public string[] phrases;
         }
 
         [Tooltip("Words shorter than this must be heard exactly - fuzzy matching tiny words ('a', 'in') matches almost anything.")]
-        [Min(1)] [SerializeField] private int minFuzzyWordLength = 4;
+        [Min(1)] [SerializeField] private int minFuzzyWordLength = 3;
 
         [Tooltip("How close a heard word must be to a vocabulary word (1 = exact). LOWER = more forgiving of accents and mishearings.")]
-        [Range(0.5f, 1f)] [SerializeField] private float wordSimilarity = 0.65f;
+        [Range(0.4f, 1f)] [SerializeField] private float wordSimilarity = 0.6f;
 
-        [Tooltip("Same, for room names (Kitchen, Hallway, Bedroom).")]
-        [Range(0.5f, 1f)] [SerializeField] private float roomSimilarity = 0.6f;
+        [Tooltip("Same, for room names (Kitchen, Hallway, Bedroom). Rooms are matched FIRST and their words removed before the anomaly name is looked for.")]
+        [Range(0.4f, 1f)] [SerializeField] private float roomSimilarity = 0.5f;
 
         [Tooltip("Same, for the Radio Check answer words ('copy', 'all clear' ...).")]
         [Range(0.5f, 1f)] [SerializeField] private float phraseSimilarity = 0.65f;
@@ -94,18 +94,52 @@ namespace GameLogic.Data
             return System.Array.Empty<string>();
         }
 
+        // Each heard word counts for the ONE observation it sounds closest to, so a loose threshold
+        // can't make a single mishearing report two different things.
         public bool Mentions(string spoken, ObservationType type)
         {
+            if (string.IsNullOrWhiteSpace(spoken)) return false;
+
+            var words = Split(spoken);
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (ClosestType(words[i], out var closest) && closest == type) return true;
+
+                // Whisper sometimes splits a word in two ("word robe", "pic ture").
+                if (i + 1 < words.Length && ClosestType(words[i] + words[i + 1], out closest) && closest == type) return true;
+            }
+
+            // Multi-word phrases ("dark shape") still need every word heard.
             foreach (var entry in entries)
             {
                 if (entry == null || entry.type != type || entry.phrases == null) continue;
 
                 foreach (var phrase in entry.phrases)
                 {
-                    if (PhraseHeard(spoken, phrase)) return true;
+                    if (phrase != null && phrase.IndexOf(' ') >= 0 && PhraseHeard(spoken, phrase)) return true;
                 }
             }
             return false;
+        }
+
+        private bool ClosestType(string word, out ObservationType type)
+        {
+            type = default;
+            float best = 0f;
+
+            foreach (var entry in entries)
+            {
+                if (entry == null || entry.phrases == null) continue;
+
+                foreach (var phrase in entry.phrases)
+                {
+                    if (string.IsNullOrWhiteSpace(phrase) || phrase.IndexOf(' ') >= 0) continue;
+
+                    float score = WordScore(word, phrase.Trim().ToLowerInvariant());
+                    if (score > best) { best = score; type = entry.type; }
+                }
+            }
+            return best >= wordSimilarity;
         }
 
         public bool PhraseHeard(string spoken, string phrase)
@@ -124,21 +158,25 @@ namespace GameLogic.Data
         {
             foreach (var word in heard)
             {
-                if (word == target) return true;
-
-                if (word.Length < minFuzzyWordLength || target.Length < minFuzzyWordLength) continue;
-
-                // Plurals and tense ("doors", "moved") without letting short words match everything.
-                if (word.StartsWith(target, StringComparison.Ordinal) || target.StartsWith(word, StringComparison.Ordinal))
-                    return true;
-
-                if (Whisper.PhraseMatcher.Similarity(word, target) >= wordSimilarity)
-                    return true;
-
-                if (useSoundAlike && Whisper.PhraseMatcher.SoundsAlike(word, target))
-                    return true;
+                if (WordScore(word, target) >= wordSimilarity) return true;
             }
             return false;
+        }
+
+        // 1 = exact. Plurals/tense ("doors", "moved") and accents ("figur", "shadoe") score high; tiny words only match exactly.
+        public float WordScore(string word, string target)
+        {
+            if (word == target) return 1f;
+            if (word.Length < minFuzzyWordLength || target.Length < minFuzzyWordLength) return 0f;
+
+            // Prefix needs 4+ letters, or "war"/"pic" would count for wardrobe/picture.
+            if (Mathf.Min(word.Length, target.Length) >= 4 &&
+                (word.StartsWith(target, StringComparison.Ordinal) || target.StartsWith(word, StringComparison.Ordinal)))
+                return 0.95f;
+
+            float score = Whisper.PhraseMatcher.Similarity(word, target);
+            if (useSoundAlike && Whisper.PhraseMatcher.SoundsAlike(word, target)) score = Mathf.Max(score, 0.9f);
+            return score;
         }
 
         private static readonly char[] Separators = { ' ', ',', '.', '!', '?', '-', ':', ';', '"', '\'' };
@@ -151,24 +189,15 @@ namespace GameLogic.Data
 
         private static List<Entry> DefaultEntries() => new List<Entry>
         {
-            new Entry { type = ObservationType.Intruder, label = "Intruder",
-                phrases = new[] { "person", "someone", "somebody", "figure", "intruder", "man", "woman", "people", "body", "guy", "stranger" } },
-            new Entry { type = ObservationType.Shadow, label = "Shadow",
-                phrases = new[] { "shadow", "shape", "blob", "darkness", "dark shape", "silhouette" } },
-            new Entry { type = ObservationType.ObjectMoved, label = "Object moved",
-                phrases = new[] { "moved", "chair", "furniture", "misplaced", "fallen", "knocked", "displaced", "out of place", "pillow", "cushion" } },
-            new Entry { type = ObservationType.ExtraObject, label = "Extra object",
-                phrases = new[] { "extra", "appeared", "new object", "wardrobe", "cabinet", "closet", "something new", "wasn't there" } },
-            new Entry { type = ObservationType.MissingObject, label = "Missing object",
-                phrases = new[] { "missing", "gone", "disappeared", "vanished", "removed", "taken" } },
-            new Entry { type = ObservationType.Door, label = "Door",
-                phrases = new[] { "door", "doorway", "opened", "open door" } },
-            new Entry { type = ObservationType.Light, label = "Light",
-                phrases = new[] { "light", "lights", "lamp", "bulb", "flicker", "flickering" } },
-            new Entry { type = ObservationType.Picture, label = "Picture",
-                phrases = new[] { "picture", "painting", "photo", "portrait", "frame" } },
-            new Entry { type = ObservationType.Demon, label = "Demon",
-                phrases = new[] { "demon", "devil", "monster", "creature" } },
+            new Entry { type = ObservationType.Intruder, label = "Figure", phrases = new[] { "figure" } },
+            new Entry { type = ObservationType.Shadow, label = "Shadow", phrases = new[] { "shadow" } },
+            new Entry { type = ObservationType.ObjectMoved, label = "Furniture", phrases = new[] { "furniture" } },
+            new Entry { type = ObservationType.ExtraObject, label = "Wardrobe", phrases = new[] { "wardrobe" } },
+            new Entry { type = ObservationType.MissingObject, label = "Missing", phrases = new[] { "missing" } },
+            new Entry { type = ObservationType.Door, label = "Door", phrases = new[] { "door" } },
+            new Entry { type = ObservationType.Light, label = "Light", phrases = new[] { "light" } },
+            new Entry { type = ObservationType.Picture, label = "Picture", phrases = new[] { "picture" } },
+            new Entry { type = ObservationType.Demon, label = "Demon", phrases = new[] { "demon" } },
         };
     }
 }

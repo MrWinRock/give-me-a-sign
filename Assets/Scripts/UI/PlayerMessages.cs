@@ -104,7 +104,7 @@ namespace UI
         private static List<Message> Defaults() => new List<Message>
         {
             new Message { id = MessageId.OverloadWarning, text = "TOO MANY ANOMALIES ({0}) - REPORT THEM BEFORE THE BUILDING FALLS", blink = true },
-            new Message { id = MessageId.StealthHint, text = "MIC LIVE - WHISPER ONLY... {0}", blink = true },
+            new Message { id = MessageId.StealthHint, text = "MIC LIVE - DO NOT SPEAK... {0}", blink = true },
             new Message { id = MessageId.ReportConfirmed, text = "COPY THAT" },
             new Message { id = MessageId.ReportNegative, text = "NEGATIVE" },
             new Message { id = MessageId.ReportNeedRoom, text = "WHICH ROOM?" },

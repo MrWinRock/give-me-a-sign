@@ -119,15 +119,16 @@ namespace Report
         {
             if (IsReportOpen || string.IsNullOrWhiteSpace(spoken)) return RadioReportOutcome.NotAReport;
 
+            // Room first: its words are taken out before the anomaly name is looked for.
             var vocabulary = ObservationVocabulary.Load();
-            string room = FindSpokenRoom(spoken);
-            bool mentionsWhat = MentionsAnyObservation(vocabulary, spoken);
+            string room = FindSpokenRoom(spoken, out string withoutRoom);
+            bool mentionsWhat = MentionsAnyObservation(vocabulary, withoutRoom);
             if (!mentionsWhat && room == null) return RadioReportOutcome.NotAReport;
 
             // A report is "what + where". Half of one is asked back and remembered, so the other half
             // alone completes it ("kitchen" ... "You see what?" ... "shadow").
             bool fresh = Time.unscaledTime - _pendingAt <= partialReportMemorySeconds;
-            string whatText = spoken;
+            string whatText = withoutRoom;
 
             if (mentionsWhat && room == null)
             {
@@ -137,7 +138,7 @@ namespace Report
                 }
                 else
                 {
-                    RememberPartial(spoken.Trim(), null);
+                    RememberPartial(whatText.Trim(), null);
                     return RadioReportOutcome.NeedRoom;
                 }
             }
@@ -157,6 +158,7 @@ namespace Report
             _recognizedKeyword = whatText.Trim();
 
             Anomaly matched = null;
+            bool onlySilentOne = false;
             RadioReportOutcome volumeMiss = RadioReportOutcome.NotAReport;
             foreach (var anomaly in Anomaly.ActiveAnomalies)
             {
@@ -165,13 +167,14 @@ namespace Report
                     continue;
 
                 var required = anomaly.Definition != null ? anomaly.Definition.voiceResponse : VoiceResponse.None;
-                if (required == VoiceResponse.Silence) required = VoiceResponse.Whisper; // stealth: must be whispered
 
-                if (!ignoreVolume && required == VoiceResponse.Whisper && level != VoiceLevel.Whisper)
+                // Stealth ones can't be reported - only silence makes them leave. Not a wrong call either.
+                if (required == VoiceResponse.Silence)
                 {
-                    if (volumeMiss == RadioReportOutcome.NotAReport) volumeMiss = RadioReportOutcome.TooLoud;
+                    onlySilentOne = true;
                     continue;
                 }
+
                 if (!ignoreVolume && required == VoiceResponse.Shout && level != VoiceLevel.Shout)
                 {
                     if (volumeMiss == RadioReportOutcome.NotAReport) volumeMiss = RadioReportOutcome.TooQuiet;
@@ -186,6 +189,12 @@ namespace Report
             {
                 RememberPartial(whatText.Trim(), room); // right words, wrong volume: the retry needs no repeating
                 return volumeMiss;
+            }
+
+            if (matched == null && onlySilentOne)
+            {
+                ClearPartialReport();
+                return RadioReportOutcome.NotAReport;
             }
 
             ClearPartialReport();
@@ -245,36 +254,67 @@ namespace Report
             return false;
         }
 
-        // Spaces/punctuation ignored so "bed room" or "Bedroom." both hear as Bedroom.
-        private static string FindSpokenRoom(string spoken)
+        private static readonly char[] SpokenSeparators = { ' ', ',', '.', '!', '?', '-', ':', ';', '"' };
+
+        // Room names come first: the best-matching word (or word pair, for "bed room" / "kit chen") is the room,
+        // and those words are removed from withoutRoom so they can never also count as the anomaly's name.
+        private static string FindSpokenRoom(string spoken, out string withoutRoom)
         {
+            withoutRoom = spoken ?? "";
+            if (string.IsNullOrWhiteSpace(spoken)) return null;
+
             var vocabulary = ObservationVocabulary.Load();
-            string squashed = Squash(spoken);
             var names = RoomRegistry.DisplayNames();
+            var words = spoken.ToLowerInvariant().Split(SpokenSeparators, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var name in names)
-            {
-                if (squashed.Contains(Squash(name))) return name;
-            }
-
-            // Mishearings and accents ("kitchin", "kichen"): accept a close-enough single word (leniency is set on the vocabulary asset).
             string best = null;
             float bestScore = vocabulary.RoomSimilarity;
-            foreach (var word in spoken.ToLowerInvariant().Split(new[] { ' ', ',', '.', '!', '?', '-' }, StringSplitOptions.RemoveEmptyEntries))
+            int bestStart = -1, bestLength = 0;
+
+            for (int i = 0; i < words.Length; i++)
             {
-                if (word.Length < 4) continue;
-
-                foreach (var name in names)
+                for (int length = 1; length <= 2 && i + length <= words.Length; length++)
                 {
-                    string target = Squash(name);
-                    if (target.Length < 5) continue;
+                    string candidate = Squash(length == 1 ? words[i] : words[i] + words[i + 1]);
+                    if (candidate.Length < 4) continue;
 
-                    float score = PhraseMatcher.Similarity(word, target);
-                    if (vocabulary.UseSoundAlike && PhraseMatcher.SoundsAlike(word, target)) score = Mathf.Max(score, 0.99f);
-                    if (score >= bestScore) { bestScore = score; best = name; }
+                    foreach (var name in names)
+                    {
+                        float score = RoomScore(candidate, Squash(name), vocabulary);
+                        // Ties go to the single word, so "kitchen door" never swallows "door".
+                        if (score > bestScore || (score == bestScore && best == null))
+                        {
+                            bestScore = score;
+                            best = name;
+                            bestStart = i;
+                            bestLength = length;
+                        }
+                    }
                 }
             }
+
+            if (best == null) return null;
+
+            var rest = new System.Text.StringBuilder();
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (i >= bestStart && i < bestStart + bestLength) continue;
+                if (rest.Length > 0) rest.Append(' ');
+                rest.Append(words[i]);
+            }
+            withoutRoom = rest.ToString();
             return best;
+        }
+
+        // Exact or "kitchens" = 1; a clear start of the name ("hall", "kitch") is accepted; otherwise edit distance / sound-alike.
+        private static float RoomScore(string candidate, string room, ObservationVocabulary vocabulary)
+        {
+            if (candidate == room || candidate.StartsWith(room, StringComparison.Ordinal)) return 1f;
+            if (room.StartsWith(candidate, StringComparison.Ordinal)) return 0.9f;
+
+            float score = PhraseMatcher.Similarity(candidate, room);
+            if (vocabulary.UseSoundAlike && PhraseMatcher.SoundsAlike(candidate, room)) score = Mathf.Max(score, 0.95f);
+            return score;
         }
 
         private static string Squash(string text)

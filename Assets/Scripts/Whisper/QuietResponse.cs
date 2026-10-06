@@ -12,9 +12,9 @@ using UnityEngine.InputSystem;
 namespace Whisper
 {
     /// <summary>
-    /// Stealth anomalies: while one is out, the game holds the radio mic open. Whispering (or saying
-    /// nothing) is safe - a whispered report with the right words banishes it like any other, and
-    /// 8 quiet seconds make it leave. Speaking louder than a whisper is heard: night lost.
+    /// Stealth anomalies: once the player finds one with the cursor, the game holds the radio mic open
+    /// and the player must not speak at all. Enough quiet seconds make it leave; any voice - even a
+    /// whisper - is heard: night lost.
     /// </summary>
     public class QuietResponse : MonoBehaviour
     {
@@ -24,8 +24,11 @@ namespace Whisper
         [Tooltip("Seconds of unbroken silence needed after the anomaly appears.")]
         [Min(1f)] [SerializeField] private float quietSeconds = 8f;
 
-        [Tooltip("Seconds of louder-than-a-whisper sound it takes to be caught - ignores a single cough or click. The whisper band comes from NoiseMeter.")]
+        [Tooltip("Seconds of normal-or-louder voice it takes to be caught - ignores a single cough or click. The bands come from NoiseMeter.")]
         [Min(0f)] [SerializeField] private float toleranceSeconds = 0.3f;
+
+        [Tooltip("Seconds of whisper-level sound it takes to be caught. Longer than the above so breathing or a chair creak doesn't count, but a whispered sentence does.")]
+        [Min(0f)] [SerializeField] private float whisperToleranceSeconds = 0.8f;
 
         [Tooltip("Seconds after the mic is forced open before sound can catch the player (the open-mic click, reaching for the desk).")]
         [Min(0f)] [SerializeField] private float graceSeconds = 1f;
@@ -35,6 +38,7 @@ namespace Whisper
         private Anomaly _watched;
         private float _micOpenedAt;
         private float _soundSeconds;
+        private float _whisperSeconds;
         private bool _caught;
         private string _lastHint;
         private readonly HashSet<Anomaly> _found = new HashSet<Anomaly>();
@@ -132,6 +136,7 @@ namespace Whisper
             {
                 _micOpenedAt = Time.time;
                 _soundSeconds = 0f;
+                _whisperSeconds = 0f;
             }
             _watched = anomaly;
             GlobalPushToTalk.Instance?.SetForcedOpen(true);
@@ -157,17 +162,20 @@ namespace Whisper
             if (_caught || _watched == null || Time.timeScale <= 0f) return;
             if (Time.time - _micOpenedAt < graceSeconds) return;
 
-            // Breathing and a low whisper pass; normal speech or louder is heard.
+            // Silence resets the count; a whisper counts too, it just takes a little longer than speech.
             var meter = NoiseMeter.Instance;
             var level = meter != null ? meter.Classify(rms) : VoiceLevel.Normal;
-            if (level != VoiceLevel.Normal && level != VoiceLevel.Shout)
+            if (level == VoiceLevel.Silent)
             {
                 _soundSeconds = 0f;
+                _whisperSeconds = 0f;
                 return;
             }
 
-            _soundSeconds += seconds;
-            if (_soundSeconds >= toleranceSeconds)
+            if (level == VoiceLevel.Whisper) _whisperSeconds += seconds;
+            else _soundSeconds += seconds;
+
+            if (_soundSeconds >= toleranceSeconds || _soundSeconds + _whisperSeconds >= whisperToleranceSeconds)
                 Caught(_watched);
         }
 

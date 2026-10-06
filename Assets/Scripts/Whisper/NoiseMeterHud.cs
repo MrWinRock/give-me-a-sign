@@ -236,9 +236,9 @@ namespace Whisper
             return centre < low ? NoiseLevel.Low : centre < high ? NoiseLevel.Normal : NoiseLevel.Loud;
         }
 
+        // StayQuiet tints nothing: no zone is safe, the stealth anomaly wants no voice at all.
         private static bool IsRequired(NoiseLevel zone, NoiseMeter.Requirement required) =>
-            (required == NoiseMeter.Requirement.StayQuiet && zone == NoiseLevel.Low) ||
-            (required == NoiseMeter.Requirement.BeLoud && zone == NoiseLevel.Loud);
+            required == NoiseMeter.Requirement.BeLoud && zone == NoiseLevel.Loud;
 
         private Color ColorOf(NoiseLevel level) =>
             level == NoiseLevel.Low ? lowColor : level == NoiseLevel.Normal ? normalColor : loudColor;

@@ -30,7 +30,7 @@ namespace GameLogic.Data
         [Tooltip("Optional extra words also accepted for THIS anomaly only (e.g. 'hanging' for a figure on the ceiling).")]
         public string[] correctKeywords = System.Array.Empty<string>();
 
-        [GG.InfoBox("Silence = stealth: the mic is held live, the report must be whispered, and anything louder gets the guard caught.")]
+        [GG.InfoBox("Silence = stealth: it cannot be reported. The mic is held live and any voice (even a whisper) gets the guard caught; staying silent makes it leave.")]
         [Tooltip("How loudly this has to be reported. None = any volume.")]
         public VoiceResponse voiceResponse = VoiceResponse.None;
 

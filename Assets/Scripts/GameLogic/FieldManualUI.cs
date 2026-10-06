@@ -212,8 +212,11 @@ namespace GameLogic
             var vocabulary = ObservationVocabulary.Load();
             string category = vocabulary != null ? vocabulary.LabelFor(def.observation) : def.observation.ToString();
 
+            bool silent = def.voiceResponse == VoiceResponse.Silence;
             if (reportAsText != null)
-                reportAsText.text = locked ? "REPORT AS: ???" : $"REPORT AS: <b><color=#0A246A>{category}</color></b> + ROOM";
+                reportAsText.text = locked ? "REPORT AS: ???"
+                    : silent ? "<b><color=#A00000>DO NOT SPEAK</color></b>"
+                    : $"REPORT AS: <b><color=#0A246A>{category}</color></b> + ROOM";
 
             if (spotBodyText != null)
                 spotBodyText.text = locked ? "Not yet encountered." :
@@ -228,6 +231,10 @@ namespace GameLogic
         // second hand-authored list.
         private static string FormatKeywords(AnomalyDefinition def, ObservationVocabulary vocabulary)
         {
+            // It can't be reported - any voice at all gets the guard caught.
+            if (def.voiceResponse == VoiceResponse.Silence)
+                return "<b>Do not speak.</b> Find it with the cursor - the mic goes live. Stay completely silent until it leaves; any voice, even a whisper, finds you.";
+
             var words = new List<string>(vocabulary != null ? vocabulary.SamplePhrases(def.observation) : System.Array.Empty<string>());
 
             if (def.correctKeywords != null)
@@ -240,9 +247,7 @@ namespace GameLogic
 
             string volume = def.voiceResponse switch
             {
-                VoiceResponse.Whisper => "\n<b>Whisper it.</b> Speak quietly.",
                 VoiceResponse.Shout => "\n<b>Shout it.</b> Speak loudly.",
-                VoiceResponse.Silence => "\n<b>Find it with the cursor.</b> The moment you do, the mic goes live - whisper the report or keep silent; anything louder finds you.",
                 _ => ""
             };
 

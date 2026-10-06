@@ -112,9 +112,8 @@ namespace GiveMeASign.EditorTools
                 else if (definition.prefab.GetComponentInChildren<Anomaly>(true) == null)
                     errors.Add($"Anomaly '{label}' points at prefab '{definition.prefab.name}', which has no Anomaly component.");
 
-                if (definition.correctKeywords == null || definition.correctKeywords.Length == 0)
-                    errors.Add($"Anomaly '{label}' has no correctKeywords - it can never be reported correctly.");
-                else
+                // correctKeywords are optional extras now - the report name comes from ObservationVocabulary.
+                if (definition.correctKeywords != null)
                 {
                     foreach (var keyword in definition.correctKeywords)
                     {

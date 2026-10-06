@@ -37,8 +37,16 @@ namespace Report
             new VariantWeight { type = CameraGlitchType.Mirror,    weight = 0.5f, durationRange = new Vector2(3f, 6f) },
         };
 
+        [Header("Variety: effects not seen yet get likelier")]
+        [Tooltip("Each time an effect fires, every effect that hasn't fired yet this cycle gets this much extra weight (x its own weight). Once all have fired, everything resets to the base weights. 0 = plain random.")]
+        [Min(0f)] [SerializeField] private float unseenBoostPerPick = 0.75f;
+
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
+
+        // Static so the cycle carries over from night to night (the scene reloads each night).
+        private static readonly HashSet<CameraGlitchType> FiredThisCycle = new HashSet<CameraGlitchType>();
+        private static int _picksThisCycle;
 
         public HauntLoopId LoopId => HauntLoopId.CameraBetrayal;
         public bool IsActive => _controller != null && _controller.IsGlitchActive;
@@ -73,9 +81,49 @@ namespace Report
             var variant = PickVariant();
             float duration = Random.Range(Mathf.Min(variant.durationRange.x, variant.durationRange.y), Mathf.Max(variant.durationRange.x, variant.durationRange.y));
             bool started = _controller.PlayGlitch(variant.type, Mathf.Max(0.1f, duration));
+            if (started) RecordFired(variant.type);
 
             if (showDebugInfo)
-                Debug.Log($"CameraBetrayalHaunt: fired {variant.type} for {duration:0.0}s (started={started}).", this);
+                Debug.Log($"CameraBetrayalHaunt: fired {variant.type} for {duration:0.0}s (started={started}). Weights now: {DescribeWeights()}", this);
+        }
+
+        private void RecordFired(CameraGlitchType type)
+        {
+            FiredThisCycle.Add(type);
+            _picksThisCycle++;
+
+            // Every effect that can actually fire has had its turn: back to the base weights.
+            foreach (var v in variants)
+            {
+                if (IsEligible(v) && v.weight > 0f && !FiredThisCycle.Contains(v.type)) return;
+            }
+            FiredThisCycle.Clear();
+            _picksThisCycle = 0;
+        }
+
+        private float EffectiveWeight(VariantWeight v)
+        {
+            float weight = Mathf.Max(0f, v.weight);
+            return FiredThisCycle.Contains(v.type) ? weight : weight * (1f + unseenBoostPerPick * _picksThisCycle);
+        }
+
+        public string DescribeWeights()
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var v in variants)
+            {
+                if (!IsEligible(v)) continue;
+                if (sb.Length > 0) sb.Append(", ");
+                sb.Append(v.type).Append(' ').Append(EffectiveWeight(v).ToString("0.00"))
+                  .Append(FiredThisCycle.Contains(v.type) ? " (seen)" : "");
+            }
+            return sb.Length > 0 ? sb.ToString() : "(no effect can fire)";
+        }
+
+        public static void ResetCycle()
+        {
+            FiredThisCycle.Clear();
+            _picksThisCycle = 0;
         }
 
         // Debug panel: runs one effect now with its configured duration range, ignoring weights and the haunt schedule.
@@ -104,7 +152,7 @@ namespace Report
         {
             float total = 0f;
             foreach (var v in variants)
-                if (IsEligible(v)) total += Mathf.Max(0f, v.weight);
+                if (IsEligible(v)) total += EffectiveWeight(v);
 
             if (total <= 0f) return new VariantWeight { type = CameraGlitchType.Blackout, durationRange = new Vector2(1.5f, 3f) };
 
@@ -112,7 +160,7 @@ namespace Report
             foreach (var v in variants)
             {
                 if (!IsEligible(v)) continue;
-                roll -= Mathf.Max(0f, v.weight);
+                roll -= EffectiveWeight(v);
                 if (roll <= 0f) return v;
             }
 

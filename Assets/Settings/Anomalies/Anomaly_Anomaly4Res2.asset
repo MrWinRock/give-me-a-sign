@@ -15,9 +15,8 @@ MonoBehaviour:
   anomalyId: anomaly4res2
   displayName: Open Door
   observation: 5
-  correctKeywords:
-  - person
-  - figure
+  correctKeywords: []
+  voiceResponse: 0
   prefab: {fileID: 24751167580862740, guid: 703f9dbe0d2108047a980f6391cbb906, type: 3}
   respondType: 1
   threatCost: 2

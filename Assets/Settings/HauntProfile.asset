@@ -17,14 +17,20 @@ MonoBehaviour:
     enabled: 1
     weight: 1.5
     minNightIndex: 2
+    boostFromNight: 0
+    boostMultiplier: 2
   - loop: 3
     enabled: 1
     weight: 1
     minNightIndex: 3
+    boostFromNight: 4
+    boostMultiplier: 2.5
   - loop: 4
     enabled: 0
     weight: 0.8
     minNightIndex: 4
+    boostFromNight: 0
+    boostMultiplier: 2
   baseHauntCount: 1
   hauntGrowthPerNight: 0.75
   maxHauntCount: 4

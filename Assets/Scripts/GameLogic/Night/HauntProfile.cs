@@ -22,6 +22,13 @@ namespace GameLogic.Night
             [Min(0f)] public float weight = 1f;
             [Tooltip("This loop is never picked before this night.")]
             [Min(1)] public int minNightIndex = 1;
+            [Tooltip("From this night on the weight is multiplied by Boost Multiplier (e.g. 4 = after night 3). 0 = never boosted.")]
+            [Min(0)] public int boostFromNight;
+            [Tooltip("How much likelier this loop gets once Boost From Night is reached.")]
+            [Min(1f)] public float boostMultiplier = 2f;
+
+            public float WeightOn(int nightIndex) =>
+                Mathf.Max(0f, weight) * (boostFromNight > 0 && nightIndex >= boostFromNight ? boostMultiplier : 1f);
         }
 
         [Tooltip("Haunt loops this night may schedule, with relative weights.")]
@@ -54,7 +61,7 @@ namespace GameLogic.Night
             foreach (var entry in loops)
             {
                 if (entry == null || !entry.enabled || entry.minNightIndex > nightIndex) continue;
-                total += Mathf.Max(0f, entry.weight);
+                total += entry.WeightOn(nightIndex);
             }
 
             if (total <= 0f) return HauntLoopId.None;
@@ -64,7 +71,7 @@ namespace GameLogic.Night
             {
                 if (entry == null || !entry.enabled || entry.minNightIndex > nightIndex) continue;
 
-                roll -= Mathf.Max(0f, entry.weight);
+                roll -= entry.WeightOn(nightIndex);
                 if (roll <= 0d) return entry.loop;
             }
 
