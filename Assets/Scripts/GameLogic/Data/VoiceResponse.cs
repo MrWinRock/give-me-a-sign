@@ -7,5 +7,6 @@ namespace GameLogic.Data
         None = 0,    // report it at any volume
         Shout = 2,   // report it loudly
         Silence = 3, // stealth: mic is held live and the player must not speak at all until it leaves
+        Hover = 4,   // not reported over the radio: chased off by holding the mouse pointer on it
     }
 }

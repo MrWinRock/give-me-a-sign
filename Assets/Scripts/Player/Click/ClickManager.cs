@@ -105,7 +105,7 @@ namespace Player.Click
             if (hit.collider.CompareTag("Anomaly"))
             {
                 var anomaly = hit.collider.GetComponent<Anomaly>();
-                if (anomaly != null)
+                if (anomaly != null && !(anomaly.Definition != null && anomaly.Definition.voiceResponse == GameLogic.Data.VoiceResponse.Hover))
                 {
                     var reportManager = IncidentReportManager.Instance;
                     if (reportManager != null) reportManager.OpenReport(anomaly);

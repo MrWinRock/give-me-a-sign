@@ -167,8 +167,8 @@ namespace Report
 
                 var required = anomaly.Definition != null ? anomaly.Definition.voiceResponse : VoiceResponse.None;
 
-                // Stealth ones can't be reported - only silence makes them leave. Not a wrong call either.
-                if (required == VoiceResponse.Silence)
+                // Stealth ones (silence) and hover-only ones (the Hider) can't be reported. Not a wrong call either.
+                if (required == VoiceResponse.Silence || required == VoiceResponse.Hover)
                 {
                     onlySilentOne = true;
                     continue;
@@ -514,15 +514,19 @@ namespace Report
         {
             if (string.IsNullOrWhiteSpace(_recognizedKeyword)) return null;
 
-            if (IsReportable(_currentAnomaly, selectedRoom)) return _currentAnomaly;
+            if (!IsHoverOnly(_currentAnomaly) && IsReportable(_currentAnomaly, selectedRoom)) return _currentAnomaly;
 
             foreach (var anomaly in Anomaly.ActiveAnomalies)
             {
-                if (anomaly != _currentAnomaly && !anomaly.IsReported && IsReportable(anomaly, selectedRoom))
+                if (anomaly != _currentAnomaly && !anomaly.IsReported && !IsHoverOnly(anomaly) && IsReportable(anomaly, selectedRoom))
                     return anomaly;
             }
             return null;
         }
+
+        // The Hider is chased off with the pointer; the form can never file it.
+        private static bool IsHoverOnly(Anomaly anomaly) =>
+            anomaly != null && anomaly.Definition != null && anomaly.Definition.voiceResponse == VoiceResponse.Hover;
 
         private bool IsReportable(Anomaly anomaly, string selectedRoom, bool roomKnown = false)
         {

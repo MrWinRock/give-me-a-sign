@@ -213,9 +213,11 @@ namespace GameLogic
             string category = vocabulary != null ? vocabulary.LabelFor(def.observation) : def.observation.ToString();
 
             bool silent = def.voiceResponse == VoiceResponse.Silence;
+            bool hover = def.voiceResponse == VoiceResponse.Hover;
             if (reportAsText != null)
                 reportAsText.text = locked ? "REPORT AS: ???"
                     : silent ? "<b><color=#A00000>DO NOT SPEAK</color></b>"
+                    : hover ? "<b><color=#A00000>POINT AT IT</color></b>"
                     : $"REPORT AS: <b><color=#0A246A>{category}</color></b> + ROOM";
 
             if (spotBodyText != null)
@@ -231,6 +233,9 @@ namespace GameLogic
         // second hand-authored list.
         private static string FormatKeywords(AnomalyDefinition def, ObservationVocabulary vocabulary)
         {
+            if (def.voiceResponse == VoiceResponse.Hover)
+                return "<b>Point at it.</b> Hold the mouse pointer on it until it fades away. It cannot be reported over the radio.";
+
             // It can't be reported - any voice at all gets the guard caught.
             if (def.voiceResponse == VoiceResponse.Silence)
                 return "<b>Do not speak.</b> Find it with the cursor - the mic goes live. Stay completely silent until it leaves; any voice, even a whisper, finds you.";
