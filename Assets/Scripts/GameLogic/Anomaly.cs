@@ -4,8 +4,6 @@ using GameLogic.Data;
 using GameLogic.Flow;
 using GameLogic.Save;
 using GameLogic.SpawnAndTime;
-using Pray;
-using Report;
 using UnityEngine;
 
 namespace GameLogic
@@ -28,7 +26,7 @@ namespace GameLogic
     [RequireComponent(typeof(AnomalyMovement))]
     [RequireComponent(typeof(AnomalyPresenter))]
     [RequireComponent(typeof(AnomalyThreatTimer))]
-    public partial class Anomaly : MonoBehaviour
+    public class Anomaly : MonoBehaviour
     {
         public enum RespondType
         {
@@ -72,21 +70,19 @@ namespace GameLogic
         // the Anomaly component, so OnEnable simply never runs until the camera finds it.
         public AnomalyState State { get; private set; } = AnomalyState.Hidden;
 
-        public System.Action<Anomaly> OnThreatExpired;
+        public event System.Action<Anomaly> OnThreatExpired;
 
-        public System.Action<Anomaly> OnAnomalyDisappeared;
+        public event System.Action<Anomaly> OnAnomalyDisappeared;
 
         private bool _isReported;
         public bool IsReported => _isReported;
 
         private bool _canPrayDisappear;  // the prayer window is open
-        private bool _alertRaised;       // this anomaly incremented IncidentReportManager's alert counter
         private bool _disappearNotified; // guards the disappear events so one activation can only ever score once
 
         private AnomalyMovement _movement;
         private AnomalyPresenter _presenter;
         private AnomalyThreatTimer _threatTimer;
-        private PrayUiManager _prayManager;
 
         public RespondType EffectiveRespondType => definition != null
             ? definition.respondType
@@ -115,11 +111,6 @@ namespace GameLogic
         {
             var existing = GetComponent<T>();
             return existing != null ? existing : gameObject.AddComponent<T>();
-        }
-
-        void Start()
-        {
-            _prayManager = FindFirstObjectByType<PrayUiManager>();
         }
 
         void OnEnable()
@@ -153,10 +144,6 @@ namespace GameLogic
 
             if (_threatTimer != null)
                 _threatTimer.OnExpired -= HandleThreatExpired;
-
-            // Safety net: if this anomaly is destroyed mid-jumpscare, don't leave the
-            // Incident Report window's ALERT badge stuck on.
-            ClearAlert();
         }
 
         // ── Escalation ───────────────────────────────────────────────────────────────────
@@ -217,11 +204,6 @@ namespace GameLogic
             _presenter.PlayResolved();
             _presenter.StopFightLoop();
 
-            if (_prayManager != null)
-                _prayManager.HidePrayPanel();
-
-            ClearAlert();
-
             // Fire before disappearing, so scoring sees it.
             if (scores)
                 RaiseDisappeared();
@@ -276,13 +258,5 @@ namespace GameLogic
         public void MarkReported() => _isReported = true;
 
         public void ClearReportedFlag() => _isReported = false;
-
-        private void ClearAlert()
-        {
-            if (!_alertRaised) return;
-
-            _alertRaised = false;
-            IncidentReportManager.Instance?.SetAlert(false);
-        }
     }
 }

@@ -35,6 +35,14 @@ namespace GameLogic.Night
 
         void Awake()
         {
+            // Dev-only: OnGUI draws every frame, so keep it out of release builds.
+            if (!Application.isEditor && !Debug.isDebugBuild)
+            {
+                enabled = false;
+                Destroy(this);
+                return;
+            }
+
             _visible = visibleByDefault;
             _collapsedLabel = $"[{toggleKey}] night plan";
         }

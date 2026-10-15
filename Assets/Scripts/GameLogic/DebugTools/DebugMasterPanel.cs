@@ -92,6 +92,14 @@ namespace GameLogic.DebugTools
 
         void Awake()
         {
+            // Dev-only: strip the cheat panel from release builds.
+            if (!Application.isEditor && !Debug.isDebugBuild)
+            {
+                enabled = false;
+                Destroy(gameObject);
+                return;
+            }
+
             if (_instance != null && _instance != this)
             {
                 Destroy(persistAcrossScenes ? gameObject : (UnityEngine.Object)this);

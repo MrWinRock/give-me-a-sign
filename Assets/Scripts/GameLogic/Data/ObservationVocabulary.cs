@@ -254,6 +254,7 @@ namespace GameLogic.Data
             new[] { "lite", "right", "lait", "rite", "lights", "lighting" },
             new[] { "pigture", "pitcher", "picher", "pikchur", "pick sure", "pictures", "pickture" },
             new[] { "daemon", "deamon", "deemon", "diamond", "damon", "demons", "lemon" },
+            new[] { "loud mouth", "loud mouse", "loudmouse", "lowdmouth", "laudmouth", "louder mouth", "loud month", "loudmouths", "loud" },
         };
 
         [ContextMenu("Reset To Defaults")]
@@ -270,6 +271,7 @@ namespace GameLogic.Data
             new Entry { type = ObservationType.Light, label = "Light", phrases = new[] { "light" }, mishearings = DefaultMishearings[6] },
             new Entry { type = ObservationType.Picture, label = "Picture", phrases = new[] { "picture" }, mishearings = DefaultMishearings[7] },
             new Entry { type = ObservationType.Demon, label = "Demon", phrases = new[] { "demon" }, mishearings = DefaultMishearings[8] },
+            new Entry { type = ObservationType.Loudmouth, label = "Loudmouth", phrases = new[] { "loudmouth" }, mishearings = DefaultMishearings[9] },
         };
     }
 }

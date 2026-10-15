@@ -27,8 +27,8 @@ namespace GameLogic.SpawnAndTime
         private bool _isNightActive = true;
         private int _lastDisplayedMinute = -1; // avoid rebuilding the TMP string every frame
 
-        public System.Action<float> OnTimeChanged;
-        public System.Action OnNightEnded;
+        public event System.Action<float> OnTimeChanged;
+        public event System.Action OnNightEnded;
 
         public float NightDurationMinutes => nightDurationMinutes;
 

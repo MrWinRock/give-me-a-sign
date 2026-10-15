@@ -21,7 +21,10 @@ namespace GameLogic
 
         void Update()
         {
-            bool anyCheckerActive = checkerObject1.activeSelf || checkerObject2.activeSelf;
+            if (checkerObject1 == null && checkerObject2 == null) return;
+
+            bool anyCheckerActive = (checkerObject1 != null && checkerObject1.activeSelf)
+                                    || (checkerObject2 != null && checkerObject2.activeSelf);
 
             SetAll(activeObject, anyCheckerActive);
             SetAll(activeUnactiveObject, !anyCheckerActive);

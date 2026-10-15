@@ -212,7 +212,7 @@ namespace Report
         void Awake()
         {
             if (nightTimer == null)
-                nightTimer = FindObjectOfType<NightTimer>();
+                nightTimer = FindFirstObjectByType<NightTimer>();
         }
 
         void Update()

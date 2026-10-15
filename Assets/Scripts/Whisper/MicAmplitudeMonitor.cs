@@ -21,22 +21,37 @@ namespace Whisper
         private string _device;
         private float[] _samples;
 
-        // PlayerPrefs is registry-backed on Windows; reading it every frame (as this used to)
-        // is a needless per-frame syscall. The Control Panel that writes MicGain only opens from
-        // the main menu, never mid-monitoring, so caching it once per session is exact, not stale.
+        // PlayerPrefs is registry-backed on Windows, so the gain is read once per session; SetGain updates it live.
         private float _cachedMicGain = 1f;
 
         public float CurrentLevel { get; private set; }
 
+        // Unsmoothed, gained RMS of the latest window - what the setup wizard measures.
+        public float RawLevel { get; private set; }
+
+        // Windows reads that produced data since the last start; stays 0 when the OS blocks the microphone.
+        public int FramesRead { get; private set; }
+
+        // The device being read, or null for the system default. Settable so the wizard can try another before anything is saved.
+        public string Device { get; private set; }
+
+        private bool _hasDeviceOverride;
+        private string _deviceOverride;
+
         public bool IsAvailable { get; private set; }
 
         public bool IsMonitoring { get; private set; }
+
+        // The OS is actually delivering audio (position advances) - false when the microphone is blocked or held by another app.
+        public bool IsReceivingAudio => IsMonitoring && IsAvailable && Microphone.IsRecording(_device) && Microphone.GetPosition(_device) > 0;
 
         public void StartMonitoring()
         {
             if (IsMonitoring) return;
             IsMonitoring = true;
             CurrentLevel = 0f;
+            RawLevel = 0f;
+            FramesRead = 0;
 
             if (Microphone.devices.Length == 0)
             {
@@ -45,12 +60,26 @@ namespace Whisper
             }
 
             IsAvailable = true;
-            _device = ResolveDevice();
+            _device = _hasDeviceOverride ? _deviceOverride : ResolveDevice();
+            Device = _device;
             _samples = new float[Mathf.Max(64, Mathf.RoundToInt(frequency * sampleWindowSeconds))];
             _cachedMicGain = Mathf.Max(0.01f, ControlPanelWindow.MicGain);
 
             // A 1-second looping buffer is plenty - only the last sampleWindowSeconds are ever read.
             _clip = Microphone.Start(_device, true, 1, frequency);
+        }
+
+        public void SetGain(float gain) => _cachedMicGain = Mathf.Max(0.01f, gain);
+
+        // Null = the system default. Restarts the capture if it is already running.
+        public void SetDevice(string device)
+        {
+            _hasDeviceOverride = true;
+            _deviceOverride = string.IsNullOrEmpty(device) ? null : device;
+
+            if (!IsMonitoring) return;
+            StopMonitoring();
+            StartMonitoring();
         }
 
         public void StopMonitoring()
@@ -59,6 +88,7 @@ namespace Whisper
 
             IsMonitoring = false;
             CurrentLevel = 0f;
+            RawLevel = 0f;
 
             if (IsAvailable && Microphone.IsRecording(_device))
                 Microphone.End(_device);
@@ -91,6 +121,8 @@ namespace Whisper
             float rms = Mathf.Sqrt(sumSquares / _samples.Length);
             float gained = rms * _cachedMicGain;
 
+            RawLevel = gained;
+            FramesRead++;
             CurrentLevel = Mathf.Lerp(CurrentLevel, gained, smoothing);
         }
 

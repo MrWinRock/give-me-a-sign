@@ -28,7 +28,10 @@ namespace Player.Click
     void Start()
     {
         if (autoFindGameManager && gameManager == null)
-            gameManager = FindObjectOfType<GameManager>();
+            gameManager = FindFirstObjectByType<GameManager>();
+
+        if (mainCamera == null)
+            mainCamera = Camera.main;
     }
 
     void Update()
@@ -48,6 +51,11 @@ namespace Player.Click
         _inputActions.Player.Disable();
     }
 
+    void OnDestroy()
+    {
+        _inputActions.Dispose();
+    }
+
     private void OnClick(InputAction.CallbackContext ctx)
     {
         // No world raycast while a modal UI is up, or clicking inside the Incident Report window
@@ -57,6 +65,15 @@ namespace Player.Click
 
         if (gameManager != null && gameManager.inputLocked)
             return;
+
+        if (Mouse.current == null)
+            return;
+
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+            if (mainCamera == null) return;
+        }
 
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
@@ -89,7 +106,10 @@ namespace Player.Click
             {
                 var anomaly = hit.collider.GetComponent<Anomaly>();
                 if (anomaly != null)
-                    IncidentReportManager.Instance?.OpenReport(anomaly);
+                {
+                    var reportManager = IncidentReportManager.Instance;
+                    if (reportManager != null) reportManager.OpenReport(anomaly);
+                }
                 break;
             }
         }

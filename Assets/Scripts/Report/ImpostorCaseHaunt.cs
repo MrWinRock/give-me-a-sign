@@ -43,7 +43,11 @@ namespace Report
             _formGlitch = FindFirstObjectByType<FormGlitchController>();
         }
 
-        void OnEnable() => HauntDirector.Instance?.Register(this);
+        void OnEnable()
+        {
+            var hauntDirector = HauntDirector.Instance;
+            if (hauntDirector != null) hauntDirector.Register(this);
+        }
         void OnDisable() => HauntDirector.ExistingInstance?.Unregister(this);
 
         public void Trigger(HauntBeat beat)

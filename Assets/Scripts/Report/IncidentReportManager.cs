@@ -84,12 +84,12 @@ namespace Report
         {
             if (autoFindReferences && gameManager == null)
             {
-                gameManager = FindObjectOfType<GameManager>();
+                gameManager = FindFirstObjectByType<GameManager>();
             }
 
             // Must be GlitchStateSource, not GlitchDirector: the director reads the state source's
             // ConsecutiveFailures instead of any value pushed into it.
-            _glitchStateSource = FindObjectOfType<GlitchStateSource>();
+            _glitchStateSource = FindFirstObjectByType<GlitchStateSource>();
 
             if (reportUI == null)
             {
@@ -435,7 +435,7 @@ namespace Report
         {
             _activeAlertCount = Mathf.Max(0, _activeAlertCount + (active ? 1 : -1));
 
-            if (IsReportOpen)
+            if (IsReportOpen && reportUI != null)
                 reportUI.SetAlertVisual(_activeAlertCount > 0);
         }
 

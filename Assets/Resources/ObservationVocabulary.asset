@@ -179,3 +179,17 @@ MonoBehaviour:
     - damon
     - demons
     - lemon
+  - type: 9
+    label: Loudmouth
+    phrases:
+    - loudmouth
+    mishearings:
+    - loud mouth
+    - loud mouse
+    - loudmouse
+    - lowdmouth
+    - laudmouth
+    - louder mouth
+    - loud month
+    - loudmouths
+    - loud

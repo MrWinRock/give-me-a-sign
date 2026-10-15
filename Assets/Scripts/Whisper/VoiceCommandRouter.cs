@@ -29,7 +29,7 @@ namespace Whisper
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
-        public Action<bool> OnPrayerAttempted;
+        public event Action<bool> OnPrayerAttempted;
 
         public void Route(string recognizedText)
         {

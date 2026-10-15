@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -66,6 +67,10 @@ namespace Audio
         private AudioSource _musicOneShot;
         private static readonly List<AudioSource> _prune = new List<AudioSource>();
 
+        private float _duck = 1f; // multiplier on everything not exempt; 1 = normal mix
+        private readonly HashSet<AudioSource> _duckExempt = new HashSet<AudioSource>();
+        private Tween _duckTween;
+
         // =======================================================================================
         // Bootstrap & lifecycle
         // =======================================================================================
@@ -112,6 +117,7 @@ namespace Audio
 
         void OnDestroy()
         {
+            _duckTween?.Kill();
             SceneManager.sceneLoaded -= OnSceneLoaded;
             if (Instance == this)
                 Instance = null;
@@ -212,7 +218,7 @@ namespace Audio
                 Debug.Log($"AudioManager: {_sources.Count} sources registered after scene sweep.", this);
         }
 
-        private void ApplyAll()
+        private void ApplyAll(bool notify = true)
         {
             // Prune sources destroyed by scene changes.
             _prune.Clear();
@@ -220,20 +226,81 @@ namespace Audio
                 if (kvp.Key == null) _prune.Add(kvp.Key);
             foreach (var dead in _prune)
                 _sources.Remove(dead);
+            _duckExempt.RemoveWhere(s => s == null);
 
             foreach (var kvp in _sources)
                 ApplyTo(kvp.Key, kvp.Value);
 
             // Shared one-shot players carry the channel volume; Play() adds the per-sound volume.
-            if (_sfxOneShot != null) _sfxOneShot.volume = GetEffectiveVolume(AudioChannel.Sfx);
-            if (_musicOneShot != null) _musicOneShot.volume = GetEffectiveVolume(AudioChannel.Music);
+            if (_sfxOneShot != null) _sfxOneShot.volume = GetEffectiveVolume(AudioChannel.Sfx) * _duck;
+            if (_musicOneShot != null) _musicOneShot.volume = GetEffectiveVolume(AudioChannel.Music) * _duck;
 
-            OnVolumesChanged?.Invoke();
+            if (notify) OnVolumesChanged?.Invoke();
         }
 
         private void ApplyTo(AudioSource source, Registered reg)
         {
-            source.volume = reg.baseVolume * GetEffectiveVolume(reg.channel);
+            float duck = _duckExempt.Contains(source) ? 1f : _duck;
+            source.volume = reg.baseVolume * GetEffectiveVolume(reg.channel) * duck;
+        }
+
+        // =======================================================================================
+        // Ducking (an effect takes the foreground; everything else gets quieter)
+        // =======================================================================================
+
+        public void ExemptFromDuck(AudioSource source)
+        {
+            if (source != null) _duckExempt.Add(source);
+        }
+
+        // 1 = normal mix. Fades every non-exempt source (music, SFX, one-shots) toward `level`.
+        public void DuckOthers(float level, float seconds)
+        {
+            _duckTween?.Kill();
+            _duckTween = null;
+            level = Mathf.Clamp01(level);
+
+            if (seconds <= 0f)
+            {
+                SetDuck(level);
+                return;
+            }
+
+            _duckTween = DOTween.To(() => _duck, SetDuck, level, seconds)
+                .SetEase(Ease.InOutSine)
+                .SetUpdate(true)
+                .SetTarget(this);
+        }
+
+        // Fades a source's authored level, so the channel sliders and ducking keep applying on top.
+        public Tween FadeSource(AudioSource source, float baseVolume, float seconds)
+        {
+            if (source == null) return null;
+
+            if (!_sources.TryGetValue(source, out var reg))
+            {
+                RegisterSource(source, AudioChannel.Sfx);
+                _sources.TryGetValue(source, out reg);
+            }
+
+            baseVolume = Mathf.Clamp01(baseVolume);
+            if (seconds <= 0f)
+            {
+                reg.baseVolume = baseVolume;
+                ApplyTo(source, reg);
+                return null;
+            }
+
+            return DOTween.To(() => reg.baseVolume, v => { reg.baseVolume = v; ApplyTo(source, reg); }, baseVolume, seconds)
+                .SetEase(Ease.InOutSine)
+                .SetUpdate(true)
+                .SetTarget(source);
+        }
+
+        private void SetDuck(float value)
+        {
+            _duck = value;
+            ApplyAll(notify: false);
         }
 
         // =======================================================================================

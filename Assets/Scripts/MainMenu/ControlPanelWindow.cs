@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using Audio;
+using MicSetup;
 using TMPro;
 using UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Whisper;
 
 namespace MainMenu
 {
@@ -17,6 +19,8 @@ namespace MainMenu
     {
         // ---- PlayerPrefs keys (volumes are AudioManager's own Vol_* keys) ----
         public const string MicGainKey = "Opt_MicGain";
+        public const float MinMicGain = 0f;
+        public const float MaxMicGain = 4f;
         public const string SubtitlesKey = "Opt_Subtitles";
         public const string ReduceFlashingKey = "Opt_ReduceFlashing";
         public const string ResWidthKey = "Opt_ResWidth";
@@ -53,6 +57,15 @@ namespace MainMenu
         [SerializeField] private TMP_Dropdown micDeviceDropdown;
         [SerializeField] private string rebindPromptText = "Press any key...";
 
+        [Header("Microphone setup")]
+        [Tooltip("The MicSetupWizard prefab; opened as a modal overlay by Recalibrate.")]
+        [SerializeField] private MicSetupWizard micSetupWizardPrefab;
+        [SerializeField] private Button recalibrateButton;
+        [Tooltip("Shows when the player skipped setup or the saved microphone is unplugged.")]
+        [SerializeField] private TextMeshProUGUI micHintLabel;
+        [SerializeField] private string usingDefaultsText = "Using default microphone settings.";
+        [SerializeField] private string deviceMissingText = "Your saved microphone is not connected. Recalibrate to choose another.";
+
         [Header("Buttons")]
         [SerializeField] private Button okButton;
         [SerializeField] private Button cancelButton;
@@ -75,6 +88,13 @@ namespace MainMenu
         // =======================================================================================
 
         public static float MicGain => PlayerPrefs.GetFloat(MicGainKey, 1f);
+
+        // Set at runtime so scenes/prefabs built with the old 0..1 range need no rebuild.
+        public static void ApplyMicGainRange(Slider slider)
+        {
+            slider.minValue = MinMicGain;
+            slider.maxValue = MaxMicGain;
+        }
         public static bool SubtitlesEnabled => PlayerPrefs.GetInt(SubtitlesKey, 1) == 1;
         public static bool ReduceFlashingEffects => PlayerPrefs.GetInt(ReduceFlashingKey, 0) == 1;
         public static string MicrophoneDevice => PlayerPrefs.GetString(MicDeviceKey, string.Empty);
@@ -125,6 +145,7 @@ namespace MainMenu
             if (masterVolumeSlider != null) masterVolumeSlider.onValueChanged.AddListener(OnMasterChanged);
             if (ambienceVolumeSlider != null) ambienceVolumeSlider.onValueChanged.AddListener(OnAmbienceChanged);
             if (pushToTalkRebindButton != null) pushToTalkRebindButton.onClick.AddListener(BeginRebind);
+            if (recalibrateButton != null) recalibrateButton.onClick.AddListener(OpenMicSetup);
 
             if (okButton != null) okButton.onClick.AddListener(OnOkClicked);
             if (cancelButton != null) cancelButton.onClick.AddListener(OnCancelClicked);
@@ -135,6 +156,55 @@ namespace MainMenu
             _openSnapshot = CaptureSaved();
             LoadIntoUI();
             ShowTab(0);
+            RefreshMicHint();
+        }
+
+        // ---- Microphone setup ----
+
+        private void RefreshMicHint()
+        {
+            if (micHintLabel == null) return;
+
+            string text = MicCalibrationStore.DeviceMissing ? deviceMissingText
+                        : MicCalibrationStore.UsesDefaultSettings ? usingDefaultsText
+                        : string.Empty;
+            micHintLabel.text = text;
+            micHintLabel.gameObject.SetActive(!string.IsNullOrEmpty(text));
+        }
+
+        // Same wizard as the first launch, as a modal window over the whole menu. Cancel keeps the previous calibration.
+        private void OpenMicSetup()
+        {
+            if (micSetupWizardPrefab == null) return;
+
+            var canvas = GetComponentInParent<Canvas>();
+            var host = canvas != null ? canvas.rootCanvas.transform : transform.root;
+
+            var wizard = Instantiate(micSetupWizardPrefab, host);
+            wizard.transform.SetAsLastSibling();
+            wizard.Closed += result =>
+            {
+                Destroy(wizard.gameObject);
+
+                // The wizard may have changed the microphone: keep this window's Cancel from putting the old one back.
+                _openSnapshot.micDevice = MicrophoneDevice;
+                if (result != MicSetupWizard.Result.Cancelled)
+                {
+                    _openSnapshot.micGain = MicGain;
+                    if (micGainSlider != null) micGainSlider.SetValueWithoutNotify(MicGain);
+                }
+                if (micDeviceDropdown != null)
+                {
+                    int index = IndexOfMicDevice(MicrophoneDevice);
+                    if (index >= 0)
+                    {
+                        micDeviceDropdown.SetValueWithoutNotify(index);
+                        micDeviceDropdown.RefreshShownValue();
+                    }
+                }
+                RefreshMicHint();
+            };
+            wizard.Open(MicSetupWizard.WizardMode.Overlay);
         }
 
         protected override void OnHiding()
@@ -212,7 +282,11 @@ namespace MainMenu
         {
             if (masterVolumeSlider != null) masterVolumeSlider.SetValueWithoutNotify(snap.master);
             if (ambienceVolumeSlider != null) ambienceVolumeSlider.SetValueWithoutNotify(snap.ambience);
-            if (micGainSlider != null) micGainSlider.SetValueWithoutNotify(snap.micGain);
+            if (micGainSlider != null)
+            {
+                ApplyMicGainRange(micGainSlider);
+                micGainSlider.SetValueWithoutNotify(snap.micGain);
+            }
             if (subtitlesToggle != null) subtitlesToggle.SetIsOnWithoutNotify(snap.subtitles);
             if (reduceFlashingToggle != null) reduceFlashingToggle.SetIsOnWithoutNotify(snap.reduceFlashing);
             if (mirrorWallpaperToggle != null) mirrorWallpaperToggle.SetIsOnWithoutNotify(snap.mirrorWallpaper);

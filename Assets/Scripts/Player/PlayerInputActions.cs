@@ -21,6 +21,11 @@ namespace Player
         {
             Player.Disable();
         }
+
+        public void Dispose()
+        {
+            Player.Dispose();
+        }
     }
 
     [System.Serializable]
@@ -41,6 +46,11 @@ namespace Player
         public void Disable()
         {
             Click.Disable();
+        }
+
+        public void Dispose()
+        {
+            Click.Dispose();
         }
     }
 }

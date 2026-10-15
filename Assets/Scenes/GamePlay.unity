@@ -2798,6 +2798,7 @@ MonoBehaviour:
     enabled: 1
     weight: 0.5
     durationRange: {x: 3, y: 6}
+  unseenBoostPerPick: 0.75
   showDebugInfo: 0
 --- !u!4 &395310485
 Transform:
@@ -5390,7 +5391,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: OCT. 6 2026
+  m_text: OCT. 15 2026
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -7034,6 +7035,7 @@ MonoBehaviour:
   forcedFileGapSeconds: 1.2
   typedInputBypassesNoiseRequirement: 1
   hud: {fileID: 178555917561746044}
+  showDebugInfo: 0
 --- !u!114 &1349133154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7048,6 +7050,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Whisper.QuietResponse
   quietSeconds: 8
   toleranceSeconds: 0.3
+  whisperToleranceSeconds: 0.8
   graceSeconds: 1
 --- !u!1 &1367956995
 GameObject:
@@ -8534,7 +8537,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -498.19995, y: -468}
+  m_AnchoredPosition: {x: -498.2, y: -468}
   m_SizeDelta: {x: 1406.39, y: 743.3701}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1734658304

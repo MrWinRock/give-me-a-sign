@@ -22,9 +22,9 @@ namespace GiveMeASign.EditorTools
         [MenuItem("Tools/Give Me A Sign/Wire Whisper + Incident Report References")]
         public static void WireReferences()
         {
-            var whisperMic = Object.FindObjectOfType<WhisperMicInput>(true);
-            var reportManager = Object.FindObjectOfType<IncidentReportManager>(true);
-            var reportUI = Object.FindObjectOfType<IncidentReportUI>(true);
+            var whisperMic = Object.FindFirstObjectByType<WhisperMicInput>(FindObjectsInactive.Include);
+            var reportManager = Object.FindFirstObjectByType<IncidentReportManager>(FindObjectsInactive.Include);
+            var reportUI = Object.FindFirstObjectByType<IncidentReportUI>(FindObjectsInactive.Include);
 
             if (whisperMic == null || reportManager == null || reportUI == null)
             {

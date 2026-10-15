@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace GameLogic
 {
+    /// <summary>
+    /// Camera-room navigation: steps the camera between rooms and locks it on demand. Not the
+    /// night/day flow - that is <see cref="GameLogic.Flow.GameFlowManager"/>.
+    /// </summary>
     public class GameManager : MonoBehaviour
     {
         [Header("Background Settings")]
@@ -38,6 +42,8 @@ namespace GameLogic
                 return;
             }
 
+            if (cameraObjects == null) return;
+
             Vector3 position = cameraObjects.transform.position;
 
             if (!Mathf.Approximately(position.x, room.cameraX))
@@ -68,8 +74,8 @@ namespace GameLogic
                 return;
             }
 
-            screen.SetActive(true);
-            audioSource.Play();
+            if (screen != null) screen.SetActive(true);
+            if (audioSource != null) audioSource.Play();
             _currentRoomIndex = (_currentRoomIndex + direction + roomCount) % roomCount;
         }
 

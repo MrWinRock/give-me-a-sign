@@ -93,7 +93,7 @@ namespace Report
         void Awake()
         {
             if (nightTimer == null)
-                nightTimer = FindObjectOfType<NightTimer>();
+                nightTimer = FindFirstObjectByType<NightTimer>();
 
             InvokeRepeating(nameof(UpdateClock), 0f, 1f);
 

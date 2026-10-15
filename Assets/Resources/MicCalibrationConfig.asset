@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebc17cebcd92f8649a07942d0d2c0143, type: 3}
+  m_Name: MicCalibrationConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Whisper.MicCalibrationConfig
+  prefsKey: Opt_MicCalibration
+  currentCalibrationVersion: 1
+  mainMenuSceneName: MainMenu
+  micSetupSceneName: MicSetup
+  defaultNoiseFloorDb: -34
+  defaultNormalVoiceDb: -22
+  defaultLoudVoiceDb: -14
+  defaultMinDb: -34
+  defaultMaxDb: -10
+  defaultLowToNormal: 0.4
+  defaultNormalToLoud: 0.75
+  pushToTalkKey: 36
+  phrase: Give me a sign
+  quietSeconds: 3
+  noiseFloorPercentile: 0.9
+  silenceDb: -80
+  noisyFloorWarningDb: -38
+  minUtteranceSeconds: 0.8
+  speechGateAboveFloorDb: 6
+  louderPortionFraction: 0.5
+  minNormalOverFloorDb: 6
+  minLoudOverNormalDb: 6
+  failedAttemptsBeforeDefaultsOffered: 3
+  minDbOffset: 2
+  maxDbHeadroom: 3
+  minRangeDb: 12
+  lowToNormalWeight: 0.5
+  normalToLoudWeight: 0.5
+  lowToNormalClamp: {x: 0.15, y: 0.45}
+  normalToLoudClamp: {x: 0.55, y: 0.9}
+  minThresholdGap: 0.15

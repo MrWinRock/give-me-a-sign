@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2276676363382218846}
   - component: {fileID: 6882619694244674469}
   - component: {fileID: 484394598282367385}
+  - component: {fileID: 7248162430234434926}
   m_Layer: 10
   m_Name: VisualAndTrigger
   m_TagString: Anomaly
@@ -109,19 +110,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b844fe9e006fca04f96ecd69cf516be8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anomaly
-  migrated: 1
-  respondType: 1
-  timeToDisappear: 30
-  moveTarget: {fileID: 1890607078677024066}
-  moveSpeed: 30
-  scaleUpAmount: 1
-  scaleAnimationSpeed: 30
-  jumpScareAudioSource: {fileID: 6614034218440359249}
-  fightAudioSource: {fileID: 1068237797386816738}
-  anomalyAnimator: {fileID: 0}
-  moveTriggerName: StartMove
-  idleTriggerName: Idle
-  correctAnomalyType: Shadow
   definition: {fileID: 11400000, guid: 03e1dacaae2a78847bcbb96be585a1fb, type: 2}
   destroyAfterDisappear: 0
 --- !u!70 &2698825523641014918
@@ -195,7 +183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36b654f83f7d6f149872085cc072a8d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyMovement
-  moveTarget: {fileID: 1890607078677024066}
+  moveTarget: {fileID: 0}
   moveSpeed: 30
   scaleUpAmount: 1
   scaleAnimationSpeed: 30
@@ -215,7 +203,7 @@ MonoBehaviour:
   moveTriggerName: StartMove
   idleTriggerName: Idle
   jumpScareAudioSource: {fileID: 6614034218440359249}
-  fightAudioSource: {fileID: 1068237797386816738}
+  fightAudioSource: {fileID: 0}
 --- !u!114 &484394598282367385
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,7 +217,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.AnomalyThreatTimer
   timeoutSeconds: 30
---- !u!1 &5547807684175128530
+--- !u!114 &7248162430234434926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2321499461814255357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b5f7011e3d80e144b20793c643fcf24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.LoudmouthAnomaly
+  timeLimitSeconds: 45
+  music: {fileID: 8939221818049632170}
+  startVolume: 0.15
+  peakVolume: 1
+  otherRoomShare: 0.5
+  sameRoomDistance: 5
+  fadeSeconds: 1
+--- !u!1 &6373150058327533618
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -237,46 +244,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8808169717217996005}
-  - component: {fileID: 1068237797386816738}
+  - component: {fileID: 9201677056112951794}
+  - component: {fileID: 8939221818049632170}
   m_Layer: 0
-  m_Name: SuspenseSFX
+  m_Name: LoudmouthMusic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8808169717217996005
+--- !u!4 &9201677056112951794
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5547807684175128530}
+  m_GameObject: {fileID: 6373150058327533618}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1361649083514336729}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!82 &1068237797386816738
+--- !u!82 &8939221818049632170
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5547807684175128530}
+  m_GameObject: {fileID: 6373150058327533618}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 32b2b2ffd67a17b4cababbf46f0fc2f1, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 54474ff0557c3194a96c08d24f32698b, type: 3}
+  m_Resource: {fileID: 8300000, guid: 54474ff0557c3194a96c08d24f32698b, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.3
+  m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -390,8 +397,7 @@ Transform:
   m_Children:
   - {fileID: 1554299098192357281}
   - {fileID: 8810843497158348182}
-  - {fileID: 1890607078677024066}
-  - {fileID: 8808169717217996005}
+  - {fileID: 9201677056112951794}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4701373651295230482
@@ -408,37 +414,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnActiveTogether
   checkObjects: {fileID: 2321499461814255357}
   unActiveObjects: {fileID: 6530810648022567755}
---- !u!1 &7773784525294458182
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1890607078677024066}
-  m_Layer: 0
-  m_Name: MoveTarget
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1890607078677024066
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7773784525294458182}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.06, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1361649083514336729}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8605075984360151373
 GameObject:
   m_ObjectHideFlags: 0

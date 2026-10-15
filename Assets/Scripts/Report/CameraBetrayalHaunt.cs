@@ -64,7 +64,8 @@ namespace Report
         // cancels and reverts everything cleanly.
         void OnEnable()
         {
-            HauntDirector.Instance?.Register(this);
+            var hauntDirector = HauntDirector.Instance;
+            if (hauntDirector != null) hauntDirector.Register(this);
 
             // Touch CameraFeedHud.Instance eagerly so the camera label is already running
             // from the start of the night - if it only spawned lazily on the first glitch, the

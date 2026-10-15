@@ -19,12 +19,12 @@ namespace GiveMeASign.EditorTools
         private const string PrefabPath = "Assets/Prefabs/Gameplay/PauseMenu.prefab";
         private const string CanvasName = "Canvas";
 
-        private const float WindowWidth = 360f, WindowHeight = 262f, WindowScale = 2f;
-        private const float ConfirmWidth = 320f, ConfirmHeight = 140f;
-        private const float TitlebarHeight = 26f, StatusBarHeight = 22f;
-        private const float BodyPadding = 14f, SectionSpacing = 10f, GroupPadding = 12f;
-        private const float ButtonHeight = 26f, ButtonSpacing = 8f, ButtonRowExtraTop = 4f;
-        private const float CaptionSize = 21f, TitleIconSize = 16f, TitleFontSize = 12f;
+        internal const float WindowWidth = 360f, WindowHeight = 262f, WindowScale = 2f;
+        internal const float ConfirmWidth = 320f, ConfirmHeight = 140f;
+        internal const float TitlebarHeight = 26f, StatusBarHeight = 22f;
+        internal const float BodyPadding = 14f, SectionSpacing = 10f, GroupPadding = 12f;
+        internal const float ButtonHeight = 26f, ButtonSpacing = 8f, ButtonRowExtraTop = 4f;
+        internal const float CaptionSize = 21f, TitleIconSize = 16f, TitleFontSize = 12f;
 
         [MenuItem("Tools/Give Me A Sign/Build Pause Menu Prefab")]
         public static void Build()
@@ -133,14 +133,14 @@ namespace GiveMeASign.EditorTools
 
         // ── pieces ───────────────────────────────────────────────────────────────────────
 
-        private static RectTransform NewRect(string name, Transform parent)
+        internal static RectTransform NewRect(string name, Transform parent)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
             return go.GetComponent<RectTransform>();
         }
 
-        private static RectTransform BuildFrame(Transform parent, string name, Vector2 size, string title, bool captionButtons,
+        internal static RectTransform BuildFrame(Transform parent, string name, Vector2 size, string title, bool captionButtons,
             XPControlStyle style, TMP_FontAsset font, out RectTransform panel, out Button closeButton)
         {
             var frame = XPControls.Img(parent, name, style.windowBorder, r =>
@@ -250,7 +250,7 @@ namespace GiveMeASign.EditorTools
             }
         }
 
-        private static RectTransform BuildBody(RectTransform panel, XPControlStyle style, float bottomInset, float topInset)
+        internal static RectTransform BuildBody(RectTransform panel, XPControlStyle style, float bottomInset, float topInset)
         {
             var body = NewRect("Body", panel);
             body.anchorMin = Vector2.zero;
@@ -270,7 +270,7 @@ namespace GiveMeASign.EditorTools
             return body;
         }
 
-        private static RectTransform NewButtonRow(Transform parent, float height, float extraTop)
+        internal static RectTransform NewButtonRow(Transform parent, float height, float extraTop)
         {
             var row = NewRect("ButtonRow", parent);
             XPControls.SetPreferred(row.gameObject, height: height);

@@ -1,4 +1,5 @@
 using GameLogic;
+using GameLogic.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -56,6 +57,9 @@ namespace Report
 
         // What the label currently shows, so Update() only rebuilds TMP text when the value changes.
         private string _lastDisplayedLabel;
+        private RoomDefinition _lastRoom;
+        private int _lastCamIndex;
+        private bool _roomKeyValid;
 
         void Awake()
         {
@@ -91,12 +95,19 @@ namespace Report
             if (!string.IsNullOrEmpty(_labelOverride))
             {
                 label = _labelOverride;
+                _roomKeyValid = false;
             }
             else
             {
                 var room = _gameManager != null ? _gameManager.CurrentRoom : null;
                 // The room's own cameraOrder keeps the number matching the room actually showing.
                 int camIndex = room != null ? room.cameraOrder + 1 : _camIndex;
+
+                if (_roomKeyValid && room == _lastRoom && camIndex == _lastCamIndex) return;
+                _roomKeyValid = true;
+                _lastRoom = room;
+                _lastCamIndex = camIndex;
+
                 string roomLabel = room != null ? room.Label.ToUpperInvariant() : "NO SIGNAL";
                 label = $"CAM 0{camIndex} — {roomLabel}";
             }

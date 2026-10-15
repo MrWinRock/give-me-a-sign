@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/StartScene.unity
     guid: 4a45cb7bf3117254b896780c4c1946a2
   - enabled: 1
+    path: Assets/Scenes/MicSetup.unity
+    guid: 7a74b6eda38f4844e931a24eac873469
+  - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 6be1286e51b4e604fb25f9618669a0fa
   - enabled: 1

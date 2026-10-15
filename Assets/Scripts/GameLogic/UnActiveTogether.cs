@@ -13,6 +13,8 @@ namespace GameLogic
 
         void Update()
         {
+            if (checkObjects == null || unActiveObjects == null) return;
+
             if (!checkObjects.activeSelf && unActiveObjects.activeSelf)
             {
                 unActiveObjects.SetActive(false);

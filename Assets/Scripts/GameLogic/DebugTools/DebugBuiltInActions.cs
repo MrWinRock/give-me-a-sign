@@ -48,14 +48,16 @@ namespace GameLogic.DebugTools
                 steps = "Spawn: Shadow Blob. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'shadow in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'shadow' = WHICH ROOM? then say just the room (it remembers 'shadow') = COPY THAT; only 'in bedroom' = YOU SEE WHAT? then say just 'shadow'. Memory lasts 20s and resets once filed or the anomaly is gone. Mispronounce on purpose ('shado', 'kichen', 'hall', 'bed room'): near-words count (lists: Mishearings on each Room_*.asset and each entry of ObservationVocabulary), a room word never counts as the anomaly name, and once the room is heard the name may be sloppier. Each anomaly has ONE name (see the Field Manual). Wrong word or room = NEGATIVE + it advances." },
             new QaItem { id = "demon", title = "Demon needs a shout",
                 steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: nothing happens (no text - watch the slider's red zone). Shout it: COPY THAT and it leaves." },
-            new QaItem { id = "stealth", title = "Hooded Figure stealth mic",
-                steps = "Spawn: Hooded Figure. NOTHING happens until you move the mouse over it (pan to its room first). Then the mic opens by itself (open click), HUD: MIC LIVE - DO NOT SPEAK n (blinks). Test 3 ways in 3 tries: (a) say nothing 8s = it leaves; (b) whisper a sentence (~1s) = caught, jumpscare then Result; (c) speak/shout = caught at once. A breath or a click must NOT catch you. V press during it only clicks." },
+            new QaItem { id = "stealth", title = "Watcher stealth mic",
+                steps = "Spawn: The Watcher, pan the camera into its room. Its face rises slowly from the bottom of the screen: the screen shakes, the camera is locked, the ghost loop fades in and the other sounds fade down. Once fully risen the mic opens by itself, HUD: MIC LIVE - DO NOT SPEAK n (blinks). Test 3 ways in 3 tries: (a) say nothing = it sinks away, sound and camera return to normal; (b) whisper a sentence (~1s) = caught, jumpscare then Result; (c) speak/shout = caught at once. Speaking while it rises or sinks does nothing. A breath or a click must NOT catch you." },
+            new QaItem { id = "loudmouth", title = "Loudmouth 8-bit timer",
+                steps = "Spawn: Loudmouth. 8-bit music starts quietly and gets louder over ~45s; it is louder while the camera is in its room, quieter in other rooms. Find the room and hold V: 'loudmouth in <room>' = COPY THAT, the music fades out and it leaves. Do nothing until the music peaks = jumpscare then Result. A wrong report does not make it leave." },
             new QaItem { id = "radio", title = "Radio Check pass / fail",
                 steps = "Radio Check > Normal. Say exactly what the card says ('SEC-04 copy'): COPY THAT shown ~2.5s. Only noise, only 'copy', or the wrong call sign must NOT pass. Run again and stay silent: NO RESPONSE and a penalty anomaly appears in the scene." },
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
                 steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears. Same for Wrong ID (saying 'copy' = WRONG SIGN-IN + penalty anomaly, silence = GOOD CALL). OwnVoice: your recorded voice plays - speaking over it must not count; answer after it ends." },
             new QaItem { id = "noise", title = "Noise meter (bottom-centre OSD)",
-                steps = "Hold V and speak: the 20 segments light left to right, the header shows LOW / NORMAL / LOUD, the highest recent segment stays lit briefly. Mic closed: dim STANDBY. Spawn Hooded Figure: no zone is tinted - say nothing at all. Reveal the Demon: LOUD zone tinted - shout. Say the right words at the wrong volume: the header flashes TOO LOUD / TOO QUIET and nothing is penalised. Noise meter > 'Feed the meter' and 'Toggle the tuning overlay' help tune without speaking." },
+                steps = "Hold V and speak: the 20 segments light left to right, the header shows LOW / NORMAL / LOUD, the highest recent segment stays lit briefly. Mic closed: dim STANDBY. Spawn The Watcher: no zone is tinted - say nothing at all. Reveal the Demon: LOUD zone tinted - shout. Say the right words at the wrong volume: the header flashes TOO LOUD / TOO QUIET and nothing is penalised. Noise meter > 'Feed the meter' and 'Toggle the tuning overlay' help tune without speaking." },
             new QaItem { id = "manual", title = "Field Manual locks + entry points",
                 steps = "Field Manual > Lock all pages, press TAB: every page '???'. Spawn an anomaly: its page unlocks (Demon only when it reveals). TAB opens/closes it, but not while paused, in a cutscene, or while the Demon is out. The MainMenu icon 'Field Manual.exe' opens it too." },
             new QaItem { id = "matcher", title = "Short words don't match everything",
@@ -466,6 +468,29 @@ namespace GameLogic.DebugTools
                 group = VoiceGroup,
                 label = "Mic: show saved noise floor",
                 run = () => info($"Noise floor = {MicCalibration.NoiseFloor:0.0000}  ({(MicCalibration.HasCalibrated ? "calibrated" : "DEFAULT - never calibrated")})"),
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = VoiceGroup,
+                label = "Mic setup: show saved calibration",
+                run = () =>
+                {
+                    var d = MicCalibrationStore.Current;
+                    info($"completed={MicCalibrationStore.IsSetupCompleted} usedDefaults={d.usedDefaults} v{d.calibrationVersion} device='{d.deviceName}' " +
+                         $"floor={d.noiseFloorDb:0.0}dB normal={d.normalVoiceDb:0.0}dB loud={d.loudVoiceDb:0.0}dB range={d.minDb:0.0}..{d.maxDb:0.0}dB thresholds={d.lowToNormal:0.00}/{d.normalToLoud:0.00}");
+                },
+            });
+
+            list.Add(new DebugEntry
+            {
+                group = VoiceGroup,
+                label = "Mic setup: RESET calibration (wizard shows again on next launch)",
+                run = () =>
+                {
+                    MicCalibrationStore.ResetToDefaults();
+                    info("Microphone calibration cleared. The setup wizard appears the next time the game starts on the main menu.");
+                },
             });
 
             list.Add(new DebugEntry

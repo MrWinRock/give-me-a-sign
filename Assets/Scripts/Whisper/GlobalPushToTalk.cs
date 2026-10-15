@@ -36,11 +36,14 @@ namespace Whisper
 
         private float _lastSpeechAt;
 
-        [Tooltip("With no microphone, reports are not judged on volume (so a Demon or Hooded Figure can still be reported by typing).")]
+        [Tooltip("With no microphone, reports are not judged on volume (so a Demon can still be reported by typing).")]
         [SerializeField] private bool typedInputBypassesNoiseRequirement = true;
 
         [Tooltip("The PushToTalkHud prefab in the gameplay Canvas. Auto-found if left empty; without one V still works, just with no on-screen indicator.")]
         [SerializeField] private PushToTalkHud hud;
+
+        [Header("Debug")]
+        [SerializeField] private bool showDebugInfo;
 
         // Unity-null aware, so "Hud?.X()" is safe even if the HUD was destroyed with its scene.
         private PushToTalkHud Hud => hud != null ? hud : null;
@@ -207,7 +210,8 @@ namespace Whisper
             bool ignoreVolume = typedInputBypassesNoiseRequirement && meter != null && !meter.HasMicrophone;
 
             var outcome = reports.FileRadioReport(spoken, level, ignoreVolume);
-            Debug.Log($"[Walkie] heard '{spoken}' ({level}) -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
+            if (showDebugInfo)
+                Debug.Log($"[Walkie] heard '{spoken}' ({level}) -> {outcome} (active anomalies: {DescribeActiveAnomalies()})", this);
 
             string heard = string.IsNullOrWhiteSpace(spoken) ? PlayerMessages.Text(MessageId.NothingHeard) : $"heard: \"{Trim(spoken, 55)}\"";
 

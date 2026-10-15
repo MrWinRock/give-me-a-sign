@@ -50,13 +50,23 @@ namespace Whisper
         // 0 = silent, 1 = far right of the meter.
         public float Position { get; private set; }
         public float Normalized => Position;
-        public float WhisperEdge => ToPosition(whisperBandMultiplier);
-        public float ShoutEdge => ToPosition(shoutBandMultiplier);
+        public float WhisperEdge => ToPosition(WhisperBand);
+        public float ShoutEdge => ToPosition(ShoutBand);
+
+        // The calibrated values (MicCalibrationStore / the wizard's Test page) win; otherwise the serialized bands over the legacy floor.
+        public float NoiseFloorRms => _calibrated ? _floorRms : MicCalibration.NoiseFloor;
+        private float WhisperBand => _calibrated ? _whisperBand : whisperBandMultiplier;
+        private float ShoutBand => _calibrated ? _shoutBand : shoutBandMultiplier;
+        private float SliderMax => _calibrated ? _sliderMax : sliderMaxMultiplier;
+        public bool IsCalibrated => _calibrated;
+
+        // The microphone wizard drives the meter from its own capture and keeps it live (no V needed).
+        public bool ExternalActive { get; set; }
 
         public NoiseLevel Level { get; private set; }
 
         // True while V is held (or the game holds the mic open), or while a Debug feed runs.
-        public bool IsActive => IsDebugFeeding || (GlobalPushToTalk.Instance != null && GlobalPushToTalk.Instance.IsMicOpen);
+        public bool IsActive => ExternalActive || IsDebugFeeding || (GlobalPushToTalk.Instance != null && GlobalPushToTalk.Instance.IsMicOpen);
         public bool IsDebugFeeding => Time.unscaledTime < _debugUntil;
 
         // False on a machine with no microphone: the HUD hides itself and typed input is not judged on volume.
@@ -85,16 +95,68 @@ namespace Whisper
         private float _debugRms;
         private float _debugUntil = float.NegativeInfinity;
 
+        private bool _calibrated;
+        private bool _previewing;
+        private float _floorRms, _whisperBand, _shoutBand, _sliderMax;
+
         void OnEnable()
         {
             Instance = this;
             WhisperMicInput.OnSpeechChunk += HandleSpeechChunk;
+            MicCalibrationStore.OnChanged += OnStoreChanged;
+            ApplyCalibration(MicCalibrationStore.Current);
         }
 
         void OnDisable()
         {
             WhisperMicInput.OnSpeechChunk -= HandleSpeechChunk;
+            MicCalibrationStore.OnChanged -= OnStoreChanged;
             if (Instance == this) Instance = null;
+        }
+
+        private void OnStoreChanged()
+        {
+            if (!_previewing) ApplyCalibration(MicCalibrationStore.Current);
+        }
+
+        // dB maps linearly onto the log-scaled meter, so the stored range and thresholds convert exactly:
+        // floor = minDb, meter end = maxDb, and each threshold is its fraction of that dB span.
+        public void ApplyCalibration(MicCalibrationData data)
+        {
+            if (data == null || data.usedDefaults || data.maxDb <= data.minDb)
+            {
+                _calibrated = false;
+                return;
+            }
+
+            float span = data.maxDb - data.minDb;
+            _floorRms = Mathf.Max(0.0005f, Mathf.Pow(10f, data.minDb / 20f));
+            _sliderMax = Mathf.Max(2f, Mathf.Pow(10f, span / 20f));
+            _whisperBand = Mathf.Max(1.01f, Mathf.Pow(10f, data.lowToNormal * span / 20f));
+            _shoutBand = Mathf.Max(_whisperBand * 1.01f, Mathf.Pow(10f, data.normalToLoud * span / 20f));
+            _calibrated = true;
+        }
+
+        // The wizard's Test page: use the measured values without saving them.
+        public void ApplyPreview(MicCalibrationData data)
+        {
+            _previewing = true;
+            ApplyCalibration(data);
+        }
+
+        public void ClearPreview()
+        {
+            _previewing = false;
+            ApplyCalibration(MicCalibrationStore.Current);
+        }
+
+        // One loudness reading (rms, already gained) from a capture that is not WhisperMicInput's.
+        public void FeedExternal(float rms)
+        {
+            if (IsDebugFeeding) return;
+
+            _lastChunkTime = Time.unscaledTime;
+            _target = ToPosition(rms / Mathf.Max(0.0005f, NoiseFloorRms));
         }
 
         void Update()
@@ -108,7 +170,7 @@ namespace Whisper
             if (IsDebugFeeding)
             {
                 _lastChunkTime = Time.unscaledTime;
-                _target = ToPosition(_debugRms / Mathf.Max(0.001f, MicCalibration.NoiseFloor));
+                _target = ToPosition(_debugRms / Mathf.Max(0.0005f, NoiseFloorRms));
             }
             else if (Time.unscaledTime - _lastChunkTime > holdSeconds)
             {
@@ -193,22 +255,22 @@ namespace Whisper
             if (IsDebugFeeding) return;
 
             _lastChunkTime = Time.unscaledTime;
-            _target = ToPosition(rms / Mathf.Max(0.001f, MicCalibration.NoiseFloor));
+            _target = ToPosition(rms / Mathf.Max(0.0005f, NoiseFloorRms));
         }
 
         // Log scale: loudness is perceived in ratios, and this keeps both a whisper and a shout on the meter.
         private float ToPosition(float ratio)
         {
             if (ratio <= 1f) return 0f;
-            return Mathf.Clamp01(Mathf.Log(ratio, 2f) / Mathf.Log(sliderMaxMultiplier, 2f));
+            return Mathf.Clamp01(Mathf.Log(ratio, 2f) / Mathf.Log(SliderMax, 2f));
         }
 
         public VoiceLevel Classify(float rms)
         {
-            float floor = Mathf.Max(0.001f, MicCalibration.NoiseFloor);
+            float floor = Mathf.Max(0.0005f, NoiseFloorRms);
             if (rms <= floor * 1.1f) return VoiceLevel.Silent;
-            if (rms >= floor * shoutBandMultiplier) return VoiceLevel.Shout;
-            if (rms <= floor * whisperBandMultiplier) return VoiceLevel.Whisper;
+            if (rms >= floor * ShoutBand) return VoiceLevel.Shout;
+            if (rms <= floor * WhisperBand) return VoiceLevel.Whisper;
             return VoiceLevel.Normal;
         }
 
@@ -218,10 +280,10 @@ namespace Whisper
         // Debug panel: holds the meter at a loudness for a few seconds, as if the player were speaking.
         public void DebugFeed(VoiceLevel level, float seconds)
         {
-            float multiplier = level == VoiceLevel.Shout ? shoutBandMultiplier * 1.5f
-                             : level == VoiceLevel.Normal ? (whisperBandMultiplier + shoutBandMultiplier) * 0.5f
-                             : whisperBandMultiplier * 0.7f;
-            _debugRms = MicCalibration.NoiseFloor * multiplier;
+            float multiplier = level == VoiceLevel.Shout ? ShoutBand * 1.5f
+                             : level == VoiceLevel.Normal ? (WhisperBand + ShoutBand) * 0.5f
+                             : WhisperBand * 0.7f;
+            _debugRms = NoiseFloorRms * multiplier;
             _debugUntil = Time.unscaledTime + seconds;
         }
 

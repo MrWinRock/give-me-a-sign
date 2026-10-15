@@ -15,5 +15,6 @@ namespace GameLogic.Data
         Light,
         Picture,
         Demon,
+        Loudmouth,
     }
 }

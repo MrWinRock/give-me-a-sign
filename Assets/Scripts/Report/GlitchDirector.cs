@@ -67,7 +67,7 @@ namespace Report
         [Serializable]
         public class ScriptedGlitchBeat
         {
-            [Tooltip("Label for your own reference. Also the key used by FireBeatByName().")]
+            [Tooltip("Label for your own reference. Also used in decision traces.")]
             public string beatName = "New Beat";
             public GlitchType glitchType = GlitchType.StatusIntrusion;
             public TriggerCondition condition = TriggerCondition.OnReportCount;
@@ -114,7 +114,7 @@ namespace Report
         [SerializeField] private bool autoDetectFormLifecycle = true;
 
         [Header("State Source (optional)")]
-        [Tooltip("Any MonoBehaviour implementing IGlitchStateSource. Leave empty and push values via SetReportCount() / SetGameHour() / SetAnomalyState() / SetConsecutiveFailures() instead.")]
+        [Tooltip("Any MonoBehaviour implementing IGlitchStateSource. Leave empty and report/hour/anomaly/failure inputs are treated as neutral.")]
         [SerializeField] private MonoBehaviour stateSourceBehaviour;
 
         // =======================================================================================
@@ -292,22 +292,6 @@ namespace Report
 
         private IGlitchStateSource _stateSource;
 
-        // Pushed state - used whenever no IGlitchStateSource is wired.
-        private int _pushedReportCount;
-        private int _pushedGameHour;
-        private float _pushedShiftProgress;
-        private GlitchAnomalyState _pushedAnomalyState = GlitchAnomalyState.None;
-        private int _pushedConsecutiveFailures;
-
-        // "Was this input ever actually provided?" - unprovided inputs are treated as neutral
-        // (multiplier 1.0) and never match a beat or blackout, instead of silently reading 0.
-        private bool _reportCountProvided;
-        private bool _gameHourProvided;
-        private bool _shiftProgressProvided;
-        private bool _anomalyStateProvided;
-        private bool _failuresProvided;
-        private bool _warnedAboutMissingProviders;
-
         private readonly HashSet<string> _firedBeats = new HashSet<string>();
         private readonly Dictionary<string, bool> _flags = new Dictionary<string, bool>();
         private readonly List<GlitchType> _firedThisSession = new List<GlitchType>();
@@ -348,7 +332,7 @@ namespace Report
                 {
                     Debug.LogWarning(
                         $"[GlitchDirector] '{stateSourceBehaviour.GetType().Name}' does not implement IGlitchStateSource. " +
-                        "Falling back to pushed values.", this);
+                        "State inputs are treated as neutral.", this);
                 }
             }
 
@@ -399,10 +383,9 @@ namespace Report
                 _scheduledBeat = null;
             }
 
-            glitchController?.NotifyFormOpened();
-            WarnAboutMissingProvidersOnce();
+            if (glitchController != null) glitchController.NotifyFormOpened();
 
-            if (ReadAnomalyState() == GlitchAnomalyState.Active)
+            if (HasStateSource && ReadAnomalyState() == GlitchAnomalyState.Active)
                 _hasSeenActiveAnomaly = true;
 
             Decide();
@@ -418,7 +401,7 @@ namespace Report
                 _scheduledBeat = null;
             }
 
-            glitchController?.NotifyFormClosed();
+            if (glitchController != null) glitchController.NotifyFormClosed();
 
             // Track the clean/glitched rhythm on the way out, once we know what actually fired.
             if (_firedThisSession.Count > 0 || _sessionMode == SessionMode.Scripted)
@@ -649,16 +632,16 @@ namespace Report
             switch (beat.condition)
             {
                 case TriggerCondition.OnReportCount:
-                    return _reportCountProvided && ReadReportCount() >= beat.conditionValue;
+                    return HasStateSource && ReadReportCount() >= beat.conditionValue;
 
                 case TriggerCondition.OnGameHour:
-                    return _gameHourProvided && ReadGameHour() >= beat.conditionValue;
+                    return HasStateSource && ReadGameHour() >= beat.conditionValue;
 
                 case TriggerCondition.OnFirstActiveAnomaly:
-                    return _anomalyStateProvided && ReadAnomalyState() == GlitchAnomalyState.Active;
+                    return HasStateSource && ReadAnomalyState() == GlitchAnomalyState.Active;
 
                 case TriggerCondition.OnConsecutiveFailures:
-                    return _failuresProvided && ReadConsecutiveFailures() >= beat.conditionValue;
+                    return HasStateSource && ReadConsecutiveFailures() >= beat.conditionValue;
 
                 default:
                     return false;
@@ -682,31 +665,6 @@ namespace Report
             _scheduledBeat = null;
         }
 
-        public bool FireBeatByName(string beatName)
-        {
-            if (string.IsNullOrWhiteSpace(beatName)) return false;
-
-            foreach (var beat in scriptedBeats)
-            {
-                if (beat == null || beat.beatName != beatName) continue;
-                if (beat.fireOnce && _firedBeats.Contains(beat.beatName))
-                {
-                    if (logDirectorDecisions)
-                        Debug.Log($"[GlitchDirector] FireBeatByName('{beatName}') ignored - already fired.", this);
-                    return false;
-                }
-
-                if (beat.fireOnce)
-                    _firedBeats.Add(beat.beatName);
-
-                FireGlitch(beat.glitchType, beat.overrideText, $"manual '{beat.beatName}'");
-                return true;
-            }
-
-            Debug.LogWarning($"[GlitchDirector] FireBeatByName('{beatName}') - no beat with that name.", this);
-            return false;
-        }
-
         // =======================================================================================
         // Blackouts & flags
         // =======================================================================================
@@ -720,15 +678,15 @@ namespace Report
                 switch (b.condition)
                 {
                     case BlackoutCondition.BeforeReportCount:
-                        if (_reportCountProvided && ReadReportCount() < b.conditionValue) return b;
+                        if (HasStateSource && ReadReportCount() < b.conditionValue) return b;
                         break;
 
                     case BlackoutCondition.BeforeGameHour:
-                        if (_gameHourProvided && ReadGameHour() < b.conditionValue) return b;
+                        if (HasStateSource && ReadGameHour() < b.conditionValue) return b;
                         break;
 
                     case BlackoutCondition.DuringPassiveAnomaly:
-                        if (_anomalyStateProvided && ReadAnomalyState() == GlitchAnomalyState.Passive) return b;
+                        if (HasStateSource && ReadAnomalyState() == GlitchAnomalyState.Passive) return b;
                         break;
 
                     case BlackoutCondition.AlwaysWhenFlagSet:
@@ -761,11 +719,11 @@ namespace Report
         private float ComputeEffectiveChance(bool includeDwell, StringBuilder trace)
         {
             float hourMul = 1f;
-            if (_shiftProgressProvided)
+            if (HasStateSource)
                 hourMul = Mathf.Max(0f, hourMultiplierCurve.Evaluate(Mathf.Clamp01(ReadShiftProgress())));
 
             float anomalyMul = 1f;
-            if (_anomalyStateProvided)
+            if (HasStateSource)
             {
                 switch (ReadAnomalyState())
                 {
@@ -775,7 +733,7 @@ namespace Report
             }
 
             float failureMul = 1f;
-            if (_failuresProvided)
+            if (HasStateSource)
             {
                 failureMul = Mathf.Min(
                     1f + ReadConsecutiveFailures() * failureMultiplierPerFailure,
@@ -798,6 +756,8 @@ namespace Report
             return clamped;
         }
 
+        public float Intensity => intensityMultiplier;
+
         public void SetIntensity(float multiplier)
         {
             intensityMultiplier = Mathf.Max(0f, multiplier);
@@ -810,91 +770,17 @@ namespace Report
         // Part 4 - State the director reads
         // =======================================================================================
 
-        public void SetReportCount(int value)
-        {
-            _pushedReportCount = value;
-            _reportCountProvided = true;
-        }
+        private bool HasStateSource => _stateSource != null;
 
-        public void SetGameHour(int hour, float shiftProgress01)
-        {
-            _pushedGameHour = hour;
-            _pushedShiftProgress = Mathf.Clamp01(shiftProgress01);
-            _gameHourProvided = true;
-            _shiftProgressProvided = true;
-        }
+        private int ReadReportCount() => _stateSource.ReportCount;
 
-        public void SetAnomalyState(GlitchAnomalyState state)
-        {
-            _pushedAnomalyState = state;
-            _anomalyStateProvided = true;
+        private int ReadGameHour() => _stateSource.GameHour;
 
-            if (state == GlitchAnomalyState.Active)
-                _hasSeenActiveAnomaly = true;
-        }
+        private float ReadShiftProgress() => _stateSource.ShiftProgress01;
 
-        public void SetConsecutiveFailures(int value)
-        {
-            _pushedConsecutiveFailures = Mathf.Max(0, value);
-            _failuresProvided = true;
-        }
+        private GlitchAnomalyState ReadAnomalyState() => _stateSource.AnomalyState;
 
-        public void RegisterReportResult(bool success)
-        {
-            if (success)
-            {
-                SetReportCount(ReadReportCount() + 1);
-                SetConsecutiveFailures(0);
-            }
-            else
-            {
-                SetConsecutiveFailures(ReadConsecutiveFailures() + 1);
-            }
-        }
-
-        private int ReadReportCount() =>
-            _stateSource != null ? _stateSource.ReportCount : _pushedReportCount;
-
-        private int ReadGameHour() =>
-            _stateSource != null ? _stateSource.GameHour : _pushedGameHour;
-
-        private float ReadShiftProgress() =>
-            _stateSource != null ? _stateSource.ShiftProgress01 : _pushedShiftProgress;
-
-        private GlitchAnomalyState ReadAnomalyState() =>
-            _stateSource != null ? _stateSource.AnomalyState : _pushedAnomalyState;
-
-        private int ReadConsecutiveFailures() =>
-            _stateSource != null ? _stateSource.ConsecutiveFailures : _pushedConsecutiveFailures;
-
-        private void WarnAboutMissingProvidersOnce()
-        {
-            if (_warnedAboutMissingProviders) return;
-
-            if (_stateSource != null)
-            {
-                _reportCountProvided = _gameHourProvided = _shiftProgressProvided = true;
-                _anomalyStateProvided = _failuresProvided = true;
-                _warnedAboutMissingProviders = true;
-                return;
-            }
-
-            var missing = new List<string>();
-            if (!_reportCountProvided) missing.Add("ReportCount");
-            if (!_gameHourProvided) missing.Add("GameHour");
-            if (!_shiftProgressProvided) missing.Add("ShiftProgress");
-            if (!_anomalyStateProvided) missing.Add("AnomalyState");
-            if (!_failuresProvided) missing.Add("ConsecutiveFailures");
-
-            if (missing.Count == 0) return;
-
-            _warnedAboutMissingProviders = true;
-            Debug.LogWarning(
-                $"[GlitchDirector] No state provider for: {string.Join(", ", missing)}. " +
-                "These are treated as neutral (multiplier 1.0) and will never match a beat or blackout. " +
-                "Wire an IGlitchStateSource, or call SetReportCount/SetGameHour/SetAnomalyState/SetConsecutiveFailures.",
-                this);
-        }
+        private int ReadConsecutiveFailures() => _stateSource.ConsecutiveFailures;
 
         // =======================================================================================
         // Helpers
@@ -907,11 +793,11 @@ namespace Report
 
         private string DescribeState()
         {
-            return $"reports={(_reportCountProvided ? ReadReportCount().ToString() : "n/a")}, " +
-                   $"hour={(_gameHourProvided ? ReadGameHour().ToString() : "n/a")}, " +
-                   $"progress={(_shiftProgressProvided ? ReadShiftProgress().ToString("F2") : "n/a")}, " +
-                   $"anomaly={(_anomalyStateProvided ? ReadAnomalyState().ToString() : "n/a")}, " +
-                   $"failures={(_failuresProvided ? ReadConsecutiveFailures().ToString() : "n/a")}, " +
+            return $"reports={(HasStateSource ? ReadReportCount().ToString() : "n/a")}, " +
+                   $"hour={(HasStateSource ? ReadGameHour().ToString() : "n/a")}, " +
+                   $"progress={(HasStateSource ? ReadShiftProgress().ToString("F2") : "n/a")}, " +
+                   $"anomaly={(HasStateSource ? ReadAnomalyState().ToString() : "n/a")}, " +
+                   $"failures={(HasStateSource ? ReadConsecutiveFailures().ToString() : "n/a")}, " +
                    $"glitchedStreak={_consecutiveGlitchedSessions}, seenActive={_hasSeenActiveAnomaly}";
         }
 

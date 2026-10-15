@@ -239,7 +239,8 @@ namespace Whisper
             }
 
             microphone.frequency = sampleRate;
-            microphone.SelectedMicDevice = string.IsNullOrEmpty(deviceName) ? null : deviceName;
+            // Inspector override first, else the player's Control Panel / setup-wizard choice (null = system default when it is gone).
+            microphone.SelectedMicDevice = string.IsNullOrEmpty(deviceName) ? MicCalibrationStore.ResolveDevice() : deviceName;
             microphone.useVad = true;
             microphone.vadUpdateRateSec = 0.08f;   // check VAD a bit faster
             microphone.vadLastSec = 0.9f;          // shorter window for earlier speech detection

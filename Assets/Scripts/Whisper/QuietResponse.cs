@@ -42,12 +42,15 @@ namespace Whisper
         private bool _caught;
         private string _lastHint;
         private readonly HashSet<Anomaly> _found = new HashSet<Anomaly>();
+        private readonly Dictionary<Anomaly, Renderer[]> _renderers = new Dictionary<Anomaly, Renderer[]>();
+        private readonly List<Anomaly> _stale = new List<Anomaly>();
 
         void OnEnable() => WhisperMicInput.OnSpeechChunk += HandleSpeechChunk;
 
         void OnDisable()
         {
             WhisperMicInput.OnSpeechChunk -= HandleSpeechChunk;
+            _renderers.Clear();
             Release();
         }
 
@@ -63,19 +66,23 @@ namespace Whisper
             {
                 if (!NeedsSilence(anomaly)) continue;
 
-                // It lurks until the player finds it with the cursor - only then does the mic go live and the countdown start.
+                // A stalker comes to the player and starts the countdown itself once it has risen; others lurk until the cursor finds them.
+                var stalker = anomaly.GetComponent<SilentStalker>();
+
                 if (!_found.Contains(anomaly))
                 {
-                    if (!PointerOver(anomaly)) continue;
+                    if (stalker != null ? !stalker.IsWatching : !PointerOver(anomaly)) continue;
 
                     _found.Add(anomaly);
+                    _renderers.Remove(anomaly);
                     _quietSince[anomaly] = Time.time;
-                    anomaly.transform.DOPunchScale(Vector3.one * 0.12f, 0.5f, 8).SetLink(anomaly.gameObject);
+                    if (stalker == null)
+                        anomaly.transform.DOPunchScale(Vector3.one * 0.12f, 0.5f, 8).SetLink(anomaly.gameObject);
                 }
 
                 float since = _quietSince[anomaly];
 
-                float remaining = quietSeconds - (Time.time - since);
+                float remaining = (stalker != null ? stalker.WatchSeconds : quietSeconds) - (Time.time - since);
                 if (remaining <= 0f)
                 {
                     _pending.Add(anomaly);
@@ -91,8 +98,13 @@ namespace Whisper
             {
                 _quietSince.Remove(anomaly);
                 _found.Remove(anomaly);
+                _renderers.Remove(anomaly);
                 anomaly.MarkReported();
-                anomaly.ResolveByReport();
+
+                // A stalker sinks out of view first and resolves itself when it has gone.
+                var leaving = anomaly.GetComponent<SilentStalker>();
+                if (leaving != null) leaving.BeginLeave();
+                else anomaly.ResolveByReport();
             }
 
             Engaged = soonestAnomaly != null;
@@ -108,7 +120,7 @@ namespace Whisper
             }
         }
 
-        private static bool PointerOver(Anomaly anomaly)
+        private bool PointerOver(Anomaly anomaly)
         {
 #if ENABLE_INPUT_SYSTEM
             var cam = Camera.main;
@@ -118,9 +130,9 @@ namespace Whisper
             Vector2 screen = mouse.position.ReadValue();
             Vector3 world = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, Mathf.Abs(cam.transform.position.z)));
 
-            foreach (var r in anomaly.GetComponentsInChildren<Renderer>(false))
+            foreach (var r in RenderersOf(anomaly))
             {
-                if (r == null || !r.enabled) continue;
+                if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
 
                 var bounds = r.bounds;
                 world.z = bounds.center.z;
@@ -128,6 +140,22 @@ namespace Whisper
             }
 #endif
             return false;
+        }
+
+        private Renderer[] RenderersOf(Anomaly anomaly)
+        {
+            if (_renderers.TryGetValue(anomaly, out var cached)) return cached;
+
+            // Drop entries for anomalies destroyed since they were cached.
+            _stale.Clear();
+            foreach (var key in _renderers.Keys)
+                if (key == null) _stale.Add(key);
+            foreach (var key in _stale)
+                _renderers.Remove(key);
+
+            var found = anomaly.GetComponentsInChildren<Renderer>(true);
+            _renderers[anomaly] = found;
+            return found;
         }
 
         private void Hold(Anomaly anomaly)

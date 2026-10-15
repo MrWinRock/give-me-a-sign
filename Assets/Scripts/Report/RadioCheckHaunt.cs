@@ -112,7 +112,11 @@ namespace Report
             _glitchDirector = FindFirstObjectByType<GlitchDirector>();
         }
 
-        void OnEnable() => HauntDirector.Instance?.Register(this);
+        void OnEnable()
+        {
+            var hauntDirector = HauntDirector.Instance;
+            if (hauntDirector != null) hauntDirector.Register(this);
+        }
 
         void OnDisable()
         {
@@ -298,8 +302,11 @@ namespace Report
 
             if (decoy)
             {
-                _glitchDirector?.SetFlag("decoy_answered", true);
-                _glitchDirector?.SetIntensity(decoyIntensityFloor);
+                if (_glitchDirector != null)
+                {
+                    _glitchDirector.SetFlag("decoy_answered", true);
+                    _glitchDirector.SetIntensity(Mathf.Max(_glitchDirector.Intensity, decoyIntensityFloor));
+                }
             }
 
             if (showDebugInfo)

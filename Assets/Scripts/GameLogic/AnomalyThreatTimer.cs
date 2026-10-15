@@ -11,7 +11,7 @@ namespace GameLogic
         [Tooltip("Seconds the player has once the anomaly turns threatening. 0 or less = no time limit.")]
         [SerializeField] private float timeoutSeconds = 30f;
 
-        public System.Action OnExpired;
+        public event System.Action OnExpired;
 
         private float _elapsed;
 

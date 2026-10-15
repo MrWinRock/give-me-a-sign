@@ -71,6 +71,11 @@ namespace GameLogic
             _inputActions.Player.Disable();
         }
 
+        void OnDestroy()
+        {
+            _inputActions.Dispose();
+        }
+
         private void OnClick(InputAction.CallbackContext ctx)
         {
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())

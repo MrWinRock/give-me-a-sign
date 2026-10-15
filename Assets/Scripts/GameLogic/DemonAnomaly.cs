@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using DG.Tweening;
-using System.Collections.Generic;
-using DG.Tweening;
 using GameLogic.Data;
 using GameLogic.Flow;
 using Report;
@@ -60,6 +58,7 @@ namespace GameLogic
         // How many demons are currently revealed and unresolved, across the scene.
         // GlitchStateSource reads this so the glitch systems treat a demon as an ACTIVE threat.
         private static int _revealedCount;
+        private static float _intensityBeforeDemon = 1f;
         public static bool AnyRevealed => _revealedCount > 0;
 
         // The jumpscare art, reused by DemonLossJumpscare for every loss.
@@ -227,8 +226,14 @@ namespace GameLogic
             if (jumpscareAudio != null)
                 jumpscareAudio.Play();
 
-            IncidentReportManager.Instance?.SetAlert(true);
-            _glitchDirector?.SetIntensity(glitchIntensityWhileActive);
+            var reportManager = IncidentReportManager.Instance;
+            if (reportManager != null) reportManager.SetAlert(true);
+
+            if (_glitchDirector != null)
+            {
+                if (_revealedCount == 1) _intensityBeforeDemon = _glitchDirector.Intensity;
+                _glitchDirector.SetIntensity(glitchIntensityWhileActive);
+            }
 
             if (showDebugInfo)
             {
@@ -444,8 +449,12 @@ namespace GameLogic
             if (!_revealed) return;
 
             _revealedCount = Mathf.Max(0, _revealedCount - 1);
-            IncidentReportManager.Instance?.SetAlert(false);
-            _glitchDirector?.SetIntensity(1f);
+
+            var reportManager = IncidentReportManager.Instance;
+            if (reportManager != null) reportManager.SetAlert(false);
+
+            if (_glitchDirector != null && _revealedCount == 0)
+                _glitchDirector.SetIntensity(_intensityBeforeDemon);
         }
     }
 }

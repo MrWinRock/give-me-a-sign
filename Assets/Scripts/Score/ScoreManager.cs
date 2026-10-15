@@ -28,8 +28,8 @@ namespace Score
         private int _currentScore;
         private bool _scoringClosed;
 
-        public System.Action<int> OnScoreChanged; // Sends current score
-        public System.Action<bool> OnGameEnded; // Sends win status (true = win, false = lose)
+        public event System.Action<int> OnScoreChanged; // Sends current score
+        public event System.Action<bool> OnGameEnded; // Sends win status (true = win, false = lose)
 
         public static ScoreManager Instance { get; private set; }
 

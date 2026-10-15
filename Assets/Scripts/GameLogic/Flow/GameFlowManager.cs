@@ -508,6 +508,13 @@ namespace GameLogic.Flow
             return true;
         }
 
+        // First-launch microphone setup hands back here once it is done.
+        public void LoadMainMenu()
+        {
+            State = GameFlowState.MainMenu;
+            LoadSceneByName(mainMenuSceneName, "main menu");
+        }
+
         void Awake()
         {
             if (_instance != null && _instance != this)

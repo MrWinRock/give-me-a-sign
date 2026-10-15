@@ -226,7 +226,7 @@ namespace Whisper
 
             var last = _meter.LastUtterance;
             debugText.text =
-                $"N {_meter.Normalized:0.00}  {_meter.Level}  zones {_meter.WhisperEdge:0.00}/{_meter.ShoutEdge:0.00}  floor {MicCalibration.NoiseFloor:0.0000}  active {_meter.IsActive}\n" +
+                $"N {_meter.Normalized:0.00}  {_meter.Level}  zones {_meter.WhisperEdge:0.00}/{_meter.ShoutEdge:0.00}  floor {_meter.NoiseFloorRms:0.0000}  active {_meter.IsActive}\n" +
                 $"last: peak {last.peak:0.00} avg {last.average:0.00} {last.duration:0.0}s  need {_meter.CurrentRequirementNow}";
         }
 

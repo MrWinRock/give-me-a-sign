@@ -100,8 +100,8 @@ namespace GameLogic.SpawnAndTime
         // otherwise replaying a seed would put anomalies in subtly different places.
         private System.Random _rng = new System.Random(0);
 
-        public System.Action<GameObject> OnAnomalySpawned;
-        public System.Action<int> OnAllAnomaliesSpawned;
+        public event System.Action<GameObject> OnAnomalySpawned;
+        public event System.Action<int> OnAllAnomaliesSpawned;
 
         public static AnomalyScheduler Instance { get; private set; }
 
