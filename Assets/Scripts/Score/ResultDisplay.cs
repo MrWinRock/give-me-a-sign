@@ -1,8 +1,10 @@
+using System.Collections;
 using GameLogic.Flow;
 using GameLogic.Night;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace Score
 {
@@ -36,6 +38,12 @@ namespace Score
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Button quitButton;
 
+        [Header("Exit Shutter")]
+        [Tooltip("Played fullscreen for a moment when Play Again or Quit is pressed. Leave empty for no transition.")]
+        [SerializeField] private VideoClip shutterClip;
+        [Tooltip("How long it plays before the button's action happens.")]
+        [Min(0f)] [SerializeField] private float shutterSeconds = 0.3f;
+
         [Header("Scene Names")]
         [SerializeField] private string gameSceneName = "GameScene"; // Scene 1 (Night gameplay)
 
@@ -47,11 +55,84 @@ namespace Score
         [SerializeField] private bool showDebugInfo;
 
         private int _resultSeed;
+        private Canvas _shutterCanvas;
+        private VideoPlayer _shutterPlayer;
+        private RenderTexture _shutterTexture;
+        private bool _leaving;
 
         void Start()
         {
             Display(ResolveResult());
             SetupButtons();
+            PrepareShutter();
+        }
+
+        void OnDestroy()
+        {
+            if (_shutterTexture != null) _shutterTexture.Release();
+        }
+
+        // Built hidden at Start so the clip is already decoded when a button is pressed.
+        private void PrepareShutter()
+        {
+            if (shutterClip == null) return;
+
+            var root = new GameObject("ExitShutter", typeof(RectTransform));
+            _shutterCanvas = root.AddComponent<Canvas>();
+            _shutterCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _shutterCanvas.sortingOrder = 2000;
+            _shutterCanvas.enabled = false;
+            root.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+
+            _shutterTexture = new RenderTexture(1280, 720, 0);
+
+            var imageObject = new GameObject("Video", typeof(RectTransform), typeof(RawImage));
+            imageObject.transform.SetParent(root.transform, false);
+            var image = imageObject.GetComponent<RawImage>();
+            image.texture = _shutterTexture;
+            image.raycastTarget = false;
+            var rect = image.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            _shutterPlayer = root.AddComponent<VideoPlayer>();
+            _shutterPlayer.playOnAwake = false;
+            _shutterPlayer.clip = shutterClip;
+            _shutterPlayer.isLooping = false;
+            _shutterPlayer.renderMode = VideoRenderMode.RenderTexture;
+            _shutterPlayer.targetTexture = _shutterTexture;
+            _shutterPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
+            _shutterPlayer.Prepare();
+        }
+
+        // Shows the shutter for a beat, then runs the button's action. Presses during it are ignored.
+        private IEnumerator ShutterThen(System.Action action)
+        {
+            if (_leaving) yield break;
+            _leaving = true;
+
+            if (_shutterPlayer != null && shutterSeconds > 0f)
+            {
+                // A press in the first moments after the scene loads: wait briefly for the clip.
+                float waited = 0f;
+                while (!_shutterPlayer.isPrepared && waited < 1f)
+                {
+                    waited += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+
+                var audio = Audio.AudioManager.Instance;
+                if (audio != null)
+                    _shutterPlayer.SetDirectAudioVolume(0, audio.GetEffectiveVolume(Audio.AudioChannel.Sfx));
+
+                _shutterCanvas.enabled = true;
+                _shutterPlayer.Play();
+                yield return new WaitForSecondsRealtime(shutterSeconds);
+            }
+
+            action();
         }
 
         private NightResult ResolveResult()
@@ -182,7 +263,9 @@ namespace Score
         /// itself: a survived day goes on to the day-end event and the next day, a lost one
         /// retries the same day with a fresh roll.
         /// </summary>
-        public void PlayAgain()
+        public void PlayAgain() => StartCoroutine(ShutterThen(PlayAgainNow));
+
+        private void PlayAgainNow()
         {
             var flow = GameFlowManager.Instance;
             if (flow == null)
@@ -208,7 +291,9 @@ namespace Score
             GameFlowManager.StartNewNight(gameSceneName);
         }
 
-        public void QuitGame()
+        public void QuitGame() => StartCoroutine(ShutterThen(QuitNow));
+
+        private void QuitNow()
         {
             if (showDebugInfo)
                 Debug.Log("Quitting game...");

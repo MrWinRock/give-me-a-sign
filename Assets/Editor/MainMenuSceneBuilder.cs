@@ -592,11 +592,11 @@ namespace GiveMeASign.EditorTools
             AddHorizontal(row, new RectOffset(0, 0, 0, 0), 20, TextAnchor.MiddleCenter);
 
             var standBy = BuildCircleButton(row.transform, "StandBy", "Stand By", out var standByFill,
-                                            out var standByBorder, out var standByLabel);
+                                            out var standByBorder, out var standByLabel, "XP_StandByIcon.png");
             var turnOff = BuildCircleButton(row.transform, "TurnOff", "Turn Off", out var turnOffFill,
-                                            out var turnOffBorder, out var turnOffLabel);
+                                            out var turnOffBorder, out var turnOffLabel, "XP_TurnOffIcon.png");
             var restart = BuildCircleButton(row.transform, "Restart", "Restart", out var restartFill,
-                                            out var restartBorder, out var restartLabel);
+                                            out var restartBorder, out var restartLabel, "XP_RestartIcon.png");
 
             var cancelRow = NewUI("CancelRow", body.transform, new Vector2(0, 23));
             Layout(cancelRow, 23);
@@ -622,7 +622,7 @@ namespace GiveMeASign.EditorTools
 
         /// <summary>34px circle with a 2px ring, plus a caption underneath. The Button is on the circle.</summary>
         private static Button BuildCircleButton(Transform parent, string name, string label, out Image fill,
-                                                out Image border, out TextMeshProUGUI caption)
+                                                out Image border, out TextMeshProUGUI caption, string iconFile = null)
         {
             var column = NewUI(name, parent, new Vector2(62, 58));
             Layout(column, 58, 62);
@@ -638,6 +638,14 @@ namespace GiveMeASign.EditorTools
             Stretch(inner, 2, 2, 2, 2);
             fill = AddImage(inner, Color.white, CircleSprite());
             fill.raycastTarget = false;
+
+            if (!string.IsNullOrEmpty(iconFile))
+            {
+                var iconGo = NewUI("Icon", circle.transform);
+                Anchor(iconGo, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(24, 24));
+                AddImage(iconGo, Color.white,
+                         AssetDatabase.LoadAssetAtPath<Sprite>(GeneratedSpriteFolder + "/" + iconFile)).raycastTarget = false;
+            }
 
             caption = AddText(column.transform, "Caption", label, 10, FontStyles.Bold, WindowBorder,
                               TextAlignmentOptions.Top, wrap: true);
@@ -784,23 +792,57 @@ namespace GiveMeASign.EditorTools
         // ---- 4. Notepad ----
         private static XPWindowController BuildNotepadWindowPrefab()
         {
-            const float width = 275f;
-            const string title = "READ ME.txt — Notepad";
+            const float width = 420f;
+            const float textAreaHeight = 296f;
+            const string title = "READ ME.txt - Notepad";
 
             var root = BuildWindowShell("NotepadWindow", title, width, out var body, out var titleText,
                                         out var closeButton);
             var window = root.AddComponent<TextContentWindow>();
             ApplyWindowBase(window, root, title, width, titleText, closeButton);
 
-            var page = NewUI("TextArea", body.transform, new Vector2(0, 130));
-            Layout(page, 130);
-            AddImage(page, Color.white);
-            page.AddComponent<Outline>().effectColor = FieldBorder;
+            // ---- XP titlebar: notepad icon left, minimise / maximise beside the shell's close button ----
+            var titleBar = root.transform.Find("TitleBar").gameObject;
+            var titleRt = titleText.rectTransform;
+            titleRt.offsetMin = new Vector2(26, 0);
+            titleRt.offsetMax = new Vector2(-66, 0);
 
-            var bodyText = AddText(page.transform, "Content", "", 11, FontStyles.Normal, Color.black,
+            var icon = NewUI("Icon", titleBar.transform);
+            Anchor(icon, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(6, 0), new Vector2(16, 16));
+            AddImage(icon, Color.white, NotepadIconSprite()).raycastTarget = false;
+
+            BuildTitlebarGlyphButton(titleBar.transform, "MinimizeButton", -23 - 20, false);
+            BuildTitlebarGlyphButton(titleBar.transform, "MaximizeButton", -23, true);
+            closeButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(-3, 0);
+
+            // Flush frame: 3px XP border on the sides/bottom, no padding above the menu bar.
+            body.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(3, 3, 0, 3);
+
+            // ---- menu bar ----
+            var menuBar = NewUI("MenuBar", body.transform, new Vector2(0, 18));
+            Layout(menuBar, 18);
+            AddImage(menuBar, WindowFace);
+            AddHorizontal(menuBar, new RectOffset(2, 2, 0, 0), 0, TextAnchor.MiddleLeft);
+            var menuItems = new[] { ("File", 30f), ("Edit", 30f), ("Format", 44f), ("View", 34f), ("Help", 32f) };
+            foreach (var (label, itemWidth) in menuItems)
+            {
+                var item = AddText(menuBar.transform, label, label, 11, FontStyles.Normal, Color.black,
+                                   TextAlignmentOptions.Center);
+                Layout(item.gameObject, 18, itemWidth);
+            }
+
+            // ---- text area: dark sunken frame, white field ----
+            var frame = NewUI("TextArea", body.transform, new Vector2(0, textAreaHeight));
+            Layout(frame, textAreaHeight);
+            AddImage(frame, Hex("#808080"));
+
+            var field = NewUI("Field", frame.transform);
+            Stretch(field, 1, 1, 1, 1);
+            AddImage(field, Color.white);
+
+            var bodyText = AddText(field.transform, "Content", "", 11, FontStyles.Normal, Color.black,
                                    TextAlignmentOptions.TopLeft, wrap: true);
-            Stretch(bodyText.gameObject, 6, 6, 6, 6);
-            bodyText.lineSpacing = 80f; // ~1.8 line-height
+            Stretch(bodyText.gameObject, 3, 2, 3, 2);
 
             Set(window, "bodyText", bodyText);
             Set(window, "content",
@@ -816,6 +858,60 @@ namespace GiveMeASign.EditorTools
             Set(window, "confirmLabel", null);
 
             return SavePrefab(root, "NotepadWindow");
+        }
+
+        // Non-functional XP minimise / maximise button: blue face, white glyph drawn from images.
+        private static void BuildTitlebarGlyphButton(Transform titleBar, string name, float x, bool maximize)
+        {
+            var go = NewUI(name, titleBar, new Vector2(18, 16));
+            Anchor(go, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(x, 0), new Vector2(18, 16));
+            AddImage(go, Color.white, RoundedSprite(2), Image.Type.Sliced).raycastTarget = false;
+            AddGradient(go, Hex("#5B90F0"), Hex("#2B5FD0"));
+            go.AddComponent<Outline>().effectColor = Color.white;
+
+            if (maximize)
+            {
+                var box = NewUI("Glyph", go.transform);
+                Anchor(box, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(9, 8));
+                AddImage(box, Color.white).raycastTarget = false;
+
+                var hole = NewUI("Hole", box.transform);
+                Stretch(hole, 1, 2, 1, 1);
+                AddImage(hole, Hex("#3C6FDB")).raycastTarget = false;
+            }
+            else
+            {
+                var bar = NewUI("Glyph", go.transform);
+                Anchor(bar, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-1, -3), new Vector2(7, 3));
+                AddImage(bar, Color.white).raycastTarget = false;
+            }
+        }
+
+        private static Sprite NotepadIconSprite()
+        {
+            const string assetPath = GeneratedSpriteFolder + "/XP_NotepadIcon.png";
+            var cached = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+            if (cached != null) return cached;
+
+            const int size = 16;
+            var pixels = new Color32[size * size]; // transparent; y = 0 is the bottom row
+            var outline = (Color32)Hex("#4A4A4A");
+            var paper = new Color32(255, 255, 255, 255);
+            var band = (Color32)Hex("#3B6FD6");
+            var line = (Color32)Hex("#7F9DB9");
+
+            for (int y = 0; y <= 14; y++)
+            {
+                for (int x = 2; x <= 13; x++)
+                {
+                    bool edge = x == 2 || x == 13 || y == 0 || y == 14;
+                    Color32 c = edge ? outline : (y >= 11 ? band : paper);
+                    if (!edge && y < 11 && y % 2 == 0 && x >= 4 && x <= 11) c = line;
+                    pixels[y * size + x] = c;
+                }
+            }
+
+            return WriteSprite(assetPath, size, size, pixels, Vector4.zero);
         }
 
         // ---- 5/6/7. Simple text dialogs ----

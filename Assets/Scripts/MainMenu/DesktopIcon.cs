@@ -1,3 +1,5 @@
+using System.Linq;
+using GameLogic.Save;
 using TMPro;
 using UI;
 using UnityEngine;
@@ -32,7 +34,14 @@ namespace MainMenu
         [SerializeField] private Color selectedColor = XPPalette.Hex("#316AC5", 0.4f);
         [SerializeField] private Color deselectedColor = new Color(0f, 0f, 0f, 0f);
 
+        [Header("Unread Badge (Mail icon only)")]
+        [Tooltip("Optional. Left empty, a red dot is created at runtime on the icon's top-right corner.")]
+        [SerializeField] private GameObject unreadBadge;
+        [SerializeField] private Vector2 badgeSize = new Vector2(10f, 10f);
+        [SerializeField] private Vector2 badgeOffset = new Vector2(2f, 2f);
+
         private DesktopManager _desktop;
+        private float _badgeTimer;
 
         public DesktopAction Action => action;
         public string Label => label;
@@ -42,6 +51,63 @@ namespace MainMenu
         {
             ApplyLabel();
             SetSelected(false);
+            EnsureBadge();
+            RefreshBadge();
+        }
+
+        void OnEnable() => RefreshBadge();
+
+        void Update()
+        {
+            if (action != DesktopAction.OpenMail) return;
+
+            // The mailbox can be read while the desktop is up, so re-check twice a second.
+            _badgeTimer -= Time.unscaledDeltaTime;
+            if (_badgeTimer > 0f) return;
+            _badgeTimer = 0.5f;
+            RefreshBadge();
+        }
+
+        /// <summary>Red dot on only while a found document is still unread.</summary>
+        public void RefreshBadge()
+        {
+            if (unreadBadge == null || action != DesktopAction.OpenMail) return;
+
+            var save = SaveManager.Current;
+            bool unread = save != null && save.foundMailIds.Any(id => !save.IsEmailRead(id));
+            if (unreadBadge.activeSelf != unread) unreadBadge.SetActive(unread);
+        }
+
+        private void EnsureBadge()
+        {
+            if (action != DesktopAction.OpenMail || unreadBadge != null || iconImage == null) return;
+
+            const int n = 32;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var px = new Color32[n * n];
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = Mathf.Sqrt((x - 15.5f) * (x - 15.5f) + (y - 15.5f) * (y - 15.5f));
+                    float a = Mathf.Clamp01(16f - d);                       // soft edge
+                    var c = d > 12.5f ? new Color(1f, 1f, 1f, a) : new Color(0.88f, 0.19f, 0.19f, a);
+                    px[y * n + x] = c;
+                }
+            tex.SetPixels32(px);
+            tex.Apply();
+
+            var go = new GameObject("UnreadBadge", typeof(RectTransform), typeof(Image));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(iconImage.transform, false);
+            rt.anchorMin = rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = badgeSize;
+            rt.anchoredPosition = badgeOffset;
+            var img = go.GetComponent<Image>();
+            img.sprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
+            img.raycastTarget = false;
+            unreadBadge = go;
+            go.SetActive(false);
         }
 
         public void Bind(DesktopManager desktop)

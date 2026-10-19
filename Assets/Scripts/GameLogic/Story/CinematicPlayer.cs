@@ -213,10 +213,19 @@ namespace GameLogic.Story
             _videoPlayer.isLooping = false;
             _videoPlayer.renderMode = VideoRenderMode.RenderTexture;
             _videoPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
-            _rt = new RenderTexture(1920, 1080, 24);
+            // The texture takes the clip's own shape and the image is fitted to it, so a 4:3 clip
+            // gets black bars instead of being stretched to the screen.
+            int width = clip.width > 0 ? (int)clip.width : 1920;
+            int height = clip.height > 0 ? (int)clip.height : 1080;
+            _rt = new RenderTexture(width, height, 0);
             _videoPlayer.targetTexture = _rt;
             _videoImage.texture = _rt;
             _videoImage.gameObject.SetActive(true);
+
+            var fitter = _videoImage.GetComponent<AspectRatioFitter>();
+            if (fitter == null) fitter = _videoImage.gameObject.AddComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            fitter.aspectRatio = width / (float)height;
         }
 
         private void Teardown()

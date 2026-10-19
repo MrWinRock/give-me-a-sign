@@ -60,8 +60,8 @@ namespace GameLogic.Flow
         [SerializeField] private float delayAfterSurviving = 1f;
         [Tooltip("How long the Demon jumpscare holds on a loss before cutting to the lose screen.")]
         [SerializeField] private float delayAfterDeath = 1.8f;
-        [Tooltip("Same, but when the Demon itself killed the player (only its scream plays, so this can be much shorter).")]
-        [SerializeField] private float delayAfterDemonDeath = 0.8f;
+        [Tooltip("Same, but when the Demon itself killed the player: it already screamed on reveal, so 0 = cut straight to the lose screen.")]
+        [Min(0f)] [SerializeField] private float delayAfterDemonDeath = 0f;
 
         // Concrete subclass, not UnityEvent<int> directly: Unity only serializes a generic
         // UnityEvent through a named [Serializable] type, and without it these would compile but

@@ -316,6 +316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MicSetup.MicSetupSceneHost
   wizard: {fileID: 1912432537}
+  openingCutscene: {fileID: 11400000, guid: dbd512259163748c9af40788a38c7012, type: 2}
 --- !u!4 &963229346
 Transform:
   m_ObjectHideFlags: 0

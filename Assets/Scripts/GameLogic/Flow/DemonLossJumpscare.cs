@@ -51,7 +51,7 @@ namespace GameLogic.Flow
 
             if (!visual)
             {
-                yield return new WaitForSecondsRealtime(Mathf.Max(0.3f, seconds));
+                if (seconds > 0f) yield return new WaitForSecondsRealtime(seconds);
                 yield break;
             }
 

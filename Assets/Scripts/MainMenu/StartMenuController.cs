@@ -37,6 +37,7 @@ namespace MainMenu
 
         private DesktopManager _desktop;
         private Vector2 _labelHomePosition;
+        private bool _labelPressed;
 
         public bool IsOpen => menuRoot != null && menuRoot.activeSelf;
 
@@ -121,8 +122,13 @@ namespace MainMenu
                     pressed ? pressedBottomColor : idleBottomColor);
             }
 
-            if (startButtonLabel != null)
-                startButtonLabel.anchoredPosition = pressed ? _labelHomePosition + pressedLabelOffset : _labelHomePosition;
+            if (startButtonLabel != null && pressed != _labelPressed)
+            {
+                // Nudge relative to wherever the label currently sits, so the position set in the
+                // Inspector is never overwritten or lost.
+                startButtonLabel.anchoredPosition += pressed ? pressedLabelOffset : -pressedLabelOffset;
+                _labelPressed = pressed;
+            }
         }
     }
 }

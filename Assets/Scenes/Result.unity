@@ -1528,6 +1528,8 @@ MonoBehaviour:
   winColor: {r: 0, g: 0.16862746, b: 1, a: 1}
   loseColor: {r: 0, g: 0.16862746, b: 1, a: 1}
   playAgainButton: {fileID: 1573754165}
+  shutterClip: {fileID: 32900000, guid: ad69a9c48bd5fb64392864e178e05b86, type: 3}
+  shutterSeconds: 0.3
   quitButton: {fileID: 515659377}
   gameSceneName: GamePlay
   anomalyDefeatObjects: []

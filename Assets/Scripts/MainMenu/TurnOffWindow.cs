@@ -9,7 +9,7 @@ namespace MainMenu
     /// Start &gt; Turn Off Computer. The only way out of the game.
     ///   Stand By  - closes the dialog (does nothing else, exactly like the real thing on a desktop)
     ///   Turn Off  - the shutdown sequence, then Application.Quit()
-    ///   Restart   - reloads the main menu scene
+    ///   Restart   - reloads the MicSetup scene (then opening cutscene, then menu)
     /// </summary>
     public class TurnOffWindow : XPWindowController
     {
@@ -24,19 +24,19 @@ namespace MainMenu
         [Header("Stand By Colors")]
         [SerializeField] private Image standByFill;
         [SerializeField] private Image standByBorder;
-        [SerializeField] private Color standByFillColor = XPPalette.Hex("#DCE8F8");
+        [SerializeField] private Color standByFillColor = XPPalette.Hex("#5A8FDC");
         [SerializeField] private Color standByBorderColor = XPPalette.Hex("#6A9AD8");
 
         [Header("Turn Off Colors")]
         [SerializeField] private Image turnOffFill;
         [SerializeField] private Image turnOffBorder;
-        [SerializeField] private Color turnOffFillColor = XPPalette.Hex("#F8DCDC");
+        [SerializeField] private Color turnOffFillColor = XPPalette.Hex("#D45A5A");
         [SerializeField] private Color turnOffBorderColor = XPPalette.Hex("#C66A6A");
 
         [Header("Restart Colors")]
         [SerializeField] private Image restartFill;
         [SerializeField] private Image restartBorder;
-        [SerializeField] private Color restartFillColor = XPPalette.Hex("#DCF0DC");
+        [SerializeField] private Color restartFillColor = XPPalette.Hex("#44AE44");
         [SerializeField] private Color restartBorderColor = XPPalette.Hex("#6AC66A");
 
         [Header("Labels")]
