@@ -130,7 +130,6 @@ GameObject:
   - component: {fileID: 551617870}
   - component: {fileID: 551617873}
   - component: {fileID: 551617872}
-  - component: {fileID: 551617871}
   m_Layer: 0
   m_Name: Desktop
   m_TagString: Untagged
@@ -157,18 +156,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &551617871
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 551617869}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01b776d4d03547c438abf0a05f0231e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MainMenu.DesktopWallpaper
 --- !u!114 &551617872
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,9 +176,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5409611486675845757, guid: bc2946522491bea4e8bb8db0ab182393, type: 3}
+  m_Sprite: {fileID: -1955448553306655712, guid: 13a9891a65eb4bc4d8ed9b95941ca795, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -1340,6 +1327,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3382851563824082537, guid: c0fcd67ad99ee7043b6eddd41dd4dcef, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
+    - target: {fileID: 3382851563824082537, guid: c0fcd67ad99ee7043b6eddd41dd4dcef, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -2102,6 +2093,10 @@ PrefabInstance:
     - target: {fileID: 6548832291213785584, guid: c0fcd67ad99ee7043b6eddd41dd4dcef, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6598515601901467899, guid: c0fcd67ad99ee7043b6eddd41dd4dcef, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6622814159834428872, guid: c0fcd67ad99ee7043b6eddd41dd4dcef, type: 3}
       propertyPath: m_AnchorMax.x

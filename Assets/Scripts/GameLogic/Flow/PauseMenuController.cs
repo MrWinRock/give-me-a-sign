@@ -30,6 +30,8 @@ namespace GameLogic.Flow
         [Header("Pause window (children of this prefab)")]
         [Tooltip("Dim overlay + the window. Hidden until paused.")]
         [SerializeField] private GameObject windowRoot;
+        [Tooltip("The draggable window frame - snapped back to the centre every time the menu opens.")]
+        [SerializeField] private RectTransform pauseFrame;
         [SerializeField] private AudioSettingsPanel audioPanel;
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button returnButton;
@@ -38,6 +40,7 @@ namespace GameLogic.Flow
 
         [Header("Return-to-menu confirm dialog")]
         [SerializeField] private GameObject confirmRoot;
+        [SerializeField] private RectTransform confirmFrame;
         [SerializeField] private Button yesButton;
         [SerializeField] private Button noButton;
         [Tooltip("The dialog's titlebar X - behaves exactly like No.")]
@@ -104,6 +107,7 @@ namespace GameLogic.Flow
             FreezeEverythingElse(true);
 
             transform.SetAsLastSibling(); // draw above every other window in the Canvas
+            if (pauseFrame != null) pauseFrame.anchoredPosition = Vector2.zero; // the titlebar can drag it away
             windowRoot.SetActive(true);   // the audio panel refreshes itself on enable
 
             if (EventSystem.current != null && resumeButton != null)
@@ -171,6 +175,7 @@ namespace GameLogic.Flow
         {
             if (confirmRoot == null) return;
 
+            if (confirmFrame != null) confirmFrame.anchoredPosition = Vector2.zero;
             confirmRoot.SetActive(true);
             if (EventSystem.current != null && noButton != null)
                 EventSystem.current.SetSelectedGameObject(noButton.gameObject);

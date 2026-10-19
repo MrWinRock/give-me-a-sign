@@ -22,6 +22,9 @@ namespace Player
         {
             if (spotlight == null || mainCamera == null) return;
 
+            // Paused (timeScale 0): freeze the flashlight where it is.
+            if (Time.timeScale <= 0f) return;
+
             var mouse = Mouse.current;
             if (mouse == null) return; // no mouse device connected
 

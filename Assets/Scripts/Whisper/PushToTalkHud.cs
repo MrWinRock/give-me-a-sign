@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Whisper
 {
-    /// <summary>Bottom-right mic indicator for <see cref="GlobalPushToTalk"/> (the PushToTalkHud prefab in the gameplay Canvas): a red dot that blinks while talking, the "[V] MIC" / "REC" label, a status line and a hint line.</summary>
+    /// <summary>Bottom-right mic indicator for <see cref="GlobalPushToTalk"/> (the PushToTalkHud prefab in the gameplay Canvas): a red dot that blinks while talking, the "[SPACE] MIC" / "REC" label, a status line and a hint line.</summary>
     public class PushToTalkHud : MonoBehaviour
     {
         [Header("Refs (set in the prefab)")]
@@ -20,7 +20,7 @@ namespace Whisper
         [SerializeField] private Color dotColor = new Color(0.9f, 0.15f, 0.15f, 1f);
         [SerializeField] private Color idleLabelColor = new Color(1f, 1f, 1f, 0.45f);
         [SerializeField] private Color talkingLabelColor = new Color(0.9f, 0.15f, 0.15f, 1f);
-        [SerializeField] private string idleText = "[V] MIC";
+        [SerializeField] private string idleText = "[SPACE] MIC";
         [SerializeField] private string talkingText = "REC";
 
         [Header("Blink while talking")]

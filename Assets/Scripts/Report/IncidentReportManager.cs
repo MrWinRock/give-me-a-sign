@@ -25,7 +25,7 @@ namespace Report
         [SerializeField] private GameManager gameManager;
         [SerializeField] private bool autoFindReferences = true;
 
-        [Tooltip("Off = Spacebar no longer opens the report form; reports are called in over the walkie-talkie (hold V).")]
+        [Tooltip("Off = Spacebar no longer opens the report form; reports are called in over the walkie-talkie (hold Spacebar).")]
         [SerializeField] private bool reportFormEnabled;
 
         [Tooltip("How long a half report (only the room, or only the anomaly) is remembered while waiting for the other half.")]
@@ -112,7 +112,7 @@ namespace Report
 
         public enum RadioReportOutcome { NotAReport, Confirmed, Negative, TooLoud, TooQuiet, NeedRoom, NeedWhat }
 
-        // Walkie-talkie path (hold V): no form. Same observation matching and bookkeeping as SubmitReport.
+        // Walkie-talkie path (hold Spacebar): no form. Same observation matching and bookkeeping as SubmitReport.
         // A volume mismatch is "static on the line" - the report is not filed and nothing is penalised.
         // ignoreVolume: no microphone, so nobody can be asked to whisper or shout.
         public RadioReportOutcome FileRadioReport(string spoken, VoiceLevel level = VoiceLevel.Normal, bool ignoreVolume = false)

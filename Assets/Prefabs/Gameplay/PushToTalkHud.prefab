@@ -271,7 +271,7 @@ MonoBehaviour:
   dotColor: {r: 1, g: 0.12, b: 0.12, a: 1}
   idleLabelColor: {r: 1, g: 1, b: 1, a: 0.7}
   talkingLabelColor: {r: 1, g: 0.3, b: 0.3, a: 1}
-  idleText: '[V] MIC'
+  idleText: '[SPACE] MIC'
   talkingText: REC
   blinkLowAlpha: 0.25
   blinkSeconds: 0.4
@@ -477,7 +477,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[V] MIC'
+  m_text: '[SPACE] MIC'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}

@@ -12,7 +12,7 @@ using UnityEngine.InputSystem;
 namespace Whisper
 {
     /// <summary>
-    /// The guard's walkie-talkie. Hold V to transmit from anywhere: a click marks the mic open, a
+    /// The guard's walkie-talkie. Hold Spacebar to transmit from anywhere: a click marks the mic open, a
     /// hiss loops while held, and on release whatever was said is filed as a radio report with
     /// IncidentReportManager. Everything said still flows through NoiseMeter and voice prompts.
     /// </summary>
@@ -24,7 +24,7 @@ namespace Whisper
         [Tooltip("Auto-found in the scene if left empty.")]
         [SerializeField] private WhisperMicInput mic;
 
-        [Tooltip("Seconds after releasing V to wait for Whisper's last segment before filing the report.")]
+        [Tooltip("Seconds after releasing Spacebar to wait for Whisper's last segment before filing the report.")]
         [Min(0f)] [SerializeField] private float finalizeGraceSeconds = 1f;
 
         [Tooltip("While the game holds the mic open, seconds of silence after speech before it counts as one report.")]
@@ -39,7 +39,7 @@ namespace Whisper
         [Tooltip("With no microphone, reports are not judged on volume (so a Demon can still be reported by typing).")]
         [SerializeField] private bool typedInputBypassesNoiseRequirement = true;
 
-        [Tooltip("The PushToTalkHud prefab in the gameplay Canvas. Auto-found if left empty; without one V still works, just with no on-screen indicator.")]
+        [Tooltip("The PushToTalkHud prefab in the gameplay Canvas. Auto-found if left empty; without one Spacebar still works, just with no on-screen indicator.")]
         [SerializeField] private PushToTalkHud hud;
 
         [Header("Debug")]
@@ -91,7 +91,7 @@ namespace Whisper
             if (_forcedOpen)
             {
                 if (!_talking) StartTalking();
-                else if (IsKeyDown()) AudioManager.Instance?.Play(OpenCloseSound); // V "keys the mic" - it's already live
+                else if (IsKeyDown()) AudioManager.Instance?.Play(OpenCloseSound); // Space "keys the mic" - it's already live
 
                 // The mic never releases, so a pause in speech ends the transmission instead.
                 if (_transmission.Length > 0 && Time.unscaledTime - _lastSpeechAt >= forcedFileGapSeconds)
@@ -117,7 +117,7 @@ namespace Whisper
 
         public void ShowHint(string text, bool blink = false) => Hud?.SetHint(text, blink);
 
-        // The game holds the mic live (V can't close it). Speech is still filed as reports, one per pause.
+        // The game holds the mic live (Spacebar can't close it). Speech is still filed as reports, one per pause.
         public void SetForcedOpen(bool forced)
         {
             if (_forcedOpen == forced) return;
@@ -260,18 +260,18 @@ namespace Whisper
         private static bool IsKeyDown()
         {
 #if ENABLE_INPUT_SYSTEM
-            return Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame;
+            return Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
 #else
-            return Input.GetKeyDown(KeyCode.V);
+            return Input.GetKeyDown(KeyCode.Space);
 #endif
         }
 
         private static bool IsKeyHeld()
         {
 #if ENABLE_INPUT_SYSTEM
-            return Keyboard.current != null && Keyboard.current.vKey.isPressed;
+            return Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
 #else
-            return Input.GetKey(KeyCode.V);
+            return Input.GetKey(KeyCode.Space);
 #endif
         }
 

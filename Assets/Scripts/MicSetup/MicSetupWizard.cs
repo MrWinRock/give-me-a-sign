@@ -74,7 +74,6 @@ namespace MicSetup
         [SerializeField] private Color feedbackWarn = new Color32(0xA0, 0x30, 0x00, 0xFF);
 
         [Header("Text")]
-        [SerializeField] private string windowTitle = "Microphone Setup.exe";
         [SerializeField] private string[] pageHeaders = { "Step 1 of 3: Stay quiet", "Step 2 of 3: Speak normally", "Step 3 of 3: Speak loudly", "Finished: Try it out" };
         [SerializeField] private string quietInstruction = "Stay quiet for a few seconds while we listen to your room.";
         [SerializeField] private string normalInstruction = "Say the phrase in your normal speaking voice.";
@@ -103,7 +102,6 @@ namespace MicSetup
         [SerializeField] private string nextText = "Next >";
         [SerializeField] private string finishText = "Finish";
         [SerializeField] private string systemDefaultDeviceLabel = "System default";
-        [SerializeField] private string statusMessage = "This setup appears only once. You can change it later in Control Panel.";
 
         public event Action<Result> Closed;
 
@@ -157,12 +155,14 @@ namespace MicSetup
             _measurer = new MicCalibrationMeasurer(_config);
             IsOpen = true;
 
-            if (windowFrame != null) windowFrame.localScale = Vector3.one * (mode == WizardMode.Scene ? sceneScale : overlayScale);
+            if (windowFrame != null)
+            {
+                windowFrame.localScale = Vector3.one * (mode == WizardMode.Scene ? sceneScale : overlayScale);
+                windowFrame.anchoredPosition = Vector2.zero; // the titlebar can drag it away
+            }
             if (dim != null) dim.enabled = mode == WizardMode.Overlay;
-            if (titleText != null) titleText.text = windowTitle;
-            if (statusText != null) statusText.text = statusMessage;
             if (skipLabel != null) skipLabel.text = mode == WizardMode.Scene ? skipLabelScene : skipLabelOverlay;
-            if (keyCapText != null) keyCapText.text = _config.pushToTalkKey.ToString().ToUpperInvariant();
+            if (keyCapText != null) keyCapText.text = KeyLabel(_config.pushToTalkKey);
 
             _selectedDevice = MicCalibrationStore.ResolveDevice();
             _failures = 0;
@@ -251,7 +251,7 @@ namespace MicSetup
 
             if (headerText != null) headerText.text = page < (Page)pageHeaders.Length ? pageHeaders[(int)page] : string.Empty;
 
-            string key = _config.pushToTalkKey.ToString().ToUpperInvariant();
+            string key = KeyLabel(_config.pushToTalkKey);
             if (instructionText != null)
             {
                 instructionText.text = page == Page.Quiet ? quietInstruction
@@ -691,5 +691,9 @@ namespace MicSetup
             feedbackText.text = text;
             feedbackText.color = color;
         }
+
+        // Key.Space would print as "SPACE"; show the full name players know.
+        private static string KeyLabel(UnityEngine.InputSystem.Key key) =>
+            key == UnityEngine.InputSystem.Key.Space ? "SPACEBAR" : key.ToString().ToUpperInvariant();
     }
 }

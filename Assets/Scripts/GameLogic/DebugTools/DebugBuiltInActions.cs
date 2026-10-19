@@ -42,24 +42,24 @@ namespace GameLogic.DebugTools
 
         private static readonly QaItem[] QaItems =
         {
-            new QaItem { id = "ptt", title = "Hold V = walkie-talkie",
-                steps = "Run a night (GamePlay). Hold V: mic-open click, then MicHold loop, HUD bottom-right shows REC (no loudness text - that is the slider's job). Release: click again. Pause menu / cutscene: V does nothing." },
+            new QaItem { id = "ptt", title = "Hold Spacebar = walkie-talkie",
+                steps = "Run a night (GamePlay). Hold Spacebar: mic-open click, then MicHold loop, HUD bottom-right shows REC (no loudness text - that is the slider's job). Release: click again. Pause menu / cutscene: V does nothing." },
             new QaItem { id = "report", title = "Report an anomaly by voice",
-                steps = "Spawn: Open Door. A report is WHAT + WHERE. Note the room from the spawn message, hold V and say e.g. 'door in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'door' = WHICH ROOM? then say just the room (it remembers 'door') = COPY THAT; only 'in bedroom' = YOU SEE WHAT? then say just 'door'. Memory lasts 20s and resets once filed or the anomaly is gone. Mispronounce on purpose ('dor', 'kichen', 'hall', 'bed room'): near-words count (lists: Mishearings on each Room_*.asset and each entry of ObservationVocabulary), a room word never counts as the anomaly name, and once the room is heard the name may be sloppier. Each anomaly has ONE name (see the Field Manual). Wrong word or room = NEGATIVE + it advances." },
+                steps = "Spawn: Open Door. A report is WHAT + WHERE. Note the room from the spawn message, hold Spacebar and say e.g. 'door in bedroom' (any volume): COPY THAT and it leaves + score up. Only 'door' = WHICH ROOM? then say just the room (it remembers 'door') = COPY THAT; only 'in bedroom' = YOU SEE WHAT? then say just 'door'. Memory lasts 20s and resets once filed or the anomaly is gone. Mispronounce on purpose ('dor', 'kichen', 'hall', 'bed room'): near-words count (lists: Mishearings on each Room_*.asset and each entry of ObservationVocabulary), a room word never counts as the anomaly name, and once the room is heard the name may be sloppier. Each anomaly has ONE name (see the Field Manual). Wrong word or room = NEGATIVE + it advances." },
             new QaItem { id = "hider", title = "Hider: chase it off with the pointer",
                 steps = "Spawn: Hider, pan to its room. Hold the mouse pointer on it: it fades the longer you stay (about 2.5s to vanish) and score goes up. Move the pointer away before it is gone and it slowly comes back. Clicking it and saying 'shadow' do nothing. With the Incident Report open the pointer does not count." },
             new QaItem { id = "demon", title = "Demon needs a shout",
-                steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold V and say 'demon in <its room>' at normal volume: nothing happens (no text - watch the slider's red zone). Shout it: COPY THAT and it leaves." },
+                steps = "Spawn: Demon, pan the camera into its room until it jumpscares (camera locks). Hold Spacebar and say 'demon in <its room>' at normal volume: nothing happens (no text - watch the slider's red zone). Shout it: COPY THAT and it leaves." },
             new QaItem { id = "stealth", title = "Watcher stealth mic",
                 steps = "Spawn: The Watcher, pan the camera into its room. Its face rises slowly from the bottom of the screen: the screen shakes, the camera is locked, the ghost loop fades in and the other sounds fade down. Once fully risen the mic opens by itself, HUD: MIC LIVE - DO NOT SPEAK n (blinks). Test 3 ways in 3 tries: (a) say nothing = it sinks away, sound and camera return to normal; (b) whisper a sentence (~1s) = caught, jumpscare then Result; (c) speak/shout = caught at once. Speaking while it rises or sinks does nothing. A breath or a click must NOT catch you." },
             new QaItem { id = "loudmouth", title = "Loudmouth 8-bit timer",
-                steps = "Spawn: Loudmouth. 8-bit music starts quietly and gets louder over ~45s; it is louder while the camera is in its room, quieter in other rooms. Find the room and hold V: 'loudmouth in <room>' = COPY THAT, the music fades out and it leaves. Do nothing until the music peaks = jumpscare then Result. A wrong report does not make it leave." },
+                steps = "Spawn: Loudmouth. 8-bit music starts quietly and gets louder over ~45s; it is louder while the camera is in its room, quieter in other rooms. Find the room and hold Spacebar: 'loudmouth in <room>' = COPY THAT, the music fades out and it leaves. Do nothing until the music peaks = jumpscare then Result. A wrong report does not make it leave." },
             new QaItem { id = "radio", title = "Radio Check pass / fail",
                 steps = "Radio Check > Normal. Say exactly what the card says ('SEC-04 copy'): COPY THAT shown ~2.5s. Only noise, only 'copy', or the wrong call sign must NOT pass. Run again and stay silent: NO RESPONSE and a penalty anomaly appears in the scene." },
             new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
                 steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears. Same for Wrong ID (saying 'copy' = WRONG SIGN-IN + penalty anomaly, silence = GOOD CALL). OwnVoice: your recorded voice plays - speaking over it must not count; answer after it ends." },
             new QaItem { id = "noise", title = "Noise meter (bottom-centre OSD)",
-                steps = "Hold V and speak: the 20 segments light left to right, the header shows LOW / NORMAL / LOUD, the highest recent segment stays lit briefly. Mic closed: dim STANDBY. Spawn The Watcher: no zone is tinted - say nothing at all. Reveal the Demon: LOUD zone tinted - shout. Say the right words at the wrong volume: the header flashes TOO LOUD / TOO QUIET and nothing is penalised. Noise meter > 'Feed the meter' and 'Toggle the tuning overlay' help tune without speaking." },
+                steps = "Hold Spacebar and speak: the 20 segments light left to right, the header shows LOW / NORMAL / LOUD, the highest recent segment stays lit briefly. Mic closed: dim STANDBY. Spawn The Watcher: no zone is tinted - say nothing at all. Reveal the Demon: LOUD zone tinted - shout. Say the right words at the wrong volume: the header flashes TOO LOUD / TOO QUIET and nothing is penalised. Noise meter > 'Feed the meter' and 'Toggle the tuning overlay' help tune without speaking." },
             new QaItem { id = "manual", title = "Field Manual locks + entry points",
                 steps = "Field Manual > Lock all pages, press TAB: every page '???'. Spawn an anomaly: its page unlocks (Demon only when it reveals). TAB opens/closes it, but not while paused, in a cutscene, or while the Demon is out. The MainMenu icon 'Field Manual.exe' opens it too." },
             new QaItem { id = "matcher", title = "Short words don't match everything",
@@ -67,7 +67,7 @@ namespace GameLogic.DebugTools
             new QaItem { id = "camera", title = "Camera Betrayal glitches + Mirror wallpaper",
                 steps = "Camera feed > Glitch: Loop (change room: the top-left label keeps the OLD room), Frozen (SIGNAL FROZEN label and you CANNOT change room until it times out; anomaly clicks still work), Blackout (feed dies, label hidden), GhostRoom (arms itself: the NEXT room you move to shows a ghost picture + fake CAM label until you change room again; coming back is normal), Mirror (arms itself like GhostRoom: the NEXT room you move to shows black + YOUR wallpaper at its own size + 'SECURITY OFFICE' label until you change room). 'Which picture would be used?' shows Wallpaper Engine first, else the Windows wallpaper. Toggle the Control Panel switch OFF: Mirror must refuse to start. All of them end by themselves and the HUD returns to normal." },
             new QaItem { id = "levels", title = "Mic levels feel right (your mic)",
-                steps = "Hold V and watch the slider: a whisper should stay in the green zone, normal speech reach yellow, a shout reach red. If not, calibrate the mic (Debug > Mic: calibrate) or adjust the Whisper/Shout Band Multipliers on NoiseMeter." },
+                steps = "Hold Spacebar and watch the slider: a whisper should stay in the green zone, normal speech reach yellow, a shout reach red. If not, calibrate the mic (Debug > Mic: calibrate) or adjust the Whisper/Shout Band Multipliers on NoiseMeter." },
         };
 
         public static List<DebugEntry> Build(Func<string> typedText, Action<string> info)
@@ -357,7 +357,7 @@ namespace GameLogic.DebugTools
                         if (meter == null) { info("No NoiseMeter in this scene (open GamePlay)."); return; }
 
                         meter.DebugFeed(captured, 5f);
-                        info($"Meter held at a {captured} level for 5s (as if V were held).");
+                        info($"Meter held at a {captured} level for 5s (as if Spacebar were held).");
                     },
                 });
             }
@@ -427,7 +427,7 @@ namespace GameLogic.DebugTools
                         if (mic == null) { info("No WhisperMicInput in this scene (open GamePlay)."); return; }
 
                         mic.SwitchLanguage(captured);
-                        info($"Loading voice model: {mic.CurrentModelLabel}. Hold V works again once it finishes (HUD says VOICE MODEL LOADING until then).");
+                        info($"Loading voice model: {mic.CurrentModelLabel}. Hold Spacebar works again once it finishes (HUD says VOICE MODEL LOADING until then).");
                     },
                 });
             }

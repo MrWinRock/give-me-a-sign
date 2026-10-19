@@ -31,7 +31,7 @@ namespace Whisper
         [Range(0f, 1f)] public float defaultNormalToLoud = 0.75f;
 
         [Header("Wizard input")]
-        public Key pushToTalkKey = Key.V;
+        public Key pushToTalkKey = Key.Space;
         [Tooltip("Spoken for the normal and loud captures.")]
         public string phrase = "Give me a sign";
 

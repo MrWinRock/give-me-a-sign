@@ -23,7 +23,7 @@ MonoBehaviour:
   defaultMaxDb: -10
   defaultLowToNormal: 0.4
   defaultNormalToLoud: 0.75
-  pushToTalkKey: 36
+  pushToTalkKey: 1
   phrase: Give me a sign
   quietSeconds: 3
   noiseFloorPercentile: 0.9
