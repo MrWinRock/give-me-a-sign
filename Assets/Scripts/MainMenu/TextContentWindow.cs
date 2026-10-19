@@ -37,40 +37,8 @@ namespace MainMenu
         {
             base.Awake();
 
-            ApplyContent();
-
             if (confirmButton != null)
                 confirmButton.onClick.AddListener(Hide);
         }
-
-        protected override void OnShown()
-        {
-            // Re-applied on every open so live Inspector edits show up without a domain reload.
-            ApplyContent();
-        }
-
-        private void ApplyContent()
-        {
-            if (bodyText != null)
-                bodyText.text = content;
-
-            if (footerText != null)
-            {
-                footerText.text = footerContent;
-                footerText.color = footerColor;
-                footerText.gameObject.SetActive(!string.IsNullOrEmpty(footerContent));
-            }
-
-            if (confirmLabel != null)
-                confirmLabel.text = confirmLabelText;
-        }
-
-#if UNITY_EDITOR
-        void OnValidate()
-        {
-            if (!Application.isPlaying)
-                ApplyContent();
-        }
-#endif
     }
 }

@@ -37,12 +37,6 @@ namespace MainMenu
             if (windowRoot == null) windowRoot = gameObject;
             if (windowRect == null) windowRect = GetComponent<RectTransform>();
 
-            if (titleText != null)
-                titleText.text = windowTitle;
-
-            if (windowRect != null && windowWidth > 0f)
-                windowRect.sizeDelta = new Vector2(windowWidth, windowRect.sizeDelta.y);
-
             if (closeButton != null)
             {
                 closeButton.onClick.RemoveListener(OnCloseButtonClicked);

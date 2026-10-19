@@ -49,7 +49,6 @@ namespace MainMenu
 
         void Awake()
         {
-            ApplyLabel();
             SetSelected(false);
             EnsureBadge();
             RefreshBadge();
@@ -142,19 +141,5 @@ namespace MainMenu
             if (iconImage != null)
                 iconImage.sprite = sprite;
         }
-
-        private void ApplyLabel()
-        {
-            if (labelText != null) labelText.text = label;
-            if (labelShadowText != null) labelShadowText.text = label;
-        }
-
-#if UNITY_EDITOR
-        void OnValidate()
-        {
-            if (!Application.isPlaying)
-                ApplyLabel();
-        }
-#endif
     }
 }

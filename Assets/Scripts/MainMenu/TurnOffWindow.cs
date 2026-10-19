@@ -52,8 +52,6 @@ namespace MainMenu
         {
             base.Awake();
 
-            ApplyStyle();
-
             if (standByButton != null) standByButton.onClick.AddListener(Hide);
             if (cancelButton != null) cancelButton.onClick.AddListener(Hide);
             if (turnOffButton != null) turnOffButton.onClick.AddListener(OnTurnOff);
@@ -71,31 +69,5 @@ namespace MainMenu
             Hide();
             Desktop?.RestartMenu();
         }
-
-        private void ApplyStyle()
-        {
-            Paint(standByFill, standByFillColor, standByBorder, standByBorderColor, standByLabel, standByLabelText);
-            Paint(turnOffFill, turnOffFillColor, turnOffBorder, turnOffBorderColor, turnOffLabel, turnOffLabelText);
-            Paint(restartFill, restartFillColor, restartBorder, restartBorderColor, restartLabel, restartLabelText);
-        }
-
-        private void Paint(Image fill, Color fillColor, Image border, Color borderColor, TextMeshProUGUI label, string text)
-        {
-            if (fill != null) fill.color = fillColor;
-            if (border != null) border.color = borderColor;
-            if (label != null)
-            {
-                label.text = text;
-                label.color = labelColor;
-            }
-        }
-
-#if UNITY_EDITOR
-        void OnValidate()
-        {
-            if (!Application.isPlaying)
-                ApplyStyle();
-        }
-#endif
     }
 }

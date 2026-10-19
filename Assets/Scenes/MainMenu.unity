@@ -636,6 +636,9 @@ MonoBehaviour:
   selectionOutline: {fileID: 1017927720}
   selectedColor: {r: 0.19215687, g: 0.41568628, b: 0.77254903, a: 0.4}
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
+  unreadBadge: {fileID: 0}
+  badgeSize: {x: 10, y: 10}
+  badgeOffset: {x: 2, y: 2}
 --- !u!1 &109343831
 GameObject:
   m_ObjectHideFlags: 0
@@ -1494,6 +1497,9 @@ MonoBehaviour:
   selectionOutline: {fileID: 764721083}
   selectedColor: {r: 0.19215687, g: 0.41568628, b: 0.77254903, a: 0.4}
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
+  unreadBadge: {fileID: 0}
+  badgeSize: {x: 10, y: 10}
+  badgeOffset: {x: 2, y: 2}
 --- !u!1 &463015991
 GameObject:
   m_ObjectHideFlags: 0
@@ -2364,7 +2370,7 @@ MonoBehaviour:
   recycleBinWindowPrefab: {fileID: 5290311808858823773, guid: e34810da8fef651498c2a3bf47db0304, type: 3}
   logOffWindowPrefab: {fileID: 7831996364971729416, guid: 8c4dce59f977ce84890d8bde80f20fdf, type: 3}
   helpWindowPrefab: {fileID: 3818168322444807372, guid: 905025bc53553e34595e11d8f74a0866, type: 3}
-  fieldManualWindowPrefab: {fileID: 4992991886115070432, guid: 893aa9fa0f2aa444cbb043c0adad7f40, type: 3}
+  fieldManualWindowPrefab: {fileID: 4992991886115070432, guid: b7e41c0d92a64f3e8a15d6c30f7b2e94, type: 3}
   shutdownSequence: {fileID: 689038941}
   uiAudioSource: {fileID: 689038942}
   startMenuOpenClip: {fileID: 0}
@@ -4161,6 +4167,7 @@ GameObject:
   - component: {fileID: 994258664}
   - component: {fileID: 994258663}
   - component: {fileID: 994258662}
+  - component: {fileID: 1900000003}
   m_Layer: 0
   m_Name: Desktop
   m_TagString: Untagged
@@ -4555,7 +4562,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: READ ME.txt
+  m_text: README.txt
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
@@ -6055,6 +6062,9 @@ MonoBehaviour:
   selectionOutline: {fileID: 1207832759}
   selectedColor: {r: 0.19215687, g: 0.41568628, b: 0.77254903, a: 0.4}
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
+  unreadBadge: {fileID: 0}
+  badgeSize: {x: 10, y: 10}
+  badgeOffset: {x: 2, y: 2}
 --- !u!1 &1313189793
 GameObject:
   m_ObjectHideFlags: 0
@@ -6360,6 +6370,9 @@ MonoBehaviour:
   selectionOutline: {fileID: 1670942131}
   selectedColor: {r: 0.19215687, g: 0.41568628, b: 0.77254903, a: 0.4}
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
+  unreadBadge: {fileID: 0}
+  badgeSize: {x: 10, y: 10}
+  badgeOffset: {x: 2, y: 2}
 --- !u!1 &1370115455
 GameObject:
   m_ObjectHideFlags: 0
@@ -7716,7 +7729,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: READ ME.txt
+  m_text: README.txt
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
@@ -9044,6 +9057,9 @@ MonoBehaviour:
   selectionOutline: {fileID: 9200000000000020}
   selectedColor: {r: 0.19215687, g: 0.41568628, b: 0.77254903, a: 0.4}
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
+  unreadBadge: {fileID: 0}
+  badgeSize: {x: 10, y: 10}
+  badgeOffset: {x: 2, y: 2}
 --- !u!1 &9200000000000008
 GameObject:
   m_ObjectHideFlags: 0
@@ -9503,3 +9519,15 @@ SceneRoots:
   - {fileID: 1921751318}
   - {fileID: 811300002}
   - {fileID: 811500002}
+--- !u!114 &1900000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994258659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3c91e5b7d2f4086b1e4c9a07f5d3e28, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UI.NormalCursorZone
