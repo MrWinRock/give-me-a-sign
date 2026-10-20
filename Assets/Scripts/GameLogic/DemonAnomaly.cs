@@ -26,6 +26,10 @@ namespace GameLogic
         [Tooltip("How close (world X) the camera must be to this demon's room before the jumpscare triggers.")]
         [SerializeField] private float revealDistance = 5f;
 
+        [Header("Visual - 3D model (optional)")]
+        [Tooltip("A posed 3D model (child of Overlay Root). When set it is shown INSTEAD of the sprite/video: it is moved to the middle of the camera view and lunges in like the flat version. Size and pose it in the prefab so the face fills the screen.")]
+        [SerializeField] private Transform model3D;
+
         [Header("Visual - pick ONE")]
         [Tooltip("If assigned, plays this video fullscreen INSTEAD of the static image on Overlay Root. Built at runtime as a textured quad - no manual VideoPlayer setup needed.")]
         [SerializeField] private VideoClip jumpscareVideo;
@@ -254,10 +258,27 @@ namespace GameLogic
 
             overlayRoot.SetActive(true);
 
+            if (model3D != null)
+            {
+                ShowModelOverlay();
+                return;
+            }
+
             if (jumpscareVideo != null)
                 ShowVideoOverlay();
             else
                 ShowImageOverlay();
+        }
+
+        private void ShowModelOverlay()
+        {
+            // The flat art stays on the prefab (the loss scare reuses it) but is hidden here.
+            var flat = overlayRoot.GetComponentInChildren<SpriteRenderer>(true);
+            if (flat != null) flat.enabled = false; // component only: the sprite sits on Overlay Root, which also holds the model
+
+            model3D.gameObject.SetActive(true);
+            if (_camera != null)
+                model3D.position = new Vector3(_roomCameraX, _camera.transform.position.y, model3D.position.z);
         }
 
         private void ShowImageOverlay()
@@ -384,7 +405,9 @@ namespace GameLogic
             KillMotion();
 
             Transform face = null;
-            if (jumpscareVideo != null && _videoOverlayObject != null)
+            if (model3D != null)
+                face = model3D;
+            else if (jumpscareVideo != null && _videoOverlayObject != null)
                 face = _videoOverlayObject.transform;
             else if (overlayRoot != null)
             {

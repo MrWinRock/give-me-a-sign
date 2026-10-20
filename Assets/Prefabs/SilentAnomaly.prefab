@@ -592,7 +592,7 @@ GameObject:
   - component: {fileID: 1361649083514336729}
   - component: {fileID: 4701373651295230482}
   m_Layer: 0
-  m_Name: Anomaly1TposeSilent
+  m_Name: SilentAnomaly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

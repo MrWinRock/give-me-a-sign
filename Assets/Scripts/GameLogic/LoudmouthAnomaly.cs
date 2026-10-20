@@ -19,6 +19,8 @@ namespace GameLogic
         [Header("Music")]
         [Tooltip("The looping 8-bit track.")]
         [SerializeField] private AudioSource music;
+        [Tooltip("One of these is picked at random each time it spawns and played on the source above. Empty = use the clip already on the source.")]
+        [SerializeField] private AudioClip[] musicClips = new AudioClip[0];
         [Tooltip("Music level the moment it spawns (before the player's volume sliders).")]
         [Range(0f, 1f)] [SerializeField] private float startVolume = 0.15f;
         [Tooltip("Music level when time is nearly up.")]
@@ -59,7 +61,14 @@ namespace GameLogic
             _fadeIn = 0f;
             _pan = 0f;
             _active = _anomaly.State != AnomalyState.Resolved;
-            if (!_active || music == null || music.clip == null) return;
+            if (!_active || music == null) return;
+
+            if (musicClips != null && musicClips.Length > 0)
+            {
+                var pick = musicClips[Random.Range(0, musicClips.Length)];
+                if (pick != null) music.clip = pick;
+            }
+            if (music.clip == null) return;
 
             SetMusicLevel(0f);
             music.loop = true;
