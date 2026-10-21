@@ -1,4 +1,6 @@
 using DG.Tweening;
+using GameLogic.Data;
+using GameLogic.Flow;
 using Report;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -23,6 +25,10 @@ namespace GameLogic
         [Tooltip("How faint it gets just before it vanishes.")]
         [Range(0f, 1f)] [SerializeField] private float minAlpha = 0.1f;
 
+        [Header("Time limit")]
+        [Tooltip("Seconds the player has to find it and point at it. The clock stops while the pointer is on it. Run out = the night is lost.")]
+        [Min(1f)] [SerializeField] private float timeLimitSeconds = 20f;
+
         private const float VanishSeconds = 0.25f;
 
         private Anomaly _anomaly;
@@ -31,6 +37,7 @@ namespace GameLogic
         private Collider2D[] _colliders;
         private float _progress;
         private bool _gone;
+        private float _timeLeft;
         private Tween _vanishTween;
 
         void Awake()
@@ -38,22 +45,47 @@ namespace GameLogic
             _anomaly = GetComponent<Anomaly>();
             _sprites = GetComponentsInChildren<SpriteRenderer>(true);
             _colliders = GetComponentsInChildren<Collider2D>(true);
+            _anomaly.OnAnomalyDisappeared += OnResolved;
 
             _baseColors = new Color[_sprites.Length];
             for (int i = 0; i < _sprites.Length; i++)
                 _baseColors[i] = _sprites[i].color;
         }
 
-        void OnDestroy() => _vanishTween?.Kill();
+        void OnEnable() => _timeLeft = timeLimitSeconds;
+
+        void OnDestroy()
+        {
+            _vanishTween?.Kill();
+            if (_anomaly != null) _anomaly.OnAnomalyDisappeared -= OnResolved;
+        }
+
+        private void OnResolved(Anomaly _) => _gone = true;
+
+        private void CatchPlayer()
+        {
+            _gone = true;
+            var def = _anomaly.Definition;
+            GameFlowManager.Instance?.EndNight(
+                NightOutcome.KilledByAnomaly,
+                def != null ? def.anomalyId : name,
+                _anomaly.AssignedRoom != null ? _anomaly.AssignedRoom.roomId : null);
+        }
 
         void Update()
         {
             if (_gone || Time.timeScale <= 0f) return;
 
             if (IsPointedAt())
-                _progress += Time.deltaTime / dispelSeconds;
+            {
+                _progress += Time.deltaTime / dispelSeconds; // the clock is held while it is being chased off
+            }
             else
+            {
                 _progress -= recoverPerSecond * Time.deltaTime;
+                _timeLeft -= Time.deltaTime;
+                if (_timeLeft <= 0f) { CatchPlayer(); return; }
+            }
 
             _progress = Mathf.Clamp01(_progress);
             SetAlpha(Mathf.Lerp(1f, minAlpha, _progress));

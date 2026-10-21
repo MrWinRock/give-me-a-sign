@@ -162,12 +162,14 @@ namespace Score
 
             // Being caught reads as a different kind of ending from simply not scoring enough,
             // so it gets its own objects and copy.
-            if (result.KilledByThreat)
+            if (result.KilledByThreat || result.outcome == NightOutcome.Negligence)
             {
                 SetTexts(
                     status: "YOU LOSE!",
                     statusColor: loseColor,
-                    score: "You were consumed by the darkness...",
+                    score: result.outcome == NightOutcome.Negligence
+                        ? "Too many anomalies were left unchecked..."
+                        : "You were consumed by the darkness...",
                     threshold: "");
 
                 SetActiveAll(anomalyDefeatObjects, true);

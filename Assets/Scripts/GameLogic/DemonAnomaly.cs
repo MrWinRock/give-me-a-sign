@@ -313,6 +313,34 @@ namespace GameLogic
                 ShowImageOverlay();
         }
 
+        public bool HasModel3D => model3D != null;
+
+        /// <summary>
+        /// A free-standing copy of the 3D head for the loss jumpscare (the prefab asset itself is never touched).
+        /// Placed like the in-game reveal: centred on the camera's X, fixed Y/Z, slammed in.
+        /// </summary>
+        public GameObject SpawnLossModel(float cameraX)
+        {
+            if (model3D == null) return null;
+            var src = model3D;
+            var clone = Object.Instantiate(src.gameObject);
+            clone.name = "DemonLossModel";
+            var t = clone.transform;
+            t.SetParent(null, true);
+            t.rotation = src.rotation;
+            t.localScale = src.lossyScale;
+            t.position = new Vector3(cameraX, modelWorldY, modelWorldZ);
+            clone.SetActive(true);
+            if (hideBoneNames != null)
+                foreach (var b in t.GetComponentsInChildren<Transform>(true))
+                    if (System.Array.IndexOf(hideBoneNames, b.name) >= 0) b.localScale = Vector3.zero;
+
+            var full = t.localScale;
+            t.localScale = full * slamStartFraction;
+            t.DOScale(full, Mathf.Max(0.01f, slamSeconds)).SetEase(Ease.OutExpo).SetUpdate(true).SetLink(clone);
+            return clone;
+        }
+
         private bool UsesModelStages => model3D != null && modelStages != null && modelStages.Length > 0;
 
         private void HideBones()

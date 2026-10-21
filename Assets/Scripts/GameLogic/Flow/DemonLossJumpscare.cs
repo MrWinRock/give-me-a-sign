@@ -45,6 +45,21 @@ namespace GameLogic.Flow
             root.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 
             var host = root.AddComponent<Host>();
+
+            var demon = visual ? FindDemon() : null;
+            var cam = Camera.main;
+            if (visual && demon != null && demon.HasModel3D && cam != null)
+            {
+                // The real 3D Demon, in world space. Hide the other overlay UI so nothing sits on top of it.
+                foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                    if (c.gameObject != root && c.renderMode == RenderMode.ScreenSpaceOverlay) c.enabled = false;
+
+                demon.SpawnLossModel(cam.transform.position.x);
+                AudioManager.Instance?.Play(ScreamSound);
+                yield return new WaitForSecondsRealtime(Mathf.Max(0.3f, seconds));
+                yield break;
+            }
+
             var black = NewGraphic<Image>(root.transform, "Black");
             black.color = Color.black;
             Stretch(black.rectTransform);
@@ -55,9 +70,9 @@ namespace GameLogic.Flow
                 yield break;
             }
 
-            var demon = FindDemon();
             RectTransform face = null;
 
+            if (demon == null && visual) demon = FindDemon();
             if (demon != null && demon.JumpscareVideo != null)
             {
                 host.texture = new RenderTexture(1280, 720, 0);
