@@ -3678,6 +3678,7 @@ GameObject:
   - component: {fileID: 761785853}
   - component: {fileID: 761785852}
   - component: {fileID: 761785851}
+  - component: {fileID: 7700000000000000050}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -4615,6 +4616,58 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &919923345
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 919923347}
+  - component: {fileID: 919923346}
+  m_Layer: 0
+  m_Name: RadioReportSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &919923346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919923345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 931015c999f79df4b8f0d9c9fbb9aa83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Report.IncidentReportManager
+  reportUI: {fileID: 0}
+  gameManager: {fileID: 0}
+  autoFindReferences: 1
+  reportFormEnabled: 1
+  partialReportMemorySeconds: 20
+  requireCorrectLocation: 0
+  resultDisplayDuration: 0.8
+  showDebugInfo: 0
+--- !u!4 &919923347
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919923345}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1900000008}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &956693654
 GameObject:
   m_ObjectHideFlags: 0
@@ -4959,41 +5012,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!1 &990001001
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 990001002}
-  - component: {fileID: 4205114680779514436}
-  - component: {fileID: 4205114680779514435}
-  - component: {fileID: 4205114680779514434}
-  - component: {fileID: 4205114680779514440}
-  m_Layer: 0
-  m_Name: IncidentReportSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &990001002
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990001001}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1900000008}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &992714566
 GameObject:
   m_ObjectHideFlags: 0
@@ -9235,7 +9253,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 990001002}
+  - {fileID: 919923347}
   m_Father: {fileID: 477437160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1900000009
@@ -9521,7 +9539,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Anomaly Detected
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -11333,7 +11351,7 @@ MonoBehaviour:
   dot: {fileID: 5054716264904321268}
   label: {fileID: 8712983601104448419}
   status: {fileID: 7598443225817639717}
-  hint: {fileID: 7230399247270459351}
+  hint: {fileID: 0}
   dotColor: {r: 1, g: 0.12, b: 0.12, a: 1}
   idleLabelColor: {r: 1, g: 1, b: 1, a: 0.7}
   talkingLabelColor: {r: 1, g: 0.3, b: 0.3, a: 1}
@@ -11498,7 +11516,6 @@ RectTransform:
   - {fileID: 2676598434581656459}
   - {fileID: 4508573076641531972}
   - {fileID: 7869939113188416482}
-  - {fileID: 3335800165793433413}
   m_Father: {fileID: 761785854}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
@@ -11569,25 +11586,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 821104963619214284}
   m_CullTransparentMesh: 1
---- !u!224 &3335800165793433413
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4144627319571539133}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2384895998161507673}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -152, y: 212}
-  m_SizeDelta: {x: 800, y: 44}
-  m_Pivot: {x: 1, y: 0}
 --- !u!114 &3613507124851344086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11764,295 +11762,6 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
---- !u!1 &4144627319571539133
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3335800165793433413}
-  - component: {fileID: 8481895627201479004}
-  - component: {fileID: 7230399247270459351}
-  m_Layer: 0
-  m_Name: Hint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &4205114680779514434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990001001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0484bcfe05d2104e8660b8685f9f4d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Report.GlitchStateSource
-  nightTimer: {fileID: 357971565}
-  consecutiveFailures: 3
---- !u!114 &4205114680779514435
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990001001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2a6bbdfce9e5fe41b4fde67e8fe5b6e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Report.GlitchDirector
-  glitchController: {fileID: 4205114680779514436}
-  reportManager: {fileID: 0}
-  autoDetectFormLifecycle: 1
-  stateSourceBehaviour: {fileID: 4205114680779514434}
-  scriptedBeats:
-  - beatName: First doubt
-    glitchType: 3
-    condition: 0
-    conditionValue: 4
-    overrideText: PREVIOUS OFFICER DID NOT REPORT
-    fireOnce: 1
-    delayAfterFormOpen: 1.5
-  - beatName: Not on shift
-    glitchType: 3
-    condition: 0
-    conditionValue: 7
-    overrideText: SEC-04 IS NOT ON SHIFT
-    fireOnce: 1
-    delayAfterFormOpen: 2
-  - beatName: It knows
-    glitchType: 1
-    condition: 2
-    conditionValue: 0
-    overrideText: behind you
-    fireOnce: 1
-    delayAfterFormOpen: 0
-  - beatName: Time breaks
-    glitchType: 4
-    condition: 1
-    conditionValue: 3
-    overrideText: 
-    fireOnce: 1
-    delayAfterFormOpen: 1
-  - beatName: Your room
-    glitchType: 0
-    condition: 0
-    conditionValue: 12
-    overrideText: Your room
-    fireOnce: 1
-    delayAfterFormOpen: 0.5
-  blackouts:
-  - reason: No glitches before report #3
-    condition: 0
-    conditionValue: 3
-    flagName: 
-  - reason: No glitches during the first in-game hour
-    condition: 1
-    conditionValue: 1
-    flagName: 
-  - reason: No glitches while the anomaly is Passive
-    condition: 2
-    conditionValue: 0
-    flagName: 
-  - reason: No glitches during the night 1 tutorial
-    condition: 3
-    conditionValue: 0
-    flagName: tutorial
-  baseChance: 0.35
-  minGlitchesPerSession: 1
-  maxGlitchesPerSession: 2
-  glitchCooldownSeconds: 3
-  ambientFirstDelayRange: {x: 1, y: 4}
-  avoidRepeatingGlitchTypeInSession: 1
-  glitchWeights:
-  - type: 0
-    enabled: 1
-    weight: 0.8
-  - type: 1
-    enabled: 1
-    weight: 1.2
-  - type: 2
-    enabled: 1
-    weight: 1
-  - type: 3
-    enabled: 1
-    weight: 1.3
-  - type: 4
-    enabled: 1
-    weight: 0.9
-  hourMultiplierCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.6
-      inSlope: 0
-      outSlope: 1.1999999
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1.8
-      inSlope: 1.1999999
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  passiveAnomalyMultiplier: 0.8
-  activeAnomalyMultiplier: 1.6
-  failureMultiplierPerFailure: 0.25
-  failureMultiplierCap: 2
-  dwellMultiplier: 1.5
-  dwellThresholdSeconds: 8
-  dwellRerollIntervalSeconds: 4
-  minEffectiveChance: 0.02
-  maxEffectiveChance: 0.85
-  intensityMultiplier: 1
-  forceCleanAfterConsecutiveGlitchedSessions: 3
-  forceMode: 0
-  forceGlitchEveryTime: 0
-  logDirectorDecisions: 0
---- !u!114 &4205114680779514436
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990001001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 524661de0b5a6e642a40c554877d1d40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Report.FormGlitchController
-  locationDropdown: {fileID: 0}
-  recognizedField: {fileID: 0}
-  caseValueText: {fileID: 0}
-  timeValueText: {fileID: 0}
-  nightTimer: {fileID: 0}
-  statusText: {fileID: 0}
-  statusBadgeImage: {fileID: 0}
-  statusBadgeText: {fileID: 0}
-  phantomOptionLabels:
-  - Room 0
-  - "\u2014\u2014\u2014"
-  - Basement (2)
-  - Your room
-  - '[REDACTED]'
-  phantomInsertIndex: -1
-  phantomTimeoutSeconds: 14
-  phantomOptionColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
-  phantomAudio:
-    source: {fileID: 0}
-    clip: {fileID: 0}
-    volume: 1
-  falseRecognitionWords:
-  - behind you
-  - don't look
-  - it's here
-  - help me
-  - look up
-  falseRecognitionDurationRange: {x: 0.6, y: 1.2}
-  falseRecognitionColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
-  falseRecognitionSettleSeconds: 0.5
-  falseRecognitionArmTimeout: 25
-  falseRecognitionAudio:
-    source: {fileID: 0}
-    clip: {fileID: 0}
-    volume: 1
-  caseCorruptionDurationRange: {x: 0.5, y: 1}
-  caseCorruptionLiterals:
-  - '#0000'
-  - '#6666'
-  - '#8888'
-  - '#----'
-  caseRepeatChance: 0.5
-  caseHistoryLimit: 24
-  caseCorruptionColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
-  caseCorruptionAudio:
-    source: {fileID: 0}
-    clip: {fileID: 0}
-    volume: 1
-  statusIntrusionMessages:
-  - SEC-04 IS NOT ON SHIFT
-  - 'SIGNAL ORIGIN: INSIDE'
-  - PREVIOUS OFFICER DID NOT REPORT
-  - WHY ARE YOU STILL HERE
-  statusIntrusionDurationRange: {x: 0.3, y: 0.8}
-  statusIntrusionBadgeLabel: ??????
-  statusIntrusionBadgeColor: {r: 0.35, g: 0, b: 0, a: 1}
-  statusIntrusionTextColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
-  statusIntrusionAudio:
-    source: {fileID: 0}
-    clip: {fileID: 0}
-    volume: 1
-  clockDesyncDurationRange: {x: 1, y: 2}
-  impossibleTimeStrings:
-  - 25:61:99
-  - 00:00:--
-  - 88:88:88
-  - --:--:--
-  - 13:60:61
-  clockRewindSecondsRange: {x: 90, y: 3600}
-  clockDesyncMode: 0
-  clockDesyncColor: {r: 0.62, g: 0.16, b: 0.16, a: 1}
-  clockDesyncAudio:
-    source: {fileID: 0}
-    clip: {fileID: 0}
-    volume: 1
-  verboseLogging: 0
-  debugHotkeys: 0
-  debugDurationOverride: 0
---- !u!114 &4205114680779514440
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990001001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c4e2a1f8d3b4c5e6f7a8b9c0d1e2f3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Report.GlitchScheduler
-  source: 0
-  schedule:
-  - entryName: 2.5m - ClockDesync
-    atMinute: 0.25
-    glitchType: 4
-    overrideText: 
-    fireDelay: 0
-  - entryName: 2.7m - PhantomDropdown
-    atMinute: 0.27
-    glitchType: 0
-    overrideText: 
-    fireDelay: 0.5
-  - entryName: 2.7m - Case Corruption
-    atMinute: 0.27
-    glitchType: 2
-    overrideText: 
-    fireDelay: 0.5
-  - entryName: 2.7m - False Recognition
-    atMinute: 0.2
-    glitchType: 1
-    overrideText: 
-    fireDelay: 0.5
-  nightTimer: {fileID: 357971565}
-  glitchDirector: {fileID: 4205114680779514435}
-  reportManager: {fileID: 0}
-  showDebugInfo: 0
 --- !u!224 &4508573076641531972
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12069,7 +11778,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -152, y: 116}
+  m_AnchoredPosition: {x: -138, y: 122}
   m_SizeDelta: {x: 210, y: 40}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &5054716264904321268
@@ -12166,98 +11875,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1815981624955015092}
   m_CullTransparentMesh: 1
---- !u!114 &7230399247270459351
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4144627319571539133}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_text: 
-  m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
-  m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
-  m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
-  m_fontMaterials: []
-  m_fontColor32:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.9, b: 0.6, a: 0.9}
-  m_enableVertexGradient: 0
-  m_colorMode: 3
-  m_fontColorGradient:
-    topLeft: {r: 1, g: 1, b: 1, a: 1}
-    topRight: {r: 1, g: 1, b: 1, a: 1}
-    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
-    bottomRight: {r: 1, g: 1, b: 1, a: 1}
-  m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
-  m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: -1183493901
-  m_overrideHtmlColors: 0
-  m_faceColor:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
-  m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 4
-  m_VerticalAlignment: 1024
-  m_textAlignment: 65535
-  m_characterSpacing: 0
-  m_characterHorizontalScale: 1
-  m_wordSpacing: 0
-  m_lineSpacing: 0
-  m_lineSpacingMax: 0
-  m_paragraphSpacing: 0
-  m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
-  m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
-  m_linkedTextComponent: {fileID: 0}
-  parentLinkedComponent: {fileID: 0}
-  m_enableKerning: 0
-  m_ActiveFontFeatures: 6e72656b
-  m_enableExtraPadding: 0
-  checkPaddingRequired: 0
-  m_isRichText: 1
-  m_EmojiFallbackSupport: 1
-  m_parseCtrlCharacters: 1
-  m_isOrthographic: 1
-  m_isCullingEnabled: 0
-  m_horizontalMapping: 0
-  m_verticalMapping: 0
-  m_uvLineOffset: 0
-  m_geometrySortingOrder: 0
-  m_IsTextObjectScaleStatic: 0
-  m_VertexBufferAutoSizeReduction: 0
-  m_useMaxVisibleDescender: 1
-  m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_isUsingLegacyAnimationComponent: 0
-  m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_baseMaterial: {fileID: 0}
-  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &7486849476922746768
 GameObject:
   m_ObjectHideFlags: 0
@@ -12395,6 +12012,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7700000000000000050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 761785850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a2d4c9e1b3f48d5a6e0c8b1f2d3e4a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panel: {fileID: 852930492}
 --- !u!224 &7869939113188416482
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12411,7 +12041,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -152, y: 160}
+  m_AnchoredPosition: {x: -152, y: 174}
   m_SizeDelta: {x: 800, y: 48}
   m_Pivot: {x: 1, y: 0}
 --- !u!224 &8098428673137236272
@@ -12433,14 +12063,6 @@ RectTransform:
   m_AnchoredPosition: {x: 40, y: -51}
   m_SizeDelta: {x: 900, y: 50}
   m_Pivot: {x: 0, y: 1}
---- !u!222 &8481895627201479004
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4144627319571539133}
-  m_CullTransparentMesh: 1
 --- !u!1 &8654782222524964205
 GameObject:
   m_ObjectHideFlags: 0
@@ -12479,7 +12101,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[SPACE] MIC'
+  m_text: '[SPACEBAR] MIC'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}

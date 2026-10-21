@@ -93,7 +93,7 @@ namespace Report
 
             if (reportUI == null)
             {
-                Debug.LogError("IncidentReportManager: No IncidentReportUI assigned!");
+                // No report form in the scene: walkie-talkie reports (hold Spacebar) still work without it.
                 return;
             }
 
@@ -335,7 +335,7 @@ namespace Report
 
         void Update()
         {
-            if (!reportFormEnabled) return;
+            if (!reportFormEnabled || reportUI == null) return; // no form in the scene = radio-only
 
             bool spacePressed;
 #if ENABLE_INPUT_SYSTEM
