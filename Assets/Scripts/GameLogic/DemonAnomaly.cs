@@ -30,6 +30,10 @@ namespace GameLogic
         [Header("Visual - 3D model (optional)")]
         [Tooltip("A posed 3D model (child of Overlay Root). When set it is shown INSTEAD of the sprite/video: it is moved to the middle of the camera view and lunges in like the flat version. Size and pose it in the prefab so the face fills the screen.")]
         [SerializeField] private Transform model3D;
+        [Tooltip("Slam-in: the model starts at this fraction of its placed size (1/3 = world scale 1 when placed at 3).")]
+        [SerializeField] private float slamStartFraction = 0.3333f;
+        [Tooltip("Seconds the slam-in takes to reach full size.")]
+        [SerializeField] private float slamSeconds = 0.1f;
         [Tooltip("World Position Y of the model when it appears.")]
         [SerializeField] private float modelWorldY = -79.6f;
         [Tooltip("World Position Z of the model when it appears.")]
@@ -115,6 +119,8 @@ namespace GameLogic
         private readonly List<Tween> _motion = new List<Tween>();
         private bool _revealed;
         private Coroutine _modelRoutine;
+        private Vector3 _modelFullScale = Vector3.one;
+        private bool _modelScaleCaptured;
         private bool _resolved;
         private bool _reportWasOpen;
         private float _burstAt = -1f; // scheduled time for the pending glitch burst, -1 = none
@@ -327,6 +333,14 @@ namespace GameLogic
             HideBones();
             // X = centre of this room's camera view. Y and Z are fixed world values.
             model3D.position = new Vector3(_roomCameraX, modelWorldY, modelWorldZ);
+
+            if (!UsesModelStages)
+            {
+                if (!_modelScaleCaptured) { _modelFullScale = model3D.localScale; _modelScaleCaptured = true; }
+                model3D.DOKill();
+                model3D.localScale = _modelFullScale * slamStartFraction;
+                model3D.DOScale(_modelFullScale, Mathf.Max(0.01f, slamSeconds)).SetEase(Ease.OutExpo).SetLink(model3D.gameObject);
+            }
         }
 
         private void ShowImageOverlay()

@@ -19,6 +19,20 @@ namespace GameLogic
         [Tooltip("Seconds it stays in the twisted pose (random between the two).")]
         [SerializeField] private Vector2 holdB = new Vector2(0.15f, 0.5f);
 
+        [Header("Shake")]
+        [Tooltip("Constant small tremble of the whole model (world units).")]
+        [SerializeField] private float tremble = 0.08f;
+        [Tooltip("Violent shake when the head snaps to the twisted pose (world units).")]
+        [SerializeField] private float snapShake = 0.45f;
+        [Tooltip("How long the violent shake lasts after each snap (seconds).")]
+        [SerializeField] private float snapShakeTime = 0.18f;
+        [Tooltip("Shake updates per second. Lower = choppier.")]
+        [SerializeField] private float shakeFps = 30f;
+
+        private Vector3 _offset;
+        private float _shakeUntil;
+        private float _nextShake;
+
         private Transform _head;
         private Vector3 _baseEuler;
         private bool _atB;
@@ -43,10 +57,26 @@ namespace GameLogic
             if (Time.time >= _nextSwitch)
             {
                 _atB = !_atB;
+                if (_atB) _shakeUntil = Time.time + snapShakeTime;
                 var h = _atB ? holdB : holdA;
                 _nextSwitch = Time.time + Random.Range(h.x, h.y);
             }
             _head.localEulerAngles = new Vector3(_baseEuler.x, _baseEuler.y, _atB ? angleB : angleA);
+
+            if (Time.time >= _nextShake)
+            {
+                _nextShake = Time.time + 1f / Mathf.Max(1f, shakeFps);
+                float amp = Time.time < _shakeUntil ? snapShake : tremble;
+                var v = Random.insideUnitCircle * amp;
+                transform.position += new Vector3(v.x, v.y, 0f) - _offset; // keep the placed position as the centre
+                _offset = new Vector3(v.x, v.y, 0f);
+            }
+        }
+
+        private void OnDisable()
+        {
+            transform.position -= _offset;
+            _offset = Vector3.zero;
         }
     }
 }
