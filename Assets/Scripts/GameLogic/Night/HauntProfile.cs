@@ -16,7 +16,7 @@ namespace GameLogic.Night
         [System.Serializable]
         public class LoopWeight
         {
-            public HauntLoopId loop = HauntLoopId.RadioCheck;
+            public HauntLoopId loop = HauntLoopId.CameraBetrayal;
             public bool enabled = true;
             [Tooltip("Relative chance of being picked. 0 = never.")]
             [Min(0f)] public float weight = 1f;
@@ -34,7 +34,7 @@ namespace GameLogic.Night
         [Tooltip("Haunt loops this night may schedule, with relative weights.")]
         public List<LoopWeight> loops = new List<LoopWeight>
         {
-            new LoopWeight { loop = HauntLoopId.RadioCheck, weight = 1f, minNightIndex = 1 },
+            new LoopWeight { loop = HauntLoopId.CameraBetrayal, weight = 1f, minNightIndex = 1 },
         };
 
         [Header("How many")]

@@ -196,7 +196,6 @@ namespace GiveMeASign.EditorTools
 
             bool changed = false;
 
-            changed |= AddIfMissing(profile, present, HauntLoopId.RadioCheck, weight: 1.5f, minNightIndex: 1);
             changed |= AddIfMissing(profile, present, HauntLoopId.CameraBetrayal, weight: 1f, minNightIndex: 1);
 
             // Sprint 6: ImpostorCase doesn't need the tutorial-safety a minNightIndex of 2 would

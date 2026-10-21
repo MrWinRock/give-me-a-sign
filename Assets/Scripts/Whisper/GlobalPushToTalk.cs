@@ -221,7 +221,7 @@ namespace Whisper
                     Hud?.ShowStatus(heard, new Color(1f, 1f, 1f, 0.8f));
                     break;
                 case IncidentReportManager.RadioReportOutcome.Confirmed:
-                    Hud?.ShowStatus(PlayerMessages.Text(MessageId.ReportConfirmed), new Color(0.4f, 0.9f, 0.4f), PlayerMessages.Blink(MessageId.ReportConfirmed));
+                    // Confirmation is shown by the InfoTextPanel (AnomalyBanishedNotice), not the HUD.
                     break;
                 case IncidentReportManager.RadioReportOutcome.NeedRoom:
                     Hud?.ShowStatus($"{PlayerMessages.Text(MessageId.ReportNeedRoom)}  {heard}", new Color(0.95f, 0.85f, 0.4f), PlayerMessages.Blink(MessageId.ReportNeedRoom));

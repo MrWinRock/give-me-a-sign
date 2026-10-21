@@ -28,7 +28,6 @@ namespace GameLogic.DebugTools
         private const string QaGroup = "QA  Test checklist  (click = steps, tick row = done)";
         private const string SpawnGroup = "Spawn anomaly  (random room, instant)";
         private const string HauntGroup = "Fire haunt now  (ignores tutorial night)";
-        private const string RadioGroup = "Radio Check  (force a call type)";
         private const string CameraGroup = "Camera feed  (Camera Betrayal glitches)";
         private const string NoiseGroup = "Noise meter  (CCTV OSD)";
         private const string VoiceGroup = "Voice / Noise / Field Manual";
@@ -54,10 +53,6 @@ namespace GameLogic.DebugTools
                 steps = "Spawn: The Watcher, pan the camera into its room. Its face rises slowly from the bottom of the screen: the screen shakes, the camera is locked, the ghost loop fades in and the other sounds fade down. Once fully risen the mic opens by itself, HUD: MIC LIVE - DO NOT SPEAK n (blinks). Test 3 ways in 3 tries: (a) say nothing = it sinks away, sound and camera return to normal; (b) whisper a sentence (~1s) = caught, jumpscare then Result; (c) speak/shout = caught at once. Speaking while it rises or sinks does nothing. A breath or a click must NOT catch you." },
             new QaItem { id = "loudmouth", title = "Loudmouth 8-bit timer",
                 steps = "Spawn: Loudmouth. 8-bit music starts quietly and gets louder over ~20s; it is louder while the camera is in its room, quieter in other rooms. Find the room and hold Spacebar: 'loudmouth in <room>' = COPY THAT, the music fades out and it leaves. Do nothing until the music peaks = jumpscare then Result. A wrong report does not make it leave." },
-            new QaItem { id = "radio", title = "Radio Check pass / fail",
-                steps = "Radio Check > Normal. Say exactly what the card says ('SEC-04 copy'): COPY THAT shown ~2.5s. Only noise, only 'copy', or the wrong call sign must NOT pass. Run again and stay silent: NO RESPONSE and a penalty anomaly appears in the scene." },
-            new QaItem { id = "mimic", title = "Radio Check Mimic / Wrong ID",
-                steps = "Radio Check > Mimic: hint says no call sign. Stay silent = GOOD CALL. Run again and say 'all clear' = IT HEARD YOU, a penalty anomaly appears. Same for Wrong ID (saying 'copy' = WRONG SIGN-IN + penalty anomaly, silence = GOOD CALL). OwnVoice: your recorded voice plays - speaking over it must not count; answer after it ends." },
             new QaItem { id = "noise", title = "Noise meter (bottom-centre OSD)",
                 steps = "Hold Spacebar and speak: the 20 segments light left to right, the header shows LOW / NORMAL / LOUD, the highest recent segment stays lit briefly. Mic closed: dim STANDBY. Spawn The Watcher: no zone is tinted - say nothing at all. Reveal the Demon: LOUD zone tinted - shout. Say the right words at the wrong volume: the header flashes TOO LOUD / TOO QUIET and nothing is penalised. Noise meter > 'Feed the meter' and 'Toggle the tuning overlay' help tune without speaking." },
             new QaItem { id = "manual", title = "Field Manual locks + entry points",
@@ -76,7 +71,6 @@ namespace GameLogic.DebugTools
             AddQa(list, info);
             AddSpawn(list, info);
             AddHaunts(list, info);
-            AddRadio(list, info);
             AddCamera(list, info);
             AddNoise(list, info);
             AddVoice(list, typedText, info);
@@ -214,30 +208,6 @@ namespace GameLogic.DebugTools
 
                         bool fired = director.TriggerNow(captured, null, ignoreTutorial: true);
                         info(fired ? $"Fired {captured}." : $"{captured} did not fire (already active, or not in the scene).");
-                    },
-                });
-            }
-        }
-
-        // ── Radio Check variants ─────────────────────────────────────────────────────────
-
-        private static void AddRadio(List<DebugEntry> list, Action<string> info)
-        {
-            foreach (RadioCheckHaunt.Variant variant in Enum.GetValues(typeof(RadioCheckHaunt.Variant)))
-            {
-                var captured = variant;
-                list.Add(new DebugEntry
-                {
-                    group = RadioGroup,
-                    label = $"Call: {captured}",
-                    run = () =>
-                    {
-                        var haunt = UnityEngine.Object.FindFirstObjectByType<RadioCheckHaunt>(FindObjectsInactive.Include);
-                        if (haunt == null) { info("No RadioCheckHaunt in this scene (open GamePlay)."); return; }
-
-                        info(haunt.DebugTrigger(captured)
-                            ? $"Radio Check ({captured}) started. Normal/OwnVoice: say 'SEC-04 copy'. WrongId/Mimic: stay silent."
-                            : "A Radio Check is already running.");
                     },
                 });
             }

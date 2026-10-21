@@ -806,54 +806,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 115135439}
   m_CullTransparentMesh: 1
---- !u!114 &126855092
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 786579303}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11354f7eb1df4b942aa81cf3ca195918, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Report.RadioCheckHaunt
-  radioId: Section 4
-  wrongIds:
-  - Section 1
-  - Section 2
-  - Section 3
-  normalScripts:
-  - callLine: '"Section 4, radio check."'
-    hint: 'say: "Section 4, copy"'
-    answerAllOf:
-    - Section 4
-    - copy
-  wrongIdScripts:
-  - callLine: '"{wrong}, radio check."'
-    hint: 'say: "{wrong}, copy"'
-    answerAllOf:
-    - copy
-  mimicScripts:
-  - callLine: Who are you?
-    hint: 
-    answerAllOf:
-    - nonononno
-  - callLine: Where are you?
-    hint: nonononno
-    answerAllOf: []
-  responseWindowSeconds: 8
-  outcomeDisplaySeconds: 2.5
-  echoGraceSeconds: 0.4
-  normalWeight: 3
-  ownVoiceWeight: 1.5
-  wrongIdWeight: 1.5
-  mimicWeight: 1
-  mimicMinNight: 3
-  decoyIntensityFloor: 1.25
-  callSoundName: RadioCall
-  missedSoundName: RadioMissed
-  showDebugInfo: 0
 --- !u!1 &135190652
 GameObject:
   m_ObjectHideFlags: 0
@@ -1160,21 +1112,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &219540831
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 786579303}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1900000002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &230240513
 GameObject:
@@ -3783,23 +3720,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &786579303
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 219540831}
-  - component: {fileID: 126855092}
-  m_Layer: 0
-  m_Name: RadioCheckHaunt
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1 &811400001
 GameObject:
   m_ObjectHideFlags: 0
@@ -9153,7 +9073,6 @@ Transform:
   - {fileID: 479646212}
   - {fileID: 2091993506}
   - {fileID: 1068152285}
-  - {fileID: 219540831}
   - {fileID: 395310485}
   m_Father: {fileID: 477437160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
