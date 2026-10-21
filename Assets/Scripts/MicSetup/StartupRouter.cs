@@ -29,6 +29,17 @@ namespace MicSetup
             SceneManager.LoadScene(config.micSetupSceneName);
         }
 
+        /// <summary>Set by the menu's Restart button so the setup scene runs even though the mic is already calibrated.</summary>
+        public static bool ForceSetupOnce;
+
+        /// <summary>True when the MicSetup scene should skip straight to the menu (already set up, not asked to re-run).</summary>
+        public static bool ShouldSkipSetupScene()
+        {
+            bool force = ForceSetupOnce;
+            ForceSetupOnce = false;
+            return !force && MicCalibrationStore.IsSetupCompleted;
+        }
+
         // Back to the menu once the wizard is done. Uses the flow manager when one already exists (it would not on a first launch).
         public static void LoadMainMenu()
         {

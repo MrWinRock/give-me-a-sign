@@ -15,6 +15,13 @@ namespace MicSetup
 
         void Start()
         {
+            // First launch only: a build always opens on this scene, so an already-calibrated player is sent on to the menu.
+            if (StartupRouter.ShouldSkipSetupScene())
+            {
+                StartupRouter.LoadMainMenu();
+                return;
+            }
+
             if (wizard == null)
             {
                 Debug.LogError("MicSetupSceneHost: no wizard assigned - going straight to the main menu.", this);
@@ -43,7 +50,11 @@ namespace MicSetup
                 if (player == null) player = gameObject.AddComponent<CinematicPlayer>();
 
                 bool done = false;
-                player.Play(openingCutscene, () => done = true);
+                player.Play(openingCutscene, () =>
+                {
+                    ScreenFade.CutToBlack(); // same frame the cutscene UI is torn down: no flash of the setup scene
+                    done = true;
+                });
                 while (!done) yield return null;
             }
 

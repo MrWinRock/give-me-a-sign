@@ -24,6 +24,15 @@ namespace GameLogic.Data
         [Tooltip("คำที่ผู้เล่นพูดเพี้ยนหรือ Whisper ได้ยินผิด แต่ให้นับเป็นห้องนี้ (เช่น 'kichen', 'bad room'). Spaces are ignored.")]
         public string[] mishearings = System.Array.Empty<string>();
 
+        [Tooltip("Nights this camera is available on (1-7). Empty = every night.")]
+        public int[] activeNights = System.Array.Empty<int>();
+
+        public bool IsActiveOn(int night)
+        {
+            if (activeNights == null || activeNights.Length == 0) return true;
+            return System.Array.IndexOf(activeNights, night) >= 0;
+        }
+
         [TextArea] public string manualNote;
 
         public string Label => string.IsNullOrWhiteSpace(displayName) ? roomId : displayName;

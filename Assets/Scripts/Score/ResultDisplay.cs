@@ -270,18 +270,23 @@ namespace Score
         private void PlayAgainNow()
         {
             var flow = GameFlowManager.Instance;
-            if (flow == null)
+            var last = GameFlowManager.LastResult;
+            bool won = last != null && last.Won;
+
+            if (showDebugInfo)
+                Debug.Log($"ResultDisplay: Play Again pressed (flow={(flow != null)}, won={won}).");
+
+            // A win carries on through the day loop; anything else (a loss, or no result at all) goes to the main menu.
+            if (won && flow != null)
             {
-                // Result scene opened directly while testing - nothing to continue into.
-                Debug.LogWarning("ResultDisplay: no GameFlowManager - reloading the gameplay scene directly.", this);
-                GameFlowManager.StartNewNight(gameSceneName);
+                flow.ContinueFromResult();
                 return;
             }
 
-            if (showDebugInfo)
-                Debug.Log("Continuing from result...");
-
-            flow.ContinueFromResult();
+            if (flow != null)
+                flow.AbandonNight();
+            else
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         }
 
         public void ReplaySeed()

@@ -257,7 +257,10 @@ namespace MainMenu
             // Restart = run the startup flow again: MicSetup, then the opening cutscene, then the menu.
             var micScene = Whisper.MicCalibrationStore.Config.micSetupSceneName;
             if (Application.CanStreamedLevelBeLoaded(micScene))
+            {
+                MicSetup.StartupRouter.ForceSetupOnce = true; // Restart always re-runs the setup
                 SceneManager.LoadScene(micScene);
+            }
             else
             {
                 Debug.LogWarning($"DesktopManager: scene '{micScene}' is not in Build Settings - reloading the menu instead.", this);

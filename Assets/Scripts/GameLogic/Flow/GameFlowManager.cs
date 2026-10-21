@@ -504,7 +504,7 @@ namespace GameLogic.Flow
                 return false;
             }
 
-            SceneManager.LoadScene(sceneName);
+            SceneManager.LoadSceneAsync(sceneName); // async: the old scene keeps rendering instead of freezing on the last frame
             return true;
         }
 

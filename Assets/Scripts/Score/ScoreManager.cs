@@ -154,6 +154,14 @@ namespace Score
             Debug.Log($"Score set to the night's requirement: {_currentScore}");
         }
 
+        [ContextMenu("Debug/Skip Night (Win)")]
+        public void DebugSkipNightWin()
+        {
+            _currentScore = RequiredScore; // meet tonight's goal first, otherwise ending the night is a loss
+            UpdateUI();
+            ForceEndNight();
+        }
+
         [ContextMenu("End Night Now (survived)")]
         public void ForceEndNight()
         {

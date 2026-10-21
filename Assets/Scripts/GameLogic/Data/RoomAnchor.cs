@@ -32,7 +32,12 @@ namespace GameLogic.Data
             return transform;
         }
 
-        void OnEnable() => RoomRegistry.Register(this);
+        void OnEnable()
+        {
+            // A camera that is not part of tonight's sector never joins the camera cycle.
+            if (room != null && !room.IsActiveOn(GameLogic.Flow.GameFlowManager.CurrentNightIndex)) return;
+            RoomRegistry.Register(this);
+        }
         void OnDisable() => RoomRegistry.Unregister(this);
 
         void OnDrawGizmos()

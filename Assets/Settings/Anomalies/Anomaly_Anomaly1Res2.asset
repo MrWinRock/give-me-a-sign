@@ -20,7 +20,7 @@ MonoBehaviour:
   prefab: {fileID: 6530810648022567755, guid: c014f8ed7cd14bb45a4e9249d22a452e, type: 3}
   respondType: 2
   threatCost: 2
-  minNightIndex: 2
+  minNightIndex: 3
   allowedRooms: []
   moveSpeed: 30
   threatTimeoutSeconds: 0
