@@ -29,7 +29,7 @@ namespace GameLogic.Flow
         // The overlay is left up on purpose: the scene load that follows removes it, so there is no
         // flash of the game between the scare and the lose screen.
         // visual:false = the Demon already filled the screen and screamed (it killed the player): cut to black, silent - no second scream.
-        public static IEnumerator Play(float seconds, bool visual = true)
+        public static IEnumerator Play(float seconds, bool visual = true, bool scream = false)
         {
             // Cut everything else first so the scream is the only thing heard (with a pile of
             // anomalies out, their own loops and stingers would otherwise bury it).
@@ -66,6 +66,7 @@ namespace GameLogic.Flow
 
             if (!visual)
             {
+                if (scream) AudioManager.Instance?.Play(ScreamSound);
                 if (seconds > 0f) yield return new WaitForSecondsRealtime(seconds);
                 yield break;
             }

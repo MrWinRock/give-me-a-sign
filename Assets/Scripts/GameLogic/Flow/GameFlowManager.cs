@@ -636,7 +636,20 @@ namespace GameLogic.Flow
             // Every loss - killed, overrun, or surviving without enough reports - ends on the Demon,
             // then cuts straight to the lose screen. When the Demon itself got you, it already scared you: only its scream plays.
             bool byDemon = outcome == NightOutcome.KilledByDemon;
-            yield return DemonLossJumpscare.Play(byDemon ? delayAfterDemonDeath : delayAfterDeath, visual: !byDemon);
+            // Demon and Silent Watcher: no extra scare - cut straight to the lose screen.
+            // (The Demon can also kill via its threat timer, which reports KilledByAnomaly with its own id.)
+            string killer = LastResult != null ? LastResult.killedByAnomalyId : null;
+            bool demonKill = byDemon || killer == "demonanomaly";
+            bool silentKill = killer == "silentwatcher";
+
+            if (demonKill)
+            {
+                if (delayAfterDemonDeath > 0f) yield return new WaitForSecondsRealtime(delayAfterDemonDeath);
+            }
+            else if (!silentKill)
+            {
+                yield return DemonLossJumpscare.Play(delayAfterDeath);
+            }
 
             LoadSceneByName(resultSceneName, "result");
         }
