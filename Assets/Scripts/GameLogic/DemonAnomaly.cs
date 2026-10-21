@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using GameLogic.Data;
@@ -29,6 +30,37 @@ namespace GameLogic
         [Header("Visual - 3D model (optional)")]
         [Tooltip("A posed 3D model (child of Overlay Root). When set it is shown INSTEAD of the sprite/video: it is moved to the middle of the camera view and lunges in like the flat version. Size and pose it in the prefab so the face fills the screen.")]
         [SerializeField] private Transform model3D;
+        [Tooltip("World Position Y of the model when it appears.")]
+        [SerializeField] private float modelWorldY = -79.6f;
+        [Tooltip("World Position Z of the model when it appears.")]
+        [SerializeField] private float modelWorldZ = -8.69f;
+
+        [System.Serializable]
+        public struct ModelStage
+        {
+            [Tooltip("Where the head is, as a fraction of the camera height from the screen centre (x right, y up).")]
+            public Vector2 viewOffset;
+            [Tooltip("Size multiplier of the model (1 = the size set in the prefab).")]
+            public float scale;
+            [Tooltip("Tilt of the whole head in degrees (Z).")]
+            public float rollDegrees;
+            [Tooltip("Seconds the demon stays in this pose (jittering in stop-motion). Ignored for the last stage.")]
+            public float holdSeconds;
+            [Tooltip("Seconds of darkness (model hidden) BEFORE this pose appears.")]
+            public float darkBefore;
+        }
+
+        [Tooltip("The approach, one pose per step: the model vanishes, then reappears closer. The LAST stage is the final jumpscare (the jumpscare sound plays there) and then holds, shaking, until it is banished. Leave EMPTY (default) for the single hard lunge.")]
+        [SerializeField] private ModelStage[] modelStages = new ModelStage[0];
+        [Tooltip("Frames per second of the stop-motion jitter. Lower = choppier and creepier.")]
+        [SerializeField] private float stopMotionFps = 8f;
+        [Tooltip("How hard the head shakes in the final pose (fraction of camera height).")]
+        [SerializeField] private float finalShake = 0.025f;
+        [Tooltip("Bones squashed to zero size at start so the unfinished arms/legs never show.")]
+        [SerializeField] private string[] hideBoneNames =
+        {
+            "mixamorig:LeftArm", "mixamorig:RightArm", "mixamorig:LeftUpLeg", "mixamorig:RightUpLeg"
+        };
 
         [Header("Visual - pick ONE")]
         [Tooltip("If assigned, plays this video fullscreen INSTEAD of the static image on Overlay Root. Built at runtime as a textured quad - no manual VideoPlayer setup needed.")]
@@ -82,6 +114,7 @@ namespace GameLogic
         private float _revealedAt;
         private readonly List<Tween> _motion = new List<Tween>();
         private bool _revealed;
+        private Coroutine _modelRoutine;
         private bool _resolved;
         private bool _reportWasOpen;
         private float _burstAt = -1f; // scheduled time for the pending glitch burst, -1 = none
@@ -97,6 +130,8 @@ namespace GameLogic
 
             if (overlayRoot != null)
                 overlayRoot.SetActive(false);
+            if (model3D != null)
+                model3D.gameObject.SetActive(false); // hidden until the jumpscare reveals it
         }
 
         void Start()
@@ -227,7 +262,8 @@ namespace GameLogic
             ShowOverlay();
             PlayRevealMotion();
 
-            if (jumpscareAudio != null)
+            // With a staged 3D approach the sound is saved for the final pose.
+            if (jumpscareAudio != null && !UsesModelStages)
                 jumpscareAudio.Play();
 
             var reportManager = IncidentReportManager.Instance;
@@ -250,6 +286,13 @@ namespace GameLogic
 
         private void ShowOverlay()
         {
+            if (model3D != null)
+            {
+                if (overlayRoot != null) overlayRoot.SetActive(true);
+                ShowModelOverlay();
+                return;
+            }
+
             if (overlayRoot == null)
             {
                 Debug.LogWarning("DemonAnomaly: no overlayRoot assigned - the jumpscare has no visual!", this);
@@ -258,27 +301,32 @@ namespace GameLogic
 
             overlayRoot.SetActive(true);
 
-            if (model3D != null)
-            {
-                ShowModelOverlay();
-                return;
-            }
-
             if (jumpscareVideo != null)
                 ShowVideoOverlay();
             else
                 ShowImageOverlay();
         }
 
+        private bool UsesModelStages => model3D != null && modelStages != null && modelStages.Length > 0;
+
+        private void HideBones()
+        {
+            if (hideBoneNames == null || hideBoneNames.Length == 0) return;
+            foreach (var t in model3D.GetComponentsInChildren<Transform>(true))
+                if (System.Array.IndexOf(hideBoneNames, t.name) >= 0)
+                    t.localScale = Vector3.zero;
+        }
+
         private void ShowModelOverlay()
         {
             // The flat art stays on the prefab (the loss scare reuses it) but is hidden here.
-            var flat = overlayRoot.GetComponentInChildren<SpriteRenderer>(true);
+            var flat = overlayRoot != null ? overlayRoot.GetComponentInChildren<SpriteRenderer>(true) : null;
             if (flat != null) flat.enabled = false; // component only: the sprite sits on Overlay Root, which also holds the model
 
-            model3D.gameObject.SetActive(true);
-            if (_camera != null)
-                model3D.position = new Vector3(_roomCameraX, _camera.transform.position.y, model3D.position.z);
+            model3D.gameObject.SetActive(!UsesModelStages); // staged mode reveals it itself
+            HideBones();
+            // X = centre of this room's camera view. Y and Z are fixed world values.
+            model3D.position = new Vector3(_roomCameraX, modelWorldY, modelWorldZ);
         }
 
         private void ShowImageOverlay()
@@ -371,6 +419,8 @@ namespace GameLogic
 
             if (overlayRoot != null)
                 overlayRoot.SetActive(false);
+            if (model3D != null)
+                model3D.gameObject.SetActive(false);
             if (_videoPlayer != null)
                 _videoPlayer.Stop();
 
@@ -404,8 +454,22 @@ namespace GameLogic
         {
             KillMotion();
 
+            if (UsesModelStages)
+            {
+                float lead = 0f;
+                for (int i = 0; i < modelStages.Length - 1; i++) lead += modelStages[i].darkBefore + modelStages[i].holdSeconds;
+                lead += modelStages[modelStages.Length - 1].darkBefore;
+                _revealedAt += lead; // the countdown starts when the real scare lands
+                _modelRoutine = StartCoroutine(ModelSequence());
+                return;
+            }
+
+            // 3D model: shown exactly as placed in the prefab/scene (no scale pop, no shake).
+            // Its only motion is DemonHeadTwitch.
+            if (model3D != null) return;
+
             Transform face = null;
-            if (model3D != null)
+            if (false)
                 face = model3D;
             else if (jumpscareVideo != null && _videoOverlayObject != null)
                 face = _videoOverlayObject.transform;
@@ -459,8 +523,77 @@ namespace GameLogic
             }).SetLink(overlayRoot));
         }
 
+        private IEnumerator ModelSequence()
+        {
+            float step = 1f / Mathf.Max(1f, stopMotionFps);
+            var wait = new WaitForSeconds(step);
+            Vector3 baseScale = model3D.localScale;
+            float camH = _camera != null && _camera.orthographic ? _camera.orthographicSize * 2f : 10f;
+            float cx = _roomCameraX;
+            float cy = _camera != null ? _camera.transform.position.y : model3D.position.y;
+            float z = model3D.position.z;
+
+            model3D.gameObject.SetActive(false);
+
+            for (int i = 0; i < modelStages.Length; i++)
+            {
+                var st = modelStages[i];
+                bool last = i == modelStages.Length - 1;
+
+                if (st.darkBefore > 0f)
+                {
+                    model3D.gameObject.SetActive(false);
+                    yield return new WaitForSeconds(st.darkBefore);
+                }
+
+                Place(st, cx, cy, z, camH, baseScale, Vector2.zero, 0f);
+                model3D.gameObject.SetActive(true);
+                HideBones();
+
+                if (last)
+                {
+                    if (jumpscareAudio != null) jumpscareAudio.Play();
+                    break;
+                }
+
+                for (float t = 0f; t < st.holdSeconds; t += step)
+                {
+                    Place(st, cx, cy, z, camH, baseScale, Random.insideUnitCircle * camH * 0.006f, Random.Range(-1.5f, 1.5f));
+                    yield return wait;
+                }
+            }
+
+            // Final pose: stop-motion shake, with a hard snap of the head now and then.
+            var fin = modelStages[modelStages.Length - 1];
+            float nextSnap = Time.time + Random.Range(1.2f, 2.8f);
+            float snapRoll = 0f;
+            while (true)
+            {
+                if (Time.time >= nextSnap)
+                {
+                    snapRoll = Random.value < 0.5f ? Random.Range(10f, 18f) : Random.Range(-18f, -10f);
+                    nextSnap = Time.time + Random.Range(1.2f, 2.8f);
+                }
+                else snapRoll = Mathf.MoveTowards(snapRoll, 0f, 6f);
+
+                Place(fin, cx, cy, z, camH, baseScale,
+                    Random.insideUnitCircle * camH * finalShake,
+                    Random.Range(-2.5f, 2.5f) + snapRoll);
+                yield return wait;
+            }
+        }
+
+        private void Place(ModelStage st, float cx, float cy, float z, float camH, Vector3 baseScale, Vector2 jitter, float rollJitter)
+        {
+            model3D.position = new Vector3(cx + st.viewOffset.x * camH + jitter.x, cy + st.viewOffset.y * camH + jitter.y, z);
+            model3D.localScale = baseScale * (st.scale <= 0f ? 1f : st.scale);
+            var e = model3D.localEulerAngles;
+            model3D.localEulerAngles = new Vector3(e.x, e.y, st.rollDegrees + rollJitter);
+        }
+
         private void KillMotion()
         {
+            if (_modelRoutine != null) { StopCoroutine(_modelRoutine); _modelRoutine = null; }
             foreach (var tween in _motion)
                 tween?.Kill();
             _motion.Clear();
