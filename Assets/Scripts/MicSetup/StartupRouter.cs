@@ -32,6 +32,9 @@ namespace MicSetup
         /// <summary>Set by the menu's Restart button so the setup scene runs even though the mic is already calibrated.</summary>
         public static bool ForceSetupOnce;
 
+        /// <summary>Set by Restart so the opening cutscene plays again even though it was already seen.</summary>
+        public static bool ReplayCutsceneOnce;
+
         /// <summary>True when the MicSetup scene should skip straight to the menu (already set up, not asked to re-run).</summary>
         public static bool ShouldSkipSetupScene()
         {

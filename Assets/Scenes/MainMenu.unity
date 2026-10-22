@@ -713,7 +713,7 @@ MonoBehaviour:
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
   unreadBadge: {fileID: 0}
   badgeSize: {x: 10, y: 10}
-  badgeOffset: {x: 2, y: 2}
+  badgeOffset: {x: -5.3, y: 8.5}
 --- !u!1 &109343831
 GameObject:
   m_ObjectHideFlags: 0
@@ -1838,7 +1838,7 @@ MonoBehaviour:
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
   unreadBadge: {fileID: 0}
   badgeSize: {x: 10, y: 10}
-  badgeOffset: {x: 2, y: 2}
+  badgeOffset: {x: -5.3, y: 8.5}
 --- !u!1 &463015991
 GameObject:
   m_ObjectHideFlags: 0
@@ -6478,7 +6478,7 @@ MonoBehaviour:
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
   unreadBadge: {fileID: 0}
   badgeSize: {x: 10, y: 10}
-  badgeOffset: {x: 2, y: 2}
+  badgeOffset: {x: -5.3, y: 8.5}
 --- !u!1 &1313189793
 GameObject:
   m_ObjectHideFlags: 0
@@ -6786,7 +6786,7 @@ MonoBehaviour:
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
   unreadBadge: {fileID: 0}
   badgeSize: {x: 10, y: 10}
-  badgeOffset: {x: 2, y: 2}
+  badgeOffset: {x: -5.3, y: 8.5}
 --- !u!1 &1370115455
 GameObject:
   m_ObjectHideFlags: 0
@@ -9674,7 +9674,7 @@ MonoBehaviour:
   deselectedColor: {r: 0, g: 0, b: 0, a: 0}
   unreadBadge: {fileID: 0}
   badgeSize: {x: 10, y: 10}
-  badgeOffset: {x: 2, y: 2}
+  badgeOffset: {x: -5.3, y: 8.5}
 --- !u!1 &9200000000000008
 GameObject:
   m_ObjectHideFlags: 0

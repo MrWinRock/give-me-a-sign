@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.CinematicData
   cinematicId: Cinematic_Training_Night3
   kind: 2
-  clip: {fileID: 32900000, guid: b55b4a60ff1ba13438e46426ff5e019d, type: 3}
+  clip: {fileID: 32900000, guid: 94e0236e3e5548b448026e698489a047, type: 3}
   skippableAfterSeconds: 2
   placeholderTitle: TRAINING - NEW SUBJECTS DETECTED
   placeholderSubtitle: Pay attention. This one does not wait.

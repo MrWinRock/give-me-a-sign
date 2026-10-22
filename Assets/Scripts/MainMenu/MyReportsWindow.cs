@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using GameLogic.Flow;
+using GameLogic.Save;
 using UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +20,8 @@ namespace MainMenu
         {
             Available,
             Incomplete,
-            Corrupted
+            Corrupted,
+            Empty
         }
 
         [Serializable]
@@ -30,13 +33,7 @@ namespace MainMenu
         }
 
         [Header("Data Source")]
-        [SerializeField]
-        private List<SaveSlot> slots = new List<SaveSlot>
-        {
-            new SaveSlot { fileName = "shift_01.log", detail = "3 reports filed", state = SlotState.Available },
-            new SaveSlot { fileName = "shift_02.log", detail = "incomplete",      state = SlotState.Incomplete },
-            new SaveSlot { fileName = "shift_03.log", detail = "corrupted",       state = SlotState.Corrupted },
-        };
+        private List<SaveSlot> slots = new List<SaveSlot>();
 
         [Header("List")]
         [Tooltip("Vertical container the rows are spawned into.")]
@@ -55,6 +52,17 @@ namespace MainMenu
         [Header("Buttons")]
         [SerializeField] private Button openButton;
         [SerializeField] private Button cancelButton;
+        [Tooltip("Deletes the selected slot's save. Click twice: the first click asks 'Sure?'.")]
+        [SerializeField] private Button deleteButton;
+
+        /// <summary>Set by DesktopManager just before opening: the next Show() is the New Game slot picker.</summary>
+        public static bool PendingNewGameMode;
+
+        private bool _newGameMode;
+        private bool _overwriteArmed;
+        private string _openLabelOriginal;
+        private bool _deleteArmed;
+        private string _deleteLabelOriginal;
 
         private readonly List<GameObject> _rows = new List<GameObject>();
         private int _selectedIndex = -1;
@@ -75,13 +83,60 @@ namespace MainMenu
             if (rowTemplate != null)
                 rowTemplate.SetActive(false);
 
-            if (openButton != null) openButton.onClick.AddListener(OnOpenClicked);
+            if (openButton != null)
+            {
+                openButton.onClick.AddListener(OnOpenClicked);
+                var ol = openButton.GetComponentInChildren<TextMeshProUGUI>(true);
+                if (ol != null) _openLabelOriginal = ol.text;
+            }
             if (cancelButton != null) cancelButton.onClick.AddListener(Hide);
+            if (deleteButton != null)
+            {
+                deleteButton.onClick.AddListener(OnDeleteClicked);
+                var l = deleteButton.GetComponentInChildren<TextMeshProUGUI>(true);
+                if (l != null) _deleteLabelOriginal = l.text;
+            }
         }
 
         protected override void OnShown()
         {
+            _newGameMode = PendingNewGameMode;
+            PendingNewGameMode = false;
+            _overwriteArmed = false;
+            SetOpenLabel(_newGameMode ? "New Game" : _openLabelOriginal);
+            slots = BuildSlotsFromSave();
             RebuildRows();
+        }
+
+        // Three fixed slots, each its own save file. Empty slots are listed too: opening one starts a new shift there.
+        private static List<SaveSlot> BuildSlotsFromSave()
+        {
+            var list = new List<SaveSlot>();
+            for (int n = 1; n <= SaveManager.SlotCount; n++)
+            {
+                string file = $"shift_{n:00}.log";
+                if (!SaveManager.Peek(n, out var save, out bool corrupted))
+                {
+                    list.Add(new SaveSlot { fileName = file, detail = "empty", state = SlotState.Empty });
+                    continue;
+                }
+                if (corrupted)
+                {
+                    list.Add(new SaveSlot { fileName = file, detail = "corrupted", state = SlotState.Corrupted });
+                    continue;
+                }
+
+                int day = Mathf.Clamp(save.currentDay, 1, GameFlowManager.FinalDay);
+                int seen = save.seenAnomalyIds != null ? save.seenAnomalyIds.Count : 0;
+                bool fresh = day <= 1 && seen == 0;
+                list.Add(new SaveSlot
+                {
+                    fileName = file,
+                    detail = fresh ? "incomplete" : $"Night {day} of {GameFlowManager.FinalDay}" + (seen > 0 ? $", {seen} anomalies logged" : ""),
+                    state = fresh ? SlotState.Incomplete : SlotState.Available
+                });
+            }
+            return list;
         }
 
         private void RebuildRows()
@@ -127,7 +182,7 @@ namespace MainMenu
                     int index = i;
                     rowButton.onClick.RemoveAllListeners();
                     rowButton.onClick.AddListener(() => OnRowClicked(index));
-                    rowButton.interactable = slot.state != SlotState.Corrupted;
+                    rowButton.interactable = _newGameMode || (slot.state != SlotState.Corrupted && slot.state != SlotState.Empty);
                 }
             }
 
@@ -139,13 +194,14 @@ namespace MainMenu
         {
             if (index < 0 || index >= slots.Count) return;
 
-            if (slots[index].state == SlotState.Corrupted)
+            if (!_newGameMode && (slots[index].state == SlotState.Corrupted || slots[index].state == SlotState.Empty))
             {
                 Desktop?.PlayCue(MenuCue.Error);
                 return;
             }
 
             _selectedIndex = index;
+            if (_overwriteArmed) { _overwriteArmed = false; SetOpenLabel("New Game"); }
             RefreshRowVisuals();
             UpdateOpenInteractable();
         }
@@ -170,7 +226,8 @@ namespace MainMenu
         {
             switch (state)
             {
-                case SlotState.Incomplete: return incompleteTextColor;
+                case SlotState.Incomplete:
+                case SlotState.Empty: return incompleteTextColor;
                 case SlotState.Corrupted: return corruptedTextColor;
                 default: return availableTextColor;
             }
@@ -180,6 +237,46 @@ namespace MainMenu
         {
             if (openButton != null)
                 openButton.interactable = _selectedIndex >= 0;
+            DisarmDelete();
+            if (deleteButton != null)
+                deleteButton.interactable = _selectedIndex >= 0 && _selectedIndex < slots.Count
+                                            && slots[_selectedIndex].state != SlotState.Empty;
+        }
+
+        private void SetOpenLabel(string text)
+        {
+            if (openButton == null || text == null) return;
+            var l = openButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (l != null) l.text = text;
+        }
+
+        private void DisarmDelete()
+        {
+            _deleteArmed = false;
+            if (deleteButton == null) return;
+            var l = deleteButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (l != null && _deleteLabelOriginal != null) l.text = _deleteLabelOriginal;
+        }
+
+        private void OnDeleteClicked()
+        {
+            if (_selectedIndex < 0 || _selectedIndex >= slots.Count || slots[_selectedIndex].state == SlotState.Empty)
+            {
+                Desktop?.PlayCue(MenuCue.Error);
+                return;
+            }
+
+            if (!_deleteArmed)
+            {
+                _deleteArmed = true; // first click only asks
+                var l = deleteButton.GetComponentInChildren<TextMeshProUGUI>(true);
+                if (l != null) l.text = "Sure?";
+                return;
+            }
+
+            SaveManager.DeleteSlot(_selectedIndex + 1);
+            slots = BuildSlotsFromSave();
+            RebuildRows(); // resets selection and disarms
         }
 
         private void OnOpenClicked()
@@ -190,9 +287,26 @@ namespace MainMenu
                 return;
             }
 
-            // No save system yet: opening a slot just begins the shift. Swap this for a real
-            // load call once saves exist - the selected slot is slots[_selectedIndex].
-            Debug.Log($"MyReportsWindow: opening '{slots[_selectedIndex].fileName}'.", this);
+            // Slot rows are in order, so the row index is the slot number - 1.
+            int slotNumber = _selectedIndex + 1;
+
+            if (_newGameMode)
+            {
+                bool occupied = slots[_selectedIndex].state != SlotState.Empty;
+                if (occupied && !_overwriteArmed)
+                {
+                    _overwriteArmed = true; // overwriting a real save: ask once
+                    SetOpenLabel("Overwrite?");
+                    return;
+                }
+                _newGameMode = false;
+                Hide();
+                Desktop?.NewGameInSlot(slotNumber);
+                return;
+            }
+
+            SaveManager.SelectSlot(slotNumber);
+            Debug.Log($"MyReportsWindow: loading slot {slotNumber} ({slots[_selectedIndex].detail}).", this);
 
             Hide();
             Desktop?.StartShift();
@@ -200,6 +314,9 @@ namespace MainMenu
 
         protected override void OnHiding()
         {
+            _newGameMode = false;
+            _overwriteArmed = false;
+            DisarmDelete();
             _selectedIndex = -1;
         }
     }

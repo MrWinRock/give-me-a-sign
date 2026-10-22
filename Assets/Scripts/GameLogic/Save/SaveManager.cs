@@ -16,7 +16,34 @@ namespace GameLogic.Save
 
         private static SaveData _current;
 
-        public static string SavePath => Path.Combine(Application.persistentDataPath, FileName);
+        public const int SlotCount = 3;
+        private const string ActiveSlotKey = "Save_ActiveSlot";
+
+        /// <summary>Which of the 3 slots the game is playing on (1..3). Remembered between launches.</summary>
+        public static int ActiveSlot => Mathf.Clamp(PlayerPrefs.GetInt(ActiveSlotKey, 1), 1, SlotCount);
+
+        public static string SlotPath(int slot) => slot == 1
+            ? Path.Combine(Application.persistentDataPath, FileName)   // slot 1 keeps the original file name: existing saves carry over
+            : Path.Combine(Application.persistentDataPath, $"givemeasign.save.slot{slot}.json");
+
+        public static string SavePath => SlotPath(ActiveSlot);
+
+        /// <summary>Switches the live save to another slot (loaded fresh from disk on next access).</summary>
+        public static void SelectSlot(int slot)
+        {
+            PlayerPrefs.SetInt(ActiveSlotKey, Mathf.Clamp(slot, 1, SlotCount));
+            PlayerPrefs.Save();
+            _current = null;
+        }
+
+        public static bool SlotExists(int slot) => File.Exists(SlotPath(slot));
+
+        public static void DeleteSlot(int slot)
+        {
+            try { if (SlotExists(slot)) File.Delete(SlotPath(slot)); }
+            catch (System.Exception e) { Debug.LogError($"SaveManager: could not delete slot {slot} ({e.Message})."); }
+            if (slot == ActiveSlot) _current = null;
+        }
 
         /// <summary>Fires after any successful write, so UI can refresh without polling.</summary>
         public static event System.Action<SaveData> OnSaved;
@@ -87,6 +114,23 @@ namespace GameLogic.Save
         {
             _current = new SaveData();
             Save();
+        }
+
+        /// <summary>
+        /// Reads the save file fresh from disk without touching the live copy. Returns false when there is no file;
+        /// <paramref name="corrupted"/> is true when a file exists but cannot be read.
+        /// </summary>
+        public static bool Peek(int slot, out SaveData data, out bool corrupted)
+        {
+            data = null; corrupted = false;
+            if (!SlotExists(slot)) return false;
+            try
+            {
+                data = JsonUtility.FromJson<SaveData>(File.ReadAllText(SlotPath(slot)));
+                if (data == null) corrupted = true;
+            }
+            catch { corrupted = true; }
+            return true;
         }
 
         /// <summary>Drops the in-memory copy so the next access re-reads from disk. For tests/tools.</summary>

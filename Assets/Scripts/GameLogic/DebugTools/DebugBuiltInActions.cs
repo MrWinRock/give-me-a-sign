@@ -68,12 +68,9 @@ namespace GameLogic.DebugTools
         public static List<DebugEntry> Build(Func<string> typedText, Action<string> info)
         {
             var list = new List<DebugEntry>();
-            AddQa(list, info);
             AddSpawn(list, info);
-            AddHaunts(list, info);
             AddCamera(list, info);
             AddNoise(list, info);
-            AddVoice(list, typedText, info);
             return list;
         }
 

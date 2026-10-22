@@ -43,8 +43,10 @@ namespace MicSetup
         private IEnumerator FinishSetup()
         {
             // The played flag also keeps it from repeating if the setup comes back (calibration version bump).
+            bool replay = StartupRouter.ReplayCutsceneOnce;
+            StartupRouter.ReplayCutsceneOnce = false;
             if (openingCutscene != null && openingCutscene.IsPlayable()
-                && !SaveManager.Current.IsCinematicPlayed(openingCutscene.cinematicId))
+                && (replay || !SaveManager.Current.IsCinematicPlayed(openingCutscene.cinematicId)))
             {
                 var player = GetComponent<CinematicPlayer>();
                 if (player == null) player = gameObject.AddComponent<CinematicPlayer>();

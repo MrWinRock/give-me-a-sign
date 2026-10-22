@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.CinematicData
   cinematicId: Cinematic_OpenGame
   kind: 0
-  clip: {fileID: 32900000, guid: 1428434d4ef54d54bbb609aaf3254c31, type: 3}
+  clip: {fileID: 32900000, guid: 076644fdd20e8d340b6a869ca5b9ff96, type: 3}
   skippableAfterSeconds: 2
   placeholderTitle: 
   placeholderSubtitle: 

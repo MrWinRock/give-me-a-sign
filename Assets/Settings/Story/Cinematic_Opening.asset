@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Story.CinematicData
   cinematicId: Cinematic_ShiftInDay1
   kind: 0
-  clip: {fileID: 32900000, guid: 843d7e9db306a484a8de02a75746c31c, type: 3}
+  clip: {fileID: 32900000, guid: 3ed8671afa5df7a44a2542d076edbce2, type: 3}
   skippableAfterSeconds: 2
   placeholderTitle: C.N.A. NEWS - EVACUATION IN EFFECT
   placeholderSubtitle: Report to your station. The Bureau is moving in.

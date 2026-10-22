@@ -38,7 +38,7 @@ namespace MainMenu
         [Tooltip("Optional. Left empty, a red dot is created at runtime on the icon's top-right corner.")]
         [SerializeField] private GameObject unreadBadge;
         [SerializeField] private Vector2 badgeSize = new Vector2(10f, 10f);
-        [SerializeField] private Vector2 badgeOffset = new Vector2(2f, 2f);
+        [SerializeField] private Vector2 badgeOffset = new Vector2(-5.3f, 8.5f);
 
         private DesktopManager _desktop;
         private float _badgeTimer;
@@ -98,10 +98,10 @@ namespace MainMenu
             var go = new GameObject("UnreadBadge", typeof(RectTransform), typeof(Image));
             var rt = (RectTransform)go.transform;
             rt.SetParent(iconImage.transform, false);
-            rt.anchorMin = rt.anchorMax = Vector2.one;
+            rt.anchorMin = rt.anchorMax = new Vector2(1f, 0f); // bottom-right corner of the icon
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = badgeSize;
-            rt.anchoredPosition = badgeOffset;
+            rt.anchoredPosition = badgeOffset; // position relative to the icon's bottom-right corner
             var img = go.GetComponent<Image>();
             img.sprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
             img.raycastTarget = false;

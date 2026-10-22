@@ -201,7 +201,7 @@ namespace MainMenu
             switch (action)
             {
                 case DesktopAction.StartShift: StartShift(); break;
-                case DesktopAction.NewGame: NewGame(); break;
+                case DesktopAction.NewGame: OpenNewGamePicker(); break;
                 case DesktopAction.OpenMyReports: OpenWindowPrefab(myReportsWindowPrefab); break;
                 case DesktopAction.OpenMail: OpenWindowPrefab(mailWindowPrefab); break;
                 case DesktopAction.OpenFieldManual: OpenWindowPrefab(fieldManualWindowPrefab); break;
@@ -235,6 +235,21 @@ namespace MainMenu
         /// Wipes the save and starts over at day 1. Overwriting is the whole point, so this must
         /// only be reachable behind a confirmation in the UI.
         /// </summary>
+        /// <summary>New Game: opens My Reports in "pick a slot to overwrite" mode.</summary>
+        public void OpenNewGamePicker()
+        {
+            startMenu?.Close();
+            MyReportsWindow.PendingNewGameMode = true;
+            OpenWindowPrefab(myReportsWindowPrefab);
+        }
+
+        /// <summary>Starts a fresh run in the chosen slot, replacing whatever was saved there.</summary>
+        public void NewGameInSlot(int slot)
+        {
+            GameLogic.Save.SaveManager.SelectSlot(slot);
+            NewGame();
+        }
+
         public void NewGame()
         {
             GameLogic.Flow.GameFlowManager.ResetAllSaveData();
@@ -258,6 +273,7 @@ namespace MainMenu
             var micScene = Whisper.MicCalibrationStore.Config.micSetupSceneName;
             if (Application.CanStreamedLevelBeLoaded(micScene))
             {
+                MicSetup.StartupRouter.ReplayCutsceneOnce = true;
                 MicSetup.StartupRouter.ForceSetupOnce = true; // Restart always re-runs the setup
                 SceneManager.LoadScene(micScene);
             }
