@@ -525,6 +525,7 @@ GameObject:
   - component: {fileID: 4432884376744729002}
   - component: {fileID: 4285424647992610554}
   - component: {fileID: 320947297428181040}
+  - component: {fileID: 8848999680625052365}
   m_Layer: 0
   m_Name: CloseButton
   m_TagString: Untagged
@@ -651,6 +652,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8848999680625052365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3504673346262676171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 1}
+  m_EffectDistance: {x: 0.5, y: 0.5}
+  m_UseGraphicAlpha: 1
 --- !u!1 &4114794653785987236
 GameObject:
   m_ObjectHideFlags: 0
