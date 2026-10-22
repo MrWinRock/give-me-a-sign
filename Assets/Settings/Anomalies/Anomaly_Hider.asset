@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Anomaly_Hider
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: anomaly2res1
-  displayName: Hider
+  displayName: HIDER
   observation: 1
   correctKeywords: []
   voiceResponse: 4

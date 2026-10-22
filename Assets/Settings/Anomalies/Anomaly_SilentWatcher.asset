@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Anomaly_SilentWatcher
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: silentwatcher
-  displayName: The Watcher
+  displayName: WATCHER
   observation: 0
   correctKeywords: []
   voiceResponse: 3
@@ -24,8 +24,16 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 3
   threatTimeoutSeconds: 0
-  manualImage: {fileID: 0}
-  manualDescription: 
+  manualImage: {fileID: 21300000, guid: e37e223fc174b284b9014cfc44ad752e, type: 3}
+  manualDescription: "A tall, narrow humanoid anomaly with unusually long arms and two large, round eyes. Upon detection, Watcher will rush toward the surveillance camera and remain directly in front of the lens, listening for sounds transmitted through the microphone. Any audible noise may reveal the operator's location and result in fatal consequences."
   howToSpot: It rises slowly from the bottom of the screen and stares. The screen
     shakes and you cannot leave the room. Do not make a sound until it sinks away.
+  manualCode: TL-03
+  manualBehavior: HOSTILE
+  threatLevel: 3
+  threatLevelLabel: SEVERE
+  manualResponse: "O.T.U. — SILENCE REQUIRED"
+  manualDetection: "VISUAL — FACIAL IDENTIFICATION"
+  manualProcedure: "Remain completely silent until Watcher leaves the camera."
+  manualWarning: "DO NOT SPEAK OR MAKE ANY SOUND."
   linkedHaunt: 0

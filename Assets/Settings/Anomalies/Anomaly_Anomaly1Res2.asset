@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Anomaly_Anomaly1Res2
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: anomaly1res2
-  displayName: Loudmouth
+  displayName: LOUD MOUTH
   observation: 9
   correctKeywords: []
   voiceResponse: 0
@@ -24,9 +24,17 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 30
   threatTimeoutSeconds: 0
-  manualImage: {fileID: 4839220238076348481, guid: c68f9c868c30e0b45886823c47adca15, type: 3}
-  manualDescription: 
+  manualImage: {fileID: 21300000, guid: 9207029030168af41a19357889d32986, type: 3}
+  manualDescription: "Produces high-intensity vocal emissions capable of causing fatal injury and severe equipment damage."
   howToSpot: Loud 8-bit music starts and keeps getting louder. Find which room it
     is in (the music swells there), then report 'loudmouth' and the room before it
     peaks - or it gets you.
+  manualCode: TL-04
+  manualBehavior: AGGRESSIVE
+  threatLevel: 4
+  threatLevelLabel: CRITICAL
+  manualResponse: "C.R.U. REQUIRED"
+  manualDetection: "AUDITORY"
+  manualProcedure: "Locate the source through monitored audio and report its position immediately."
+  manualWarning: "DO NOT ATTEMPT DIRECT INTERVENTION."
   linkedHaunt: 0

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Anomaly_DemonAnomaly
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
   anomalyId: demonanomaly
-  displayName: Demon
+  displayName: DEMON
   observation: 8
   correctKeywords: []
   voiceResponse: 2
@@ -25,8 +25,16 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9658ad65d85cfa74089500eb784e5769, type: 2}
   moveSpeed: 3
   threatTimeoutSeconds: 30
-  manualImage: {fileID: 0}
-  manualDescription: 
+  manualImage: {fileID: 21300000, guid: 458360817593e794b8456442cad3ec23, type: 3}
+  manualDescription: "A tall, narrow humanoid anomaly nearly identical to Watcher, distinguished by the complete absence of eyes. Upon detection, Demon will immediately rush toward the surveillance camera and remain directly in front of the lens. Highly sensitive to loud sounds transmitted through the observation system."
   howToSpot: You will know. The screen goes black and something screams - say "Demon"
     the moment the report opens. No time limit warnings, act fast.
+  manualCode: TL-04
+  manualBehavior: AGGRESSIVE
+  threatLevel: 4
+  threatLevelLabel: CRITICAL
+  manualResponse: "O.T.U. AUDIO DETERRENCE / C.R.U. REQUIRED"
+  manualDetection: "VISUAL — FACIAL IDENTIFICATION"
+  manualProcedure: "Use the microphone to report its name and location at high volume. Maintain audio input in the RED zone until the anomaly disappears. Notify the C.R.U. following successful deterrence."
+  manualWarning: "DO NOT REMAIN SILENT. MAINTAIN RED-LEVEL AUDIO."
   linkedHaunt: 0

@@ -65,9 +65,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "NIGHT SHIFT PROTOCOL\n1. Monitor all cameras.\n2. Report anomalies via
-    form.\n3. Do not leave the terminal.\n4. Do not answer if it speaks first.\n\u2014
-    Management"
+  m_text: "HOW TO REPORT\n\n1. Watch the cameras. Use the on-screen arrows to switch
+    rooms.\n2. See something wrong? hold SPACE and say what you saw + the room.\n3.
+    Press TAB to open the Field Manual.\n\nSurvive until 6:00 AM. \n\n\u2014 Management"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
   m_sharedMaterial: {fileID: 6933100262435591940, guid: 8676dcfef2b6e6f4b957ca1c505831df, type: 2}
@@ -1450,8 +1450,11 @@ MonoBehaviour:
   windowTitle: READ ME.txt - Notepad
   closeButton: {fileID: 7538791380759008452}
   bodyText: {fileID: 8830686979523388111}
-  content: "NIGHT SHIFT PROTOCOL\n1. Monitor all cameras.\n2. Report anomalies via
-    form.\n3. Do not leave the terminal.\n4. Do not answer if it speaks first.\n\u2014
+  content: "HOW TO PLAY\n\n1. Watch the cameras. Use the on-screen arrows to switch
+    rooms.\n2. See something wrong? Click it, or hold SPACE and say what you saw
+    + the room.\n3. Hider hides in the dark. Move your flashlight (mouse) over it
+    and keep it lit until it disappears.\n4. Watcher: stay completely silent until
+    it leaves.\n5. Press TAB to open the Field Manual.\n\nSurvive until 6:00 AM.\n\u2014
     Management"
   footerText: {fileID: 0}
   footerContent: 
