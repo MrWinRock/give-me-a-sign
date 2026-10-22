@@ -308,7 +308,18 @@ namespace GameLogic.SpawnAndTime
                 {
                     if (room != null && candidate.Room == room) { anchor = candidate; break; }
                 }
-                if (anchor == null) anchor = RoomRegistry.All[_rng.Next(RoomRegistry.Count)];
+                if (anchor == null)
+                {
+                    // Prefer a room the anomaly's definition allows (e.g. Blood -> Kitchen only).
+                    var def = prefab.GetComponentInChildren<Anomaly>(true)?.Definition;
+                    var allowed = new List<RoomAnchor>();
+                    foreach (var candidate in RoomRegistry.All)
+                        if (def == null || def.allowedRooms == null || def.allowedRooms.Length == 0
+                            || System.Array.IndexOf(def.allowedRooms, candidate.Room) >= 0)
+                            allowed.Add(candidate);
+                    anchor = allowed.Count > 0 ? allowed[_rng.Next(allowed.Count)]
+                                               : RoomRegistry.All[_rng.Next(RoomRegistry.Count)];
+                }
             }
 
             Spawn(new ScheduledSpawn
