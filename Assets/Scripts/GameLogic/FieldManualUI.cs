@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using GameLogic.Data;
 using GameLogic.Night;
 using GameLogic.Save;
@@ -48,6 +49,18 @@ namespace GameLogic
         [SerializeField] private TextMeshProUGUI spotBodyText;
         [SerializeField] private TextMeshProUGUI keywordsText;
 
+        [Header("Dossier")]
+        [Tooltip("howToSpot / REPORT AS / keywords block - shown for anomalies with no dossier data (and locked entries).")]
+        [SerializeField] private GameObject legacyRoot;
+        [SerializeField] private GameObject dossierRoot;
+        [SerializeField] private TextMeshProUGUI dossierCodeText;
+        [Tooltip("BEHAVIOR / THREAT LEVEL / RESPONSE / DETECTION as tab-aligned rich-text lines.")]
+        [SerializeField] private TextMeshProUGUI dossierTableText;
+        [SerializeField] private TextMeshProUGUI dossierDescriptionText;
+        [SerializeField] private TextMeshProUGUI dossierProcedureText;
+        [SerializeField] private GameObject dossierWarningRoot;
+        [SerializeField] private TextMeshProUGUI dossierWarningText;
+
         [Header("Status Bar (optional)")]
         [SerializeField] private bool showStatusBar;
         [SerializeField] private GameObject statusBarRoot;
@@ -59,9 +72,17 @@ namespace GameLogic
         private readonly List<FieldManualEntryButton> _rows = new List<FieldManualEntryButton>();
         private int _selectedIndex = -1; // remembered for the life of the session, not persisted to disk
 
+        private const string DarkRed = "#A00000";
+        private const float DossierTitleY = -17f;
+        private Vector2 _titleLegacyPos;
+        private Vector2 _frameLegacySize;
+
         protected override void Awake()
         {
             base.Awake();
+
+            if (detailTitleText != null) _titleLegacyPos = detailTitleText.rectTransform.anchoredPosition;
+            if (PreviewFrame != null) _frameLegacySize = PreviewFrame.sizeDelta;
 
             if (statusBarRoot != null)
                 statusBarRoot.SetActive(showStatusBar);
@@ -226,6 +247,92 @@ namespace GameLogic
 
             if (keywordsText != null)
                 keywordsText.text = locked ? "" : FormatKeywords(def, vocabulary);
+
+            bool dossier = !locked && HasDossier(def);
+            if (legacyRoot != null) legacyRoot.SetActive(!dossier);
+            if (dossierRoot != null) dossierRoot.SetActive(dossier);
+            LayoutDetail(dossier);
+            if (dossier) ShowDossier(def);
+        }
+
+        // The frame is the PreviewImage's parent; in dossier mode it runs the full height of the pane.
+        private RectTransform PreviewFrame => previewImage != null ? previewImage.transform.parent as RectTransform : null;
+
+        private void LayoutDetail(bool dossier)
+        {
+            if (detailTitleText != null)
+                detailTitleText.rectTransform.anchoredPosition = dossier ? new Vector2(_titleLegacyPos.x, DossierTitleY) : _titleLegacyPos;
+
+            var frame = PreviewFrame;
+            if (frame == null) return;
+
+            var panel = frame.parent as RectTransform;
+            float height = dossier && panel != null ? Mathf.Max(_frameLegacySize.y, panel.rect.height - 16f) : _frameLegacySize.y;
+            frame.sizeDelta = new Vector2(_frameLegacySize.x, height);
+        }
+
+        private static bool HasDossier(AnomalyDefinition def) =>
+            def.threatLevel > 0
+            || !string.IsNullOrWhiteSpace(def.manualCode)
+            || !string.IsNullOrWhiteSpace(def.manualBehavior)
+            || !string.IsNullOrWhiteSpace(def.threatLevelLabel)
+            || !string.IsNullOrWhiteSpace(def.manualResponse)
+            || !string.IsNullOrWhiteSpace(def.manualDetection)
+            || !string.IsNullOrWhiteSpace(def.manualProcedure)
+            || !string.IsNullOrWhiteSpace(def.manualWarning);
+
+        private void ShowDossier(AnomalyDefinition def)
+        {
+            if (dossierCodeText != null) dossierCodeText.text = def.manualCode;
+
+            string table = BuildTable(def);
+            if (dossierTableText != null)
+            {
+                dossierTableText.gameObject.SetActive(table.Length > 0);
+                dossierTableText.text = table;
+            }
+
+            SetSection(dossierDescriptionText, "DESCRIPTION", def.manualDescription);
+            SetSection(dossierProcedureText, "PROCEDURE", def.manualProcedure);
+
+            bool hasWarning = !string.IsNullOrWhiteSpace(def.manualWarning);
+            if (dossierWarningRoot != null) dossierWarningRoot.SetActive(hasWarning);
+            if (dossierWarningText != null) dossierWarningText.text = hasWarning ? def.manualWarning : "";
+        }
+
+        private static void SetSection(TextMeshProUGUI target, string header, string body)
+        {
+            if (target == null) return;
+
+            bool has = !string.IsNullOrWhiteSpace(body);
+            target.gameObject.SetActive(has);
+            if (has) target.text = $"<b>{header}</b>\n{body}";
+        }
+
+        private static string BuildTable(AnomalyDefinition def)
+        {
+            var sb = new StringBuilder();
+
+            if (!string.IsNullOrWhiteSpace(def.manualBehavior))
+                AddRow(sb, "BEHAVIOR", $"<b><color={DarkRed}>{def.manualBehavior}</color></b>");
+
+            if (def.threatLevel > 0 || !string.IsNullOrWhiteSpace(def.threatLevelLabel))
+            {
+                int level = Mathf.Clamp(def.threatLevel, 0, 5);
+                string head = string.IsNullOrWhiteSpace(def.threatLevelLabel) ? level.ToString() : $"{level} — {def.threatLevelLabel}";
+                AddRow(sb, "THREAT LEVEL", $"<b><color={DarkRed}>{head}</color></b>");
+            }
+
+            if (!string.IsNullOrWhiteSpace(def.manualResponse)) AddRow(sb, "RESPONSE", def.manualResponse);
+            if (!string.IsNullOrWhiteSpace(def.manualDetection)) AddRow(sb, "DETECTION", def.manualDetection);
+
+            return sb.ToString();
+        }
+
+        private static void AddRow(StringBuilder sb, string label, string value)
+        {
+            if (sb.Length > 0) sb.Append('\n');
+            sb.Append("<b>").Append(label).Append("</b><pos=80>").Append(value);
         }
 
         // Single source of truth: the same words Incident Report validation accepts

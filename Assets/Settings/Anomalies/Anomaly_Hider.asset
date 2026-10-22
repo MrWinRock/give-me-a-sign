@@ -24,9 +24,17 @@ MonoBehaviour:
   allowedRooms: []
   moveSpeed: 3
   threatTimeoutSeconds: 0
-  manualImage: {fileID: -4580158403072897189, guid: e221f4843d40a5e46b5cd8464c82fb73, type: 3}
-  manualDescription: 
+  manualImage: {fileID: 21300000, guid: 63ace8c9000919c41929193315994baf, type: 3}
+  manualDescription: Tall, thin humanoid anomaly with elongated legs, V-shaped shoulder extensions, and a single large eye floating above its body. Conceals itself in dark areas and advances toward the observation room whenever direct observation is interrupted.
   howToSpot: 'A dark, featureless shape clinging to a wall where the shadows shouldn''t
     be that solid. It cannot be reported: hold the mouse pointer on it until it fades
     away. Look away and it comes back.'
+  manualCode: TL-03
+  manualBehavior: HOSTILE
+  threatLevel: 3
+  threatLevelLabel: SEVERE
+  manualResponse: O.T.U. AUTHORIZED
+  manualDetection: "VISUAL — LOW-LIGHT"
+  manualProcedure: Search dark corners using the camera flashlight. Look for the floating eye. Maintain direct illumination until the anomaly disappears.
+  manualWarning: DO NOT LOOK AWAY BEFORE NEUTRALIZATION.
   linkedHaunt: 0

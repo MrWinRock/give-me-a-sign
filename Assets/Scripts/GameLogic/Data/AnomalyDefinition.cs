@@ -61,6 +61,15 @@ namespace GameLogic.Data
         public Sprite manualImage;
         [TextArea(3, 8)] public string manualDescription;
         [TextArea(2, 4)] public string howToSpot;
+        [Tooltip("Dossier fields below: leave them all empty and the Field Manual falls back to howToSpot + REPORT AS.")]
+        public string manualCode;
+        public string manualBehavior;
+        [Range(0, 5)] public int threatLevel;
+        public string threatLevelLabel;
+        public string manualResponse;
+        public string manualDetection;
+        [TextArea(2, 5)] public string manualProcedure;
+        public string manualWarning;
 
         [Header("Links")]
         [Tooltip("Sprint 4 - not read by anything yet.")]
