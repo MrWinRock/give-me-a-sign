@@ -28,7 +28,7 @@ MonoBehaviour:
   threatTimeoutSeconds: 0
   manualImage: {fileID: 0}
   manualDescription: 
-  howToSpot: Blood has appeared across the kitchen. Report it as unidentified, kitchen.
+  howToSpot: Blood has appeared across the kitchen. Report it as paranormal, kitchen.
   manualCode: 
   manualBehavior: 
   threatLevel: 0

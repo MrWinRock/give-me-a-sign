@@ -194,14 +194,14 @@ MonoBehaviour:
     - loudmouths
     - loud
   - type: 10
-    label: Unidentified
+    label: Paranormal
     phrases:
-    - unidentified
+    - paranormal
     mishearings:
-    - un identified
-    - unidentify
-    - unidentifed
-    - on identified
-    - unidentifying
-    - unidentity
-    - identified
+    - para normal
+    - paranormals
+    - pair normal
+    - parra normal
+    - paranormel
+    - paranormale
+    - perinormal

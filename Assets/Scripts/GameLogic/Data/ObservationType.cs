@@ -16,6 +16,6 @@ namespace GameLogic.Data
         Picture,
         Demon,
         Loudmouth,
-        Unidentified,
+        Paranormal,
     }
 }

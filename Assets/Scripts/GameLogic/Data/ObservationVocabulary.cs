@@ -255,7 +255,7 @@ namespace GameLogic.Data
             new[] { "pigture", "pitcher", "picher", "pikchur", "pick sure", "pictures", "pickture" },
             new[] { "daemon", "deamon", "deemon", "diamond", "damon", "demons", "lemon" },
             new[] { "loud mouth", "loud mouse", "loudmouse", "lowdmouth", "laudmouth", "louder mouth", "loud month", "loudmouths", "loud" },
-            new[] { "un identified", "unidentify", "unidentifed", "on identified", "unidentifying", "unidentity", "identified" },
+            new[] { "para normal", "paranormals", "pair normal", "parra normal", "paranormel", "paranormale", "perinormal" },
         };
 
         [ContextMenu("Reset To Defaults")]
@@ -273,7 +273,7 @@ namespace GameLogic.Data
             new Entry { type = ObservationType.Picture, label = "Picture", phrases = new[] { "picture" }, mishearings = DefaultMishearings[7] },
             new Entry { type = ObservationType.Demon, label = "Demon", phrases = new[] { "demon" }, mishearings = DefaultMishearings[8] },
             new Entry { type = ObservationType.Loudmouth, label = "Loudmouth", phrases = new[] { "loudmouth" }, mishearings = DefaultMishearings[9] },
-            new Entry { type = ObservationType.Unidentified, label = "Unidentified", phrases = new[] { "unidentified" }, mishearings = DefaultMishearings[10] },
+            new Entry { type = ObservationType.Paranormal, label = "Paranormal", phrases = new[] { "paranormal" }, mishearings = DefaultMishearings[10] },
         };
     }
 }

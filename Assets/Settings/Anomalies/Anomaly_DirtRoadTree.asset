@@ -27,7 +27,7 @@ MonoBehaviour:
   threatTimeoutSeconds: 0
   manualImage: {fileID: 0}
   manualDescription: 
-  howToSpot: The tree on the dirt road has vanished. Report it as unidentified, dirt road.
+  howToSpot: The tree on the dirt road has vanished. Report it as paranormal, dirt road.
   manualCode: 
   manualBehavior: 
   threatLevel: 0
