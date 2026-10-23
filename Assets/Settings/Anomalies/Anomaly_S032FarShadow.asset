@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e48cabf329ab0b4d9016ca366178ff6, type: 3}
+  m_Name: Anomaly_S032FarShadow
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
+  anomalyId: shadow_s032farshadow
+  displayName: Far Shadow
+  observation: 1
+  correctKeywords: []
+  voiceResponse: 0
+  prefab: {fileID: 111247843505507398, guid: 3225acbd4e83404ca878e4659e976f16, type: 3}
+  respondType: 0
+  threatCost: 1
+  minNightIndex: 1
+  allowedRooms:
+  - {fileID: 11400000, guid: 631db6f8dc8d4533b2e1fb0578f635ab, type: 2}
+  moveSpeed: 3
+  threatTimeoutSeconds: 0
+  manualImage: {fileID: 0}
+  manualDescription: 
+  howToSpot: A shadow stands far off. Report it as shadow, dirt road.
+  manualCode: 
+  manualBehavior: 
+  threatLevel: 0
+  threatLevelLabel: 
+  manualResponse: 
+  manualDetection: 
+  manualProcedure: 
+  manualWarning: 
+  linkedHaunt: 0

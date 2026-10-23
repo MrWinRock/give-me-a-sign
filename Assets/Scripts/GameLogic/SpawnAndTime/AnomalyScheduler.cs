@@ -284,12 +284,27 @@ namespace GameLogic.SpawnAndTime
                 return;
             }
 
+            // Background-swap anomalies share one picture per room: never two live at once in the same room.
+            if (item.room != null && item.prefab.GetComponentInChildren<ReplaceRoomBackground>(true) != null)
+            {
+                foreach (var live in _spawned)
+                {
+                    if (live == null || !live.activeInHierarchy || live.GetComponentInChildren<ReplaceRoomBackground>(true) == null) continue;
+                    var liveAnomaly = live.GetComponentInChildren<Anomaly>(true);
+                    if (liveAnomaly != null && liveAnomaly.AssignedRoom == item.room)
+                    {
+                        Debug.LogWarning($"AnomalyScheduler: '{item.label}' skipped - another background swap is already live in '{item.room.Label}'.", this);
+                        return;
+                    }
+                }
+            }
+
             // Pick the point NOW so occupancy is current. Rooms with designated points never
             // spawn anywhere else: no free point of the right kind = no spawn.
             if (item.room != null)
             {
                 var roomAnchor = RoomRegistry.Get(item.room);
-                if (roomAnchor != null && roomAnchor.SpawnPointCount > 0)
+                if (roomAnchor != null && roomAnchor.SpawnPointCount > 0 && item.prefab.GetComponent<AttachToRoomOverlay>() == null)
                 {
                     item.point = roomAnchor.GetSpawnPoint(_rng, DefinitionOf(item.prefab), IsPointFree);
                     if (item.point == null)

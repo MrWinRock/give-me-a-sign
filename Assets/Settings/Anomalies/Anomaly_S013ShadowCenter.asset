@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e48cabf329ab0b4d9016ca366178ff6, type: 3}
+  m_Name: Anomaly_S013ShadowCenter
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
+  anomalyId: shadow_s013shadowcenter
+  displayName: Shadow Center
+  observation: 1
+  correctKeywords: []
+  voiceResponse: 0
+  prefab: {fileID: 111247843505507398, guid: 2389d4341b79459197de3eeaf663183d, type: 3}
+  respondType: 0
+  threatCost: 1
+  minNightIndex: 1
+  allowedRooms:
+  - {fileID: 11400000, guid: 4133d9c27c8047969f422571c4881f51, type: 2}
+  moveSpeed: 3
+  threatTimeoutSeconds: 0
+  manualImage: {fileID: 0}
+  manualDescription: 
+  howToSpot: Shadow Center is visible. Report it as shadow, courtyard.
+  manualCode: 
+  manualBehavior: 
+  threatLevel: 0
+  threatLevelLabel: 
+  manualResponse: 
+  manualDetection: 
+  manualProcedure: 
+  manualWarning: 
+  linkedHaunt: 0

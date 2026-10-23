@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e48cabf329ab0b4d9016ca366178ff6, type: 3}
+  m_Name: Anomaly_ManStanding
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
+  anomalyId: shadow_manstanding
+  displayName: Standing Man
+  observation: 1
+  correctKeywords: []
+  voiceResponse: 0
+  prefab: {fileID: 111247843505507398, guid: da261cb8267c49ba97e68ff81b0f67ac, type: 3}
+  respondType: 0
+  threatCost: 1
+  minNightIndex: 1
+  allowedRooms:
+  - {fileID: 11400000, guid: 75a5dd14acda40e39ca28183205e22b2, type: 2}
+  moveSpeed: 3
+  threatTimeoutSeconds: 0
+  manualImage: {fileID: 0}
+  manualDescription: 
+  howToSpot: A man is standing in the room. Report it as shadow, drainage.
+  manualCode: 
+  manualBehavior: 
+  threatLevel: 0
+  threatLevelLabel: 
+  manualResponse: 
+  manualDetection: 
+  manualProcedure: 
+  manualWarning: 
+  linkedHaunt: 0

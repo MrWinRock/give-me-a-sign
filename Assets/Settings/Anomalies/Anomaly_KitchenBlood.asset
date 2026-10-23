@@ -15,13 +15,12 @@ MonoBehaviour:
   anomalyId: unidentified_kitchen_blood
   displayName: Blood
   observation: 10
-  correctKeywords:
-  - Blood
+  correctKeywords: []
   voiceResponse: 0
   prefab: {fileID: 111247843505507398, guid: 842497ab47de674468e673abe65b04ec, type: 3}
   respondType: 0
   threatCost: 1
-  minNightIndex: 5
+  minNightIndex: 1
   allowedRooms:
   - {fileID: 11400000, guid: 86648210943f43c5924d4f85848fa186, type: 2}
   moveSpeed: 3

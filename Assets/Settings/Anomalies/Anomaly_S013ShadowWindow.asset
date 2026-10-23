@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e48cabf329ab0b4d9016ca366178ff6, type: 3}
+  m_Name: Anomaly_S013ShadowWindow
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
+  anomalyId: shadow_s013shadowwindow
+  displayName: Shadow at Window
+  observation: 1
+  correctKeywords: []
+  voiceResponse: 0
+  prefab: {fileID: 111247843505507398, guid: 750058f7ffef4cb981e4f5b12695561c, type: 3}
+  respondType: 0
+  threatCost: 1
+  minNightIndex: 1
+  allowedRooms:
+  - {fileID: 11400000, guid: b33d7b7150ba4874bafb17963d558630, type: 2}
+  moveSpeed: 3
+  threatTimeoutSeconds: 0
+  manualImage: {fileID: 0}
+  manualDescription: 
+  howToSpot: Shadow at Window is visible. Report it as shadow, entrance.
+  manualCode: 
+  manualBehavior: 
+  threatLevel: 0
+  threatLevelLabel: 
+  manualResponse: 
+  manualDetection: 
+  manualProcedure: 
+  manualWarning: 
+  linkedHaunt: 0

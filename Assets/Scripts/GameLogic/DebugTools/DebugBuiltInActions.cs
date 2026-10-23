@@ -139,6 +139,13 @@ namespace GameLogic.DebugTools
 
         // ── Spawn anomaly ────────────────────────────────────────────────────────────────
 
+        private static string SectorOf(RoomDefinition room)
+        {
+            if (room == null || string.IsNullOrEmpty(room.roomId)) return null;
+            int i = room.roomId.IndexOf('_');
+            return i > 0 ? room.roomId.Substring(0, i).ToUpperInvariant() : null;
+        }
+
         private static void AddSpawn(List<DebugEntry> list, Action<string> info)
         {
             var library = NightContentLibrary.Load();
@@ -150,20 +157,57 @@ namespace GameLogic.DebugTools
 
                 var captured = def;
                 string voice = captured.voiceResponse == VoiceResponse.None ? "" : $"  [{captured.voiceResponse}]";
+                // A kind locked to one room belongs to that room's Sector (roomId "s032_cam02" -> "S032").
+                var lockedRoom = captured.allowedRooms != null && captured.allowedRooms.Length == 1 ? captured.allowedRooms[0] : null;
+                string sector = SectorOf(lockedRoom);
+                string entryGroup = sector != null ? $"Spawn {sector}  (its own room)" : SpawnGroup;
+                string roomTag = lockedRoom != null ? lockedRoom.Label + ": " : "";
                 list.Add(new DebugEntry
                 {
-                    group = SpawnGroup,
-                    label = $"Spawn: {captured.Label}{voice}",
+                    group = entryGroup,
+                    label = $"Spawn: {roomTag}{captured.Label}{voice}",
                     run = () =>
                     {
                         var scheduler = AnomalyScheduler.Instance;
                         if (scheduler == null) { info("No AnomalyScheduler in this scene (open GamePlay)."); return; }
 
-                        var go = scheduler.SpawnNow(captured.prefab);
+                        var go = scheduler.SpawnNow(captured.prefab, lockedRoom);
                         var anomaly = go != null ? go.GetComponentInChildren<Anomaly>(true) : null;
                         string room = anomaly != null && anomaly.AssignedRoom != null ? anomaly.AssignedRoom.Label : "?";
                         info($"Spawned {captured.Label} in {room}. Report it: " + ObservationVocabulary.Load().LabelFor(captured.observation) +
                              (captured.voiceResponse == VoiceResponse.None ? "" : $"  (needs: {captured.voiceResponse})"));
+                    },
+                });
+            }
+
+            var sectors = new List<string>();
+            foreach (var def in library.anomalies)
+            {
+                if (def == null || def.prefab == null || def.allowedRooms == null || def.allowedRooms.Length != 1) continue;
+                string s = SectorOf(def.allowedRooms[0]);
+                if (s != null && !sectors.Contains(s)) sectors.Add(s);
+            }
+            sectors.Sort();
+            foreach (var sector in sectors)
+            {
+                string capturedSector = sector;
+                list.Add(new DebugEntry
+                {
+                    group = $"Spawn {capturedSector}  (its own room)",
+                    label = $">> Spawn ALL of {capturedSector} (background swaps: one per room)",
+                    run = () =>
+                    {
+                        var scheduler = AnomalyScheduler.Instance;
+                        if (scheduler == null) { info("No AnomalyScheduler in this scene."); return; }
+                        int made = 0, tried = 0;
+                        foreach (var def in library.anomalies)
+                        {
+                            if (def == null || def.prefab == null || def.allowedRooms == null || def.allowedRooms.Length != 1) continue;
+                            if (SectorOf(def.allowedRooms[0]) != capturedSector) continue;
+                            tried++;
+                            if (scheduler.SpawnNow(def.prefab, def.allowedRooms[0]) != null) made++;
+                        }
+                        info($"{capturedSector}: spawned {made} of {tried} (skipped ones had no free point or a background swap already live).");
                     },
                 });
             }

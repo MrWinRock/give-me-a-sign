@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e48cabf329ab0b4d9016ca366178ff6, type: 3}
+  m_Name: Anomaly_S013ShadowHead2
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.AnomalyDefinition
+  anomalyId: shadow_s013shadowhead2
+  displayName: Shadow Head
+  observation: 1
+  correctKeywords: []
+  voiceResponse: 0
+  prefab: {fileID: 111247843505507398, guid: d9dda256a4a0474285bc8eb3214cbf7a, type: 3}
+  respondType: 0
+  threatCost: 1
+  minNightIndex: 1
+  allowedRooms:
+  - {fileID: 11400000, guid: 9f8b3df223e0445db58ed1e5f46f27c6, type: 2}
+  moveSpeed: 3
+  threatTimeoutSeconds: 0
+  manualImage: {fileID: 0}
+  manualDescription: 
+  howToSpot: Shadow Head is visible. Report it as shadow, main hall.
+  manualCode: 
+  manualBehavior: 
+  threatLevel: 0
+  threatLevelLabel: 
+  manualResponse: 
+  manualDetection: 
+  manualProcedure: 
+  manualWarning: 
+  linkedHaunt: 0
