@@ -40,8 +40,9 @@ namespace MainMenu
         [SerializeField] private GameObject readingPaneRoot;
         [SerializeField] private TextMeshProUGUI subjectText;
         [SerializeField] private TextMeshProUGUI senderText;
-        [SerializeField] private TextMeshProUGUI dateText;
         [SerializeField] private TextMeshProUGUI bodyText;
+        [Tooltip("Scroll view around the body text + attachment; reset to the top for every opened document.")]
+        [SerializeField] private ScrollRect bodyScroll;
         [SerializeField] private Image attachmentImage;
         [SerializeField] private GameObject attachmentRoot;
         [Tooltip("Shown in the reading pane before any document is selected.")]
@@ -113,7 +114,7 @@ namespace MainMenu
 
                 var rowLabel = row.GetComponentInChildren<TextMeshProUGUI>(true);
                 if (rowLabel != null)
-                    rowLabel.text = $"{mail.subject} — {mail.sender}";
+                    rowLabel.text = mail.subject;
 
                 var rowButton = row.GetComponent<Button>();
                 if (rowButton != null)
@@ -157,12 +158,18 @@ namespace MainMenu
 
             if (subjectText != null) subjectText.text = mail.subject;
             if (senderText != null) senderText.text = mail.sender;
-            if (dateText != null) dateText.text = mail.DateLabel;
             if (bodyText != null) bodyText.text = mail.body;
 
             bool hasAttachment = mail.attachment != null;
             if (attachmentRoot != null) attachmentRoot.SetActive(hasAttachment);
             if (attachmentImage != null) attachmentImage.sprite = mail.attachment;
+
+            if (bodyScroll != null)
+            {
+                if (bodyScroll.content != null)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(bodyScroll.content);
+                bodyScroll.verticalNormalizedPosition = 1f;
+            }
         }
 
         private void RefreshRowVisuals(SaveData save)

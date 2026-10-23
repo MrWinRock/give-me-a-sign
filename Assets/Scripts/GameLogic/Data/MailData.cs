@@ -25,17 +25,12 @@ namespace GameLogic.Data
         [Header("Header")]
         [GG.Required] public string sender = "";
         [GG.Required] public string subject = "";
-        [Tooltip("Shown next to the sender. Leave empty to auto-fill as 'Night {unlockDay}'.")]
-        public string dateLabel = "";
 
         [Header("Body")]
         [TextArea(4, 20)] public string body = "";
 
         [Tooltip("Optional scanned image shown as an attachment in the reading pane.")]
         public Sprite attachment;
-
-        /// <summary>dateLabel, falling back to a generated "Night N" so the header is never blank.</summary>
-        public string DateLabel => string.IsNullOrWhiteSpace(dateLabel) ? $"Night {unlockDay}" : dateLabel;
 
         /// <summary>False when the asset is missing the data it needs to display.</summary>
         public bool IsPlayable() =>

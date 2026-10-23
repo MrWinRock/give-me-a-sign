@@ -92,7 +92,7 @@ namespace GameLogic.Flow
         /// <summary>What Debug Skip Night does with today's documents.</summary>
         public enum DebugSkipMailMode
         {
-            /// <summary>Force-collect every MailPickup scheduled for today.</summary>
+            /// <summary>Force-collect every MailPickup scheduled for today, and grant all of today's MailData (editor only).</summary>
             Collect,
             /// <summary>Don't touch mail at all.</summary>
             Leave
@@ -715,12 +715,32 @@ namespace GameLogic.Flow
                           $"(score={debugSkipScore}, mail={debugSkipMail}, dayEnd={debugSkipDayEndEvent}).", this);
         }
 
-        /// <summary>Force-collects every MailPickup scheduled for today, wherever it sits in the scene.</summary>
+        /// <summary>Force-collects today's MailPickups, and (editor only) grants today's MailData even with no pickup in the scene.</summary>
         private void DebugCollectTodaysMail()
         {
             var pickups = FindObjectsByType<MailPickup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var pickup in pickups)
                 pickup.ForceCollect();
+
+#if UNITY_EDITOR
+            int granted = 0;
+            var save = SaveManager.Current;
+            foreach (var guid in UnityEditor.AssetDatabase.FindAssets("t:MailData"))
+            {
+                var mail = UnityEditor.AssetDatabase.LoadAssetAtPath<MailData>(
+                    UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+                if (mail == null || !mail.IsScheduledForDay(CurrentDay) || !mail.IsPlayable()) continue;
+                if (save.IsMailFound(mail.emailId)) continue;
+
+                save.MarkMailFound(mail.emailId);
+                granted++;
+            }
+
+            SaveManager.Save();
+
+            if (showDebugInfo)
+                Debug.Log($"GameFlowManager: debug-granted {granted} document(s) for day {CurrentDay}.", this);
+#endif
         }
     }
 }

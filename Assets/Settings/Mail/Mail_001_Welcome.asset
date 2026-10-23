@@ -16,7 +16,6 @@ MonoBehaviour:
   unlockDay: 1
   sender: HR - Threshold Security Co.
   subject: Welcome to your first shift
-  dateLabel:
   body: "To the new security guard,\n\nWelcome to the mansion. Tonight is your first
     shift.\n\nYour main duty is to watch every camera closely from midnight until
     6 AM. If you notice anything unusual - a shadow that moves, an object that has
