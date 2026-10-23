@@ -413,6 +413,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1361649083514336729}
   - component: {fileID: 4701373651295230482}
+  - component: {fileID: 9100000000004002}
   m_Layer: 0
   m_Name: LoudMouthAnomaly
   m_TagString: Untagged
@@ -581,6 +582,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!210 &9100000000004002
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6530810648022567755}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_SortingLayerID: 363268365
+  m_SortingLayer: 6
+  m_SortingOrder: 1
+  m_SortAtRoot: 0
 --- !u!1001 &2512988438360924059
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -591,15 +605,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 546de026a400f7248a5d8d7a7032bc7d, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.34693113
+      value: 0.05999999
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 546de026a400f7248a5d8d7a7032bc7d, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.3469312
+      value: 0.05999999
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 546de026a400f7248a5d8d7a7032bc7d, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.34693113
+      value: 0.05999999
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 546de026a400f7248a5d8d7a7032bc7d, type: 3}
       propertyPath: m_LocalPosition.x

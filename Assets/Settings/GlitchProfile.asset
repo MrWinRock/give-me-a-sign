@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26bd78487e346174c8f7870510e49d0d, type: 3}
   m_Name: GlitchProfile
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Night.GlitchProfile
-  weights: []
+  weights:
+  - type: 0
+    weight: 0
   intensity: 1
   maxFireDelay: 0.6

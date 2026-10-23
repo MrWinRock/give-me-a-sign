@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 386444599788968149}
   - component: {fileID: 4714833298111795383}
   - component: {fileID: 8357605948139765405}
+  - component: {fileID: 9100000000003001}
+  - component: {fileID: 9100000000004001}
   m_Layer: 10
   m_Name: HiderAnomaly
   m_TagString: Anomaly
@@ -373,6 +375,31 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &9100000000003001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593009758373546416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc41b8d7615d421fbb6a18a826b5b136, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLogic.KeepPrefabRotation
+--- !u!210 &9100000000004001
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593009758373546416}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_SortingLayerID: 142054089
+  m_SortingLayer: 5
+  m_SortingOrder: 1
+  m_SortAtRoot: 0
 --- !u!1001 &8624444161701134358
 PrefabInstance:
   m_ObjectHideFlags: 0

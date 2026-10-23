@@ -200,7 +200,7 @@ namespace GameLogic.SpawnAndTime
                 {
                     atMinute = placement.atMinute,
                     prefab = placement.definition.prefab,
-                    point = anchor != null ? anchor.GetSpawnPoint(_rng) : null,
+                    point = anchor != null ? anchor.GetSpawnPoint(_rng, placement.definition) : null,
                     room = placement.room,
                     label = $"{placement.definition.Label} in {placement.room?.Label ?? "(no room)"}",
                 });
@@ -263,10 +263,45 @@ namespace GameLogic.SpawnAndTime
             }
         }
 
+        private readonly Dictionary<GameObject, Transform> _slots = new Dictionary<GameObject, Transform>();
+
+        private bool IsPointFree(Transform point)
+        {
+            foreach (var kv in _slots)
+                if (kv.Value == point && kv.Key != null && kv.Key.activeInHierarchy) return false;
+            return true;
+        }
+
         private void Spawn(ScheduledSpawn item)
         {
+            // Hard rule: a kind restricted to certain rooms never spawns anywhere else,
+            // whichever path asked for it (plan, debug, penalty).
+            var spawnDef = DefinitionOf(item.prefab);
+            if (spawnDef != null && spawnDef.allowedRooms != null && spawnDef.allowedRooms.Length > 0
+                && (item.room == null || System.Array.IndexOf(spawnDef.allowedRooms, item.room) < 0))
+            {
+                Debug.LogWarning($"AnomalyScheduler: '{item.label}' is not allowed in room '{item.room?.Label ?? "(none)"}' - skipped.", this);
+                return;
+            }
+
+            // Pick the point NOW so occupancy is current. Rooms with designated points never
+            // spawn anywhere else: no free point of the right kind = no spawn.
+            if (item.room != null)
+            {
+                var roomAnchor = RoomRegistry.Get(item.room);
+                if (roomAnchor != null && roomAnchor.SpawnPointCount > 0)
+                {
+                    item.point = roomAnchor.GetSpawnPoint(_rng, DefinitionOf(item.prefab), IsPointFree);
+                    if (item.point == null)
+                    {
+                        Debug.LogWarning($"AnomalyScheduler: no free spawn point in '{item.room.Label}' for '{item.label}' - skipped.", this);
+                        return;
+                    }
+                }
+            }
             GameObject instance = item.point != null
-                ? Instantiate(item.prefab, item.point.position, item.point.rotation)
+                ? Instantiate(item.prefab, item.point.position,
+                    item.prefab.GetComponent<KeepPrefabRotation>() != null ? item.point.rotation * item.prefab.transform.rotation : item.point.rotation)
                 : Instantiate(item.prefab); // keeps the position saved inside the prefab
 
             if (anomalyParent != null)
@@ -286,6 +321,7 @@ namespace GameLogic.SpawnAndTime
             // keeps the player's volume sliders in control of them too.
             Audio.AudioManager.RegisterHierarchy(instance);
 
+            if (item.point != null) _slots[instance] = item.point;
             _spawned.Add(instance);
             OnAnomalySpawned?.Invoke(instance);
 
@@ -322,16 +358,17 @@ namespace GameLogic.SpawnAndTime
                 }
             }
 
+            int before = _spawned.Count;
             Spawn(new ScheduledSpawn
             {
                 atMinute = -1f,
                 prefab = prefab,
-                point = anchor != null ? anchor.GetSpawnPoint(_rng) : null,
+                point = anchor != null ? anchor.GetSpawnPoint(_rng, DefinitionOf(prefab)) : null,
                 room = anchor != null ? anchor.Room : null,
                 label = $"DEBUG: {prefab.name} in {(anchor != null ? anchor.Room.Label : "(no room)")}",
             });
 
-            return _spawned[_spawned.Count - 1];
+            return _spawned.Count > before ? _spawned[_spawned.Count - 1] : null;
         }
 
         public int SpawnPenaltyAnomalies()
@@ -351,6 +388,9 @@ namespace GameLogic.SpawnAndTime
 
             return spawned;
         }
+
+        private static AnomalyDefinition DefinitionOf(GameObject prefab)
+            => prefab != null ? prefab.GetComponentInChildren<Anomaly>(true)?.Definition : null;
 
         public GameObject SpawnPenaltyAnomaly()
         {
@@ -374,17 +414,18 @@ namespace GameLogic.SpawnAndTime
             {
                 atMinute = -1f,
                 prefab = prefab,
-                point = anchor != null ? anchor.GetSpawnPoint(_rng) : null,
+                point = anchor != null ? anchor.GetSpawnPoint(_rng, DefinitionOf(prefab)) : null,
                 room = anchor != null ? anchor.Room : null,
                 label = $"PENALTY: {prefab.name} in {(anchor != null ? anchor.Room.Label : "(no room)")}",
             };
 
+            int before = _spawned.Count;
             Spawn(spawn);
 
             if (showDebugInfo)
                 Debug.Log($"AnomalyScheduler: spawned penalty anomaly '{spawn.label}'.", this);
 
-            return _spawned[_spawned.Count - 1];
+            return _spawned.Count > before ? _spawned[_spawned.Count - 1] : null;
         }
 
         private void BuildPenaltyPool()

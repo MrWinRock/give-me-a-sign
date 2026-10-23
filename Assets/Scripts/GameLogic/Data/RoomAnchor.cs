@@ -17,19 +17,25 @@ namespace GameLogic.Data
         public RoomDefinition Room => room;
         public int SpawnPointCount => spawnPoints != null ? spawnPoints.Length : 0;
 
-        public Transform GetSpawnPoint(System.Random rng)
+        public Transform GetSpawnPoint(System.Random rng, AnomalyDefinition definition = null, System.Func<Transform, bool> isFree = null)
         {
             if (spawnPoints == null || spawnPoints.Length == 0) return transform;
 
-            // Skip empty slots left behind by editing the list in the Inspector.
+            // Skip empty slots and points reserved for other anomaly kinds (SpawnPointFilter).
             int start = rng != null ? rng.Next(spawnPoints.Length) : 0;
             for (int i = 0; i < spawnPoints.Length; i++)
             {
                 var candidate = spawnPoints[(start + i) % spawnPoints.Length];
-                if (candidate != null) return candidate;
+                if (candidate == null) continue;
+                var filter = candidate.GetComponent<SpawnPointFilter>();
+                if (filter != null && !filter.Allows(definition)) continue;
+                if (isFree != null && !isFree(candidate)) continue;
+                return candidate;
             }
 
-            return transform;
+            // Points exist but none is usable (wrong kind or already occupied): spawn nothing.
+            // Never fall back to the anchor position - only designated points are allowed.
+            return null;
         }
 
         void OnEnable()

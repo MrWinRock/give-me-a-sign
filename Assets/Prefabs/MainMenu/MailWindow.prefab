@@ -179,6 +179,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a9d26281f54443daed7639d414f162e, type: 2}
   - {fileID: 11400000, guid: 24b33572adbd4222a39bbebec9465ac0, type: 2}
   - {fileID: 11400000, guid: 7b118d073ca242a79bd8666220d6235e, type: 2}
+  - {fileID: 11400000, guid: 4a78c2249f3e404d8ff765d6089a39ae, type: 2}
   rowContainer: {fileID: 9100000000000040}
   rowTemplate: {fileID: 9100000000000046}
   emptyInboxLabel: {fileID: 9100000000000056}
