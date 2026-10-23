@@ -15,7 +15,8 @@ MonoBehaviour:
   anomalyId: unidentified_kitchen_blood
   displayName: Blood
   observation: 10
-  correctKeywords: []
+  correctKeywords:
+  - Blood
   voiceResponse: 0
   prefab: {fileID: 111247843505507398, guid: 842497ab47de674468e673abe65b04ec, type: 3}
   respondType: 0
@@ -28,4 +29,12 @@ MonoBehaviour:
   manualImage: {fileID: 0}
   manualDescription: 
   howToSpot: Blood has appeared across the kitchen. Report it as unidentified, kitchen.
+  manualCode: 
+  manualBehavior: 
+  threatLevel: 0
+  threatLevelLabel: 
+  manualResponse: 
+  manualDetection: 
+  manualProcedure: 
+  manualWarning: 
   linkedHaunt: 0

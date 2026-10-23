@@ -1,0 +1,1287 @@
+fileFormatVersion: 2
+guid: e9c1056cfe63e1d4cb28cb382f5259d4
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 54327963276799697
+    second: EyesParanormal_0
+  - first:
+      213: -8742562159279623418
+    second: EyesParanormal_1
+  - first:
+      213: -2656398357250752013
+    second: EyesParanormal_2
+  - first:
+      213: -6926980749737130248
+    second: EyesParanormal_3
+  - first:
+      213: -9206220476515428434
+    second: EyesParanormal_4
+  - first:
+      213: -1363653576011000093
+    second: EyesParanormal_5
+  - first:
+      213: 697065585540182675
+    second: EyesParanormal_6
+  - first:
+      213: -3668595305277583133
+    second: EyesParanormal_7
+  - first:
+      213: -7905150678085462731
+    second: EyesParanormal_8
+  - first:
+      213: -8780522802920213676
+    second: EyesParanormal_9
+  - first:
+      213: -4109718969745057327
+    second: EyesParanormal_10
+  - first:
+      213: -8980626440614107205
+    second: EyesParanormal_11
+  - first:
+      213: -2634548354226772717
+    second: EyesParanormal_12
+  - first:
+      213: 3892124856409598559
+    second: EyesParanormal_13
+  - first:
+      213: -5098851783309292470
+    second: EyesParanormal_14
+  - first:
+      213: 8865577432067540368
+    second: EyesParanormal_15
+  - first:
+      213: 9125122896544785494
+    second: EyesParanormal_16
+  - first:
+      213: -7768255781000892553
+    second: EyesParanormal_17
+  - first:
+      213: -7221716538467394184
+    second: EyesParanormal_18
+  - first:
+      213: 3496961725249127750
+    second: EyesParanormal_19
+  - first:
+      213: 8036994557923591252
+    second: EyesParanormal_20
+  - first:
+      213: 1024281823592156321
+    second: EyesParanormal_21
+  - first:
+      213: -2678076193484303308
+    second: EyesParanormal_22
+  - first:
+      213: -6862783228608560232
+    second: EyesParanormal_23
+  - first:
+      213: 4258884118902923141
+    second: EyesParanormal_24
+  - first:
+      213: -4995126307340512766
+    second: EyesParanormal_25
+  - first:
+      213: -4586435291834309795
+    second: EyesParanormal_26
+  - first:
+      213: -8424824977362261802
+    second: EyesParanormal_27
+  - first:
+      213: 2726412308011399216
+    second: EyesParanormal_28
+  - first:
+      213: 3482691350467332531
+    second: EyesParanormal_29
+  - first:
+      213: 4157156505927589414
+    second: EyesParanormal_30
+  - first:
+      213: -7742556349562905750
+    second: EyesParanormal_31
+  - first:
+      213: 2311854297372854022
+    second: EyesParanormal_32
+  - first:
+      213: -299077919167141200
+    second: EyesParanormal_33
+  - first:
+      213: -3417510257461043315
+    second: EyesParanormal_34
+  - first:
+      213: 3979441824672633152
+    second: EyesParanormal_35
+  - first:
+      213: 7265477303568471158
+    second: EyesParanormal_36
+  - first:
+      213: 1782228339423706955
+    second: EyesParanormal_37
+  - first:
+      213: -1222105634295209754
+    second: EyesParanormal_38
+  - first:
+      213: 2524769405507684886
+    second: EyesParanormal_39
+  - first:
+      213: -7839040251363022574
+    second: EyesParanormal_40
+  - first:
+      213: 248183830063757837
+    second: EyesParanormal_41
+  - first:
+      213: 4673862466839515253
+    second: EyesParanormal_42
+  - first:
+      213: 968090506411646884
+    second: EyesParanormal_43
+  - first:
+      213: 7853658827608262065
+    second: EyesParanormal_44
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 312.5
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: EyesParanormal_0
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 3067
+        width: 201
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1deeb78aef201c000800000000000000
+      internalID: 54327963276799697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_1
+      rect:
+        serializedVersion: 2
+        x: 732
+        y: 3014
+        width: 422
+        height: 262
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 603bd55490e2ca680800000000000000
+      internalID: -8742562159279623418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_2
+      rect:
+        serializedVersion: 2
+        x: 1516
+        y: 2863
+        width: 387
+        height: 308
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f1432ea4c3922bd0800000000000000
+      internalID: -2656398357250752013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_3
+      rect:
+        serializedVersion: 2
+        x: 2087
+        y: 2642
+        width: 449
+        height: 648
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f603f575bb6edf90800000000000000
+      internalID: -6926980749737130248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_4
+      rect:
+        serializedVersion: 2
+        x: 2876
+        y: 2935
+        width: 386
+        height: 309
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea7de55d04fec3080800000000000000
+      internalID: -9206220476515428434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_5
+      rect:
+        serializedVersion: 2
+        x: 3562
+        y: 2881
+        width: 634
+        height: 394
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e65c2d2c44531de0800000000000000
+      internalID: -1363653576011000093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_6
+      rect:
+        serializedVersion: 2
+        x: 4330
+        y: 2903
+        width: 375
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 392b543f4797ca900800000000000000
+      internalID: 697065585540182675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_7
+      rect:
+        serializedVersion: 2
+        x: 5014
+        y: 2953
+        width: 349
+        height: 316
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e09344c108861dc0800000000000000
+      internalID: -3668595305277583133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_8
+      rect:
+        serializedVersion: 2
+        x: 5541
+        y: 2736
+        width: 368
+        height: 609
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53517c077534b4290800000000000000
+      internalID: -7905150678085462731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_9
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 2730
+        width: 191
+        height: 174
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45339bd2801552680800000000000000
+      internalID: -8780522802920213676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_10
+      rect:
+        serializedVersion: 2
+        x: 871
+        y: 2166
+        width: 520
+        height: 641
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d959a90f5857f6c0800000000000000
+      internalID: -4109718969745057327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_11
+      rect:
+        serializedVersion: 2
+        x: 1387
+        y: 548
+        width: 3206
+        height: 2340
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb727ba65d76e5380800000000000000
+      internalID: -8980626440614107205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_12
+      rect:
+        serializedVersion: 2
+        x: 1800
+        y: 2764
+        width: 232
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31529b2fa34307bd0800000000000000
+      internalID: -2634548354226772717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_13
+      rect:
+        serializedVersion: 2
+        x: 4085
+        y: 2764
+        width: 229
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5a23cf7fea930630800000000000000
+      internalID: 3892124856409598559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_14
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 2400
+        width: 387
+        height: 308
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4c8b75615d3d39b0800000000000000
+      internalID: -5098851783309292470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_15
+      rect:
+        serializedVersion: 2
+        x: 4237
+        y: 2454
+        width: 426
+        height: 260
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0950b1fd3bbd80b70800000000000000
+      internalID: 8865577432067540368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_16
+      rect:
+        serializedVersion: 2
+        x: 4770
+        y: 2336
+        width: 619
+        height: 419
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 654e55c6de2f2ae70800000000000000
+      internalID: 9125122896544785494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_17
+      rect:
+        serializedVersion: 2
+        x: 5596
+        y: 2268
+        width: 273
+        height: 396
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77f2111768c913490800000000000000
+      internalID: -7768255781000892553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_18
+      rect:
+        serializedVersion: 2
+        x: 628
+        y: 2235
+        width: 154
+        height: 215
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87d5610121f47cb90800000000000000
+      internalID: -7221716538467394184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_19
+      rect:
+        serializedVersion: 2
+        x: 252
+        y: 1931
+        width: 255
+        height: 162
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6458c925924b78030800000000000000
+      internalID: 3496961725249127750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_20
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 1801
+        width: 258
+        height: 427
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45488c6f7f3298f60800000000000000
+      internalID: 8036994557923591252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_21
+      rect:
+        serializedVersion: 2
+        x: 4971
+        y: 1847
+        width: 384
+        height: 294
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ac891544eaf63e00800000000000000
+      internalID: 1024281823592156321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_22
+      rect:
+        serializedVersion: 2
+        x: 5656
+        y: 1996
+        width: 225
+        height: 192
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43410fd14ef85dad0800000000000000
+      internalID: -2678076193484303308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_23
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 1634
+        width: 160
+        height: 209
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8934740a30f72c0a0800000000000000
+      internalID: -6862783228608560232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_24
+      rect:
+        serializedVersion: 2
+        x: 4251
+        y: 1118
+        width: 398
+        height: 629
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58fd2c6aa889a1b30800000000000000
+      internalID: 4258884118902923141
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_25
+      rect:
+        serializedVersion: 2
+        x: 5014
+        y: 1408
+        width: 198
+        height: 262
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20292cab61fbdaab0800000000000000
+      internalID: -4995126307340512766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_26
+      rect:
+        serializedVersion: 2
+        x: 5583
+        y: 1436
+        width: 294
+        height: 385
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d53a6ece665b950c0800000000000000
+      internalID: -4586435291834309795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_27
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 1141
+        width: 612
+        height: 379
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d8eb79d152051b80800000000000000
+      internalID: -8424824977362261802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_28
+      rect:
+        serializedVersion: 2
+        x: 805
+        y: 1325
+        width: 419
+        height: 255
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 038b54a8c8926d520800000000000000
+      internalID: 2726412308011399216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_29
+      rect:
+        serializedVersion: 2
+        x: 917
+        y: 779
+        width: 297
+        height: 377
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b94ee6c451055030800000000000000
+      internalID: 3482691350467332531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_30
+      rect:
+        serializedVersion: 2
+        x: 4880
+        y: 1074
+        width: 170
+        height: 194
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62e948b01df21b930800000000000000
+      internalID: 4157156505927589414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_31
+      rect:
+        serializedVersion: 2
+        x: 5438
+        y: 1134
+        width: 191
+        height: 174
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6b9bda950aec8490800000000000000
+      internalID: -7742556349562905750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_32
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 748
+        width: 316
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6078e571c3b551020800000000000000
+      internalID: 2311854297372854022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_33
+      rect:
+        serializedVersion: 2
+        x: 4452
+        y: 624
+        width: 199
+        height: 232
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ba21e3973679dbf0800000000000000
+      internalID: -299077919167141200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_34
+      rect:
+        serializedVersion: 2
+        x: 4994
+        y: 664
+        width: 430
+        height: 347
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8fd7cf07809290d0800000000000000
+      internalID: -3417510257461043315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_35
+      rect:
+        serializedVersion: 2
+        x: 5758
+        y: 696
+        width: 166
+        height: 254
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 041d1fb6141d93730800000000000000
+      internalID: 3979441824672633152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_36
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 235
+        width: 404
+        height: 289
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6749cda0d1924d460800000000000000
+      internalID: 7265477303568471158
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_37
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 85
+        width: 394
+        height: 491
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4ffbf76b3fbbb810800000000000000
+      internalID: 1782228339423706955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_38
+      rect:
+        serializedVersion: 2
+        x: 1660
+        y: 139
+        width: 195
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e0a4dd86653a0fe0800000000000000
+      internalID: -1222105634295209754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_39
+      rect:
+        serializedVersion: 2
+        x: 2160
+        y: 144
+        width: 419
+        height: 282
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61a4f03c568c90320800000000000000
+      internalID: 2524769405507684886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_40
+      rect:
+        serializedVersion: 2
+        x: 2954
+        y: 148
+        width: 437
+        height: 348
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 219a485ac62263390800000000000000
+      internalID: -7839040251363022574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_41
+      rect:
+        serializedVersion: 2
+        x: 3806
+        y: 246
+        width: 254
+        height: 270
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0a32f5e0e9b17300800000000000000
+      internalID: 248183830063757837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_42
+      rect:
+        serializedVersion: 2
+        x: 4325
+        y: 98
+        width: 386
+        height: 439
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57010018625ecd040800000000000000
+      internalID: 4673862466839515253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_43
+      rect:
+        serializedVersion: 2
+        x: 4888
+        y: 116
+        width: 570
+        height: 396
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4af1819bf295f6d00800000000000000
+      internalID: 968090506411646884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EyesParanormal_44
+      rect:
+        serializedVersion: 2
+        x: 5601
+        y: 257
+        width: 230
+        height: 193
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b583bed71dcdfc60800000000000000
+      internalID: 7853658827608262065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      EyesParanormal_0: 54327963276799697
+      EyesParanormal_1: -8742562159279623418
+      EyesParanormal_10: -4109718969745057327
+      EyesParanormal_11: -8980626440614107205
+      EyesParanormal_12: -2634548354226772717
+      EyesParanormal_13: 3892124856409598559
+      EyesParanormal_14: -5098851783309292470
+      EyesParanormal_15: 8865577432067540368
+      EyesParanormal_16: 9125122896544785494
+      EyesParanormal_17: -7768255781000892553
+      EyesParanormal_18: -7221716538467394184
+      EyesParanormal_19: 3496961725249127750
+      EyesParanormal_2: -2656398357250752013
+      EyesParanormal_20: 8036994557923591252
+      EyesParanormal_21: 1024281823592156321
+      EyesParanormal_22: -2678076193484303308
+      EyesParanormal_23: -6862783228608560232
+      EyesParanormal_24: 4258884118902923141
+      EyesParanormal_25: -4995126307340512766
+      EyesParanormal_26: -4586435291834309795
+      EyesParanormal_27: -8424824977362261802
+      EyesParanormal_28: 2726412308011399216
+      EyesParanormal_29: 3482691350467332531
+      EyesParanormal_3: -6926980749737130248
+      EyesParanormal_30: 4157156505927589414
+      EyesParanormal_31: -7742556349562905750
+      EyesParanormal_32: 2311854297372854022
+      EyesParanormal_33: -299077919167141200
+      EyesParanormal_34: -3417510257461043315
+      EyesParanormal_35: 3979441824672633152
+      EyesParanormal_36: 7265477303568471158
+      EyesParanormal_37: 1782228339423706955
+      EyesParanormal_38: -1222105634295209754
+      EyesParanormal_39: 2524769405507684886
+      EyesParanormal_4: -9206220476515428434
+      EyesParanormal_40: -7839040251363022574
+      EyesParanormal_41: 248183830063757837
+      EyesParanormal_42: 4673862466839515253
+      EyesParanormal_43: 968090506411646884
+      EyesParanormal_44: 7853658827608262065
+      EyesParanormal_5: -1363653576011000093
+      EyesParanormal_6: 697065585540182675
+      EyesParanormal_7: -3668595305277583133
+      EyesParanormal_8: -7905150678085462731
+      EyesParanormal_9: -8780522802920213676
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
