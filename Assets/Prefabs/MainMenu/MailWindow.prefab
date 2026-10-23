@@ -43,7 +43,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 640, y: 0}
+  m_SizeDelta: {x: 837.3068, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9100000000000003
 CanvasRenderer:
@@ -174,7 +174,11 @@ MonoBehaviour:
   pool:
   - {fileID: 11400000, guid: 98f5be51ccd8d294c92f5ca9448127e1, type: 2}
   - {fileID: 11400000, guid: d3df9fc1414e4a189c27d40d1d3a7504, type: 2}
-  - {fileID: 11400000, guid: 45f1675ecb34dd641bd88e2b0e827c40, type: 2}
+  - {fileID: 11400000, guid: aea05ac99e934af1bb99491cd1580e2f, type: 2}
+  - {fileID: 11400000, guid: 56aed948cf194ae0a99a1fa758fee1c6, type: 2}
+  - {fileID: 11400000, guid: 7a9d26281f54443daed7639d414f162e, type: 2}
+  - {fileID: 11400000, guid: 24b33572adbd4222a39bbebec9465ac0, type: 2}
+  - {fileID: 11400000, guid: 7b118d073ca242a79bd8666220d6235e, type: 2}
   rowContainer: {fileID: 9100000000000040}
   rowTemplate: {fileID: 9100000000000046}
   emptyInboxLabel: {fileID: 9100000000000056}
