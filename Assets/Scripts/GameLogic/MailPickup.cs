@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Video;
 
 namespace GameLogic
 {
@@ -25,6 +26,15 @@ namespace GameLogic
         [Tooltip("Which document this pickup grants. Its unlockDay decides which shift this pickup is active during.")]
         [SerializeField] private MailData mailData;
 
+        [Tooltip("Clip played fullscreen when this document is collected (e.g. Assets/Video/Transition.mp4). The player stays in the current scene.")]
+        [SerializeField] private VideoClip transitionClip;
+
+        [Tooltip("How long the clip stays on screen before it is cut.")]
+        [Min(0.02f)] [SerializeField] private float videoSeconds = 0.1f;
+
+        [Tooltip("Played through the game's SFX channel on collect (e.g. Assets/Audio/camera-shutter-314056.mp3).")]
+        [SerializeField] private AudioClip collectSound;
+
         [Tooltip("Camera clicks are raycast from. Auto-resolved via Camera.main if left empty.")]
         [SerializeField] private Camera mainCamera;
 
@@ -34,7 +44,15 @@ namespace GameLogic
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo;
 
+        /// <summary>Debug panel switch: while true every pickup ignores the unlockDay / already-found gate.</summary>
+        public static bool DebugShowAll;
+
+        [Tooltip("Fraction of the night that must pass before this document appears (0.5 = halfway through the shift).")]
+        [Range(0f, 1f)] [SerializeField] private float appearAtNightFraction = 0.5f;
+
         private Collider2D _collider;
+        private GameLogic.SpawnAndTime.NightTimer _timer;
+        private bool _revealed = true;
         private PlayerInputActions _inputActions;
 
         void Awake()
@@ -53,16 +71,34 @@ namespace GameLogic
             }
 
             // Already found earlier, or not today's document - never show it.
-            if (SaveManager.Current.IsMailFound(mailData.emailId) ||
-                !mailData.IsScheduledForDay(GameFlowManager.CurrentDay))
+            if (!DebugShowAll && (SaveManager.Current.IsMailFound(mailData.emailId) ||
+                !mailData.IsScheduledForDay(GameFlowManager.CurrentDay)))
             {
                 gameObject.SetActive(false);
                 return;
             }
 
             if (mainCamera == null) mainCamera = Camera.main;
+            _timer = FindFirstObjectByType<GameLogic.SpawnAndTime.NightTimer>();
+            SetRevealed(TimeReached());
             _inputActions.Player.Click.performed += OnClick;
             _inputActions.Player.Enable();
+        }
+
+        void Update()
+        {
+            if (!_revealed && TimeReached()) SetRevealed(true);
+        }
+
+        private bool TimeReached() =>
+            DebugShowAll || _timer == null || _timer.GetNormalizedTime() >= appearAtNightFraction;
+
+        /// <summary>Hides/shows the model and collider while the object itself stays active to watch the clock.</summary>
+        private void SetRevealed(bool on)
+        {
+            _revealed = on;
+            foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = on;
+            if (_collider != null) _collider.enabled = on;
         }
 
         void OnDisable()
@@ -76,9 +112,33 @@ namespace GameLogic
             _inputActions.Dispose();
         }
 
+        private static readonly System.Collections.Generic.List<RaycastResult> _uiHits = new System.Collections.Generic.List<RaycastResult>();
+
+        /// <summary>
+        /// True only if a UI element you can actually see sits under the pointer. Invisible full-screen
+        /// panels (alpha 0 but Raycast Target on) must not swallow world clicks. Queried live, because
+        /// EventSystem.IsPointerOverGameObject() returns last frame's state inside an input callback.
+        /// </summary>
+        private bool IsBlockedByVisibleUi(Vector2 screenPos)
+        {
+            if (EventSystem.current == null) return false;
+            _uiHits.Clear();
+            EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current) { position = screenPos }, _uiHits);
+            foreach (var hit in _uiHits)
+            {
+                var g = hit.gameObject.GetComponent<UnityEngine.UI.Graphic>();
+                bool invisible = g != null && g.color.a < 0.02f && !(g is TMPro.TMP_Text);
+                if (invisible) continue;
+                if (showDebugInfo) Debug.Log($"MailPickup: click blocked by UI '{hit.gameObject.name}'.", this);
+                return true;
+            }
+            return false;
+        }
+
         private void OnClick(InputAction.CallbackContext ctx)
         {
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            if (!_revealed || Mouse.current == null) return;
+            if (IsBlockedByVisibleUi(Mouse.current.position.ReadValue()))
                 return;
 
             if (mainCamera == null)
@@ -95,6 +155,7 @@ namespace GameLogic
             {
                 if (hit.collider == _collider)
                 {
+                    if (showDebugInfo) Debug.Log("MailPickup: clicked.", this);
                     Collect();
                     return;
                 }
@@ -115,6 +176,19 @@ namespace GameLogic
             Collect();
         }
 
+        /// <summary>Debug panel: show/hide every MailPickup in the scene, regardless of day or whether it was found.</summary>
+        public static int DebugSetAllVisible(bool visible)
+        {
+            DebugShowAll = visible;
+            var all = FindObjectsByType<MailPickup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var p in all)
+            {
+                p.gameObject.SetActive(false); // re-run OnEnable so the click handler is wired once
+                if (visible) p.gameObject.SetActive(true);
+            }
+            return all.Length;
+        }
+
         private void Collect()
         {
             SaveManager.Current.MarkMailFound(mailData.emailId);
@@ -123,6 +197,7 @@ namespace GameLogic
             if (showDebugInfo)
                 Debug.Log($"MailPickup: found '{mailData.subject}'.", this);
 
+            MailPickupVideo.Play(transitionClip, videoSeconds, collectSound);
             OnCollected?.Invoke();
             gameObject.SetActive(false);
         }

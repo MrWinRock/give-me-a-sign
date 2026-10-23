@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: OldPaper
     second: {fileID: 2800000, guid: cbb5cb23fb73d5d42b73a494e024ce60, type: 3}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OldPaper
+    second: {fileID: 2100000, guid: c3f97404143242509c10ab493e5c5ba3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

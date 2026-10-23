@@ -67,8 +67,25 @@ namespace MainMenu
                 cancelButton.onClick.AddListener(Hide);
         }
 
+        /// <summary>Marks every unlockDay-0 document in the pool as found (no pickup needed). Safe to call repeatedly.</summary>
+        public void GrantStartingMail()
+        {
+            var save = SaveManager.Current;
+            if (save == null) return;
+
+            bool changed = false;
+            foreach (var mail in pool)
+            {
+                if (mail == null || !mail.IsPlayable() || !mail.IsStartingMail || save.IsMailFound(mail.emailId)) continue;
+                save.MarkMailFound(mail.emailId);
+                changed = true;
+            }
+            if (changed) SaveManager.Save();
+        }
+
         protected override void OnShown()
         {
+            GrantStartingMail();
             RebuildRows();
             ShowSelected(-1);
         }

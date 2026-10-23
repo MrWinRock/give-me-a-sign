@@ -13,14 +13,36 @@ MonoBehaviour:
   m_Name: Mail_001_Welcome
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.MailData
   emailId: mail_001
-  unlockDay: 1
+  unlockDay: 0
   sender: HR - Threshold Security Co.
   subject: Welcome to your first shift
-  body: "To the new security guard,\n\nWelcome to the mansion. Tonight is your first
-    shift.\n\nYour main duty is to watch every camera closely from midnight until
-    6 AM. If you notice anything unusual - a shadow that moves, an object that has
-    shifted position, or something that simply shouldn't be there - hold the spacebar
-    and report it by voice immediately. Don't let even one slip by.\n\nA requirement
-    from the homeowner:\nNever turn off your flashlight.\nNo matter what you hear.\n\nGood
-    luck tonight.\n\nHR\nThreshold Security Co."
+  body: 'To the new security guard,
+
+
+    Welcome to the mansion. Tonight is your
+    first shift.
+
+
+    Your main duty is to watch every camera closely from midnight
+    until 6 AM. If you notice anything unusual - a shadow that moves, an object that
+    has shifted position, or something that simply shouldn''t be there - hold the
+    spacebar and report it by voice immediately. Don''t let even one slip by.
+
+
+    A
+    requirement from the homeowner:
+
+    Never turn off your flashlight.
+
+    No
+    matter what you hear.
+
+
+    Good luck tonight.
+
+
+    HR
+
+    Threshold Security
+    Co.'
   attachment: {fileID: 0}

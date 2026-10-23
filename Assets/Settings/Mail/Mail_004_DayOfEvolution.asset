@@ -13,8 +13,143 @@ MonoBehaviour:
   m_Name: Mail_004_DayOfEvolution
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.MailData
   emailId: mail_004_day_of_evolution
-  unlockDay: 1
-  sender: "UNKNOWN"
-  subject: "THE DAY OF EVOLUTION"
-  body: "<b>I. The Seven That Fell Silent</b>\nIt is written that the Fourteen Worlds were not made to stand forever. Each was woven by the Great Mind, and each was given its season. When its season was done, the Universe drew breath, and the world was gathered back into the Void, as a wave is gathered back into the sea.\n\nSeven of the Fourteen have gone so. Which seven, the Lamp-Teachers do not agree. Some say they were the worlds below, which were heavy and sank. Some say they were the worlds above, which grew light and rose out of sight. No Lamp-Teacher has stood in a fallen world to say. What they hold in common is the number: seven gone, and seven that remain.\n\n<b>II. The Thinning</b>\nThe seven that remain lie one upon another, like the leaves of a book that is not yet shut. Between each leaf there is a space. In that space the common man is born and dies, and never learns that the page above him has been turned. The space is the work of the Great Prana of Evolution, which holds the worlds apart so that each may ripen in its own season.\n\nBut the Great Prana does not rest. It is a current, and a current quickens. In every age it runs a little swifter between spirit and matter, and in every age the space between the leaves grows a little thinner. This is the evolution that was promised in the First Utterance. It cannot be stopped, for it is the very thread that keeps dead matter from falling back to sleep.\n\n<b>III. The Day</b>\nThere shall come a day, and it is written in the True Manifest that it shall come, when the space is gone. On that day the seven worlds that remain shall close upon each other, as the two leaves of a book are closed, and what was seven shall be one.\n\nThis is the Day of Evolution.\n\nOn that day the above and the below shall have no distance between them. The realm of the Opapatika and the realm of the flesh shall be one ground. All who dwell in the worlds shall walk the same road, and see one another, and be seen. The eye of flesh shall no longer be too coarse to see them, for there shall be nothing left to hide behind.\n\nThe Speakers call it ascent. The worlds do not die on that day. They are fulfilled. Yet the Lamp-Teachers also record that some shall name the Day by another word, and the word is ruin. For a house built upon the division of the worlds cannot stand when the division is taken away.\n\n<b>IV. The Signs</b>\nSeven signs go before the Day, one for each world that remains. They are not hidden. The Lamp-Teachers say only that they are seen last by those who most refuse to look.\n\nThe first sign is the shape at the edge of sight. It is there when the eye turns away, and gone when the eye returns.\n\nThe second sign is the voice without a throat. It cries out with no breath behind it, and the works of men break at the sound.\n\nThe third sign is the watcher in the dark. It stands in the unlit corner and does not move while it is looked upon. It moves when it is not.\n\nThe fourth sign is the stillness: rooms where no living thing has been, and which are not empty.\n\nThe fifth sign is the stirring of dead matter. Stone and iron tremble, as they trembled at the Second Utterance, when the Great Prana first ran through them.\n\nThe sixth sign is the forgotten name. Men shall lose the names of things they have always known, and begin to speak names for things they have never seen.\n\nThe seventh sign is the Speaker. For when the space is nearly gone, one shall come who may speak the True Manifest, and who alone may change the truth made plain. He walks before the rest.\n\n<b>V. The Counsel</b>\nTherefore the Lamp-Teachers counsel the common man, and this is their counsel.\n\nDo not blind yourself. The one who keeps watch is not the one who is taken unawares. Fear not what is seen. Fear the day when you can no longer see.\n\nTrain the mind until the divine eye opens, and you shall walk into the one world as into a house you know. Strive. Evolve. Seek the True Manifest, and do not turn from the unseen, for the unseen has never turned from you.\n\nWhat is ordained is ordained, and no hand may unwrite it. Accept your path, and follow the Wayfarer.\n\n<b>VI. After the Day</b>\nWhen the seven are one, the oneness shall hold a little while, as the First Utterance held at the center of the Void. Then the Universe shall draw its breath. All that has risen shall be gathered back into the perfect emptiness, spirit from matter and matter from spirit, and the Great Prana shall be still.\n\nAnd in that stillness the cosmos shall speak again. A new First Utterance shall be spoken at a new center, and a point of light shall appear upon the dark canvas. For this is the cycle, which has no beginning, and shall have no end."
+  unlockDay: 7
+  sender: UNKNOWN
+  subject: THE DAY OF EVOLUTION
+  body: '<b>I. The Seven That Fell Silent</b>
+
+    It is written that the Fourteen
+    Worlds were not made to stand forever. Each was woven by the Great Mind, and
+    each was given its season. When its season was done, the Universe drew breath,
+    and the world was gathered back into the Void, as a wave is gathered back into
+    the sea.
+
+
+    Seven of the Fourteen have gone so. Which seven, the Lamp-Teachers
+    do not agree. Some say they were the worlds below, which were heavy and sank.
+    Some say they were the worlds above, which grew light and rose out of sight.
+    No Lamp-Teacher has stood in a fallen world to say. What they hold in common
+    is the number: seven gone, and seven that remain.
+
+
+    <b>II. The Thinning</b>
+
+    The
+    seven that remain lie one upon another, like the leaves of a book that is not
+    yet shut. Between each leaf there is a space. In that space the common man is
+    born and dies, and never learns that the page above him has been turned. The
+    space is the work of the Great Prana of Evolution, which holds the worlds apart
+    so that each may ripen in its own season.
+
+
+    But the Great Prana does not
+    rest. It is a current, and a current quickens. In every age it runs a little
+    swifter between spirit and matter, and in every age the space between the leaves
+    grows a little thinner. This is the evolution that was promised in the First
+    Utterance. It cannot be stopped, for it is the very thread that keeps dead matter
+    from falling back to sleep.
+
+
+    <b>III. The Day</b>
+
+    There shall come a
+    day, and it is written in the True Manifest that it shall come, when the space
+    is gone. On that day the seven worlds that remain shall close upon each other,
+    as the two leaves of a book are closed, and what was seven shall be one.
+
+
+    This
+    is the Day of Evolution.
+
+
+    On that day the above and the below shall have
+    no distance between them. The realm of the Opapatika and the realm of the flesh
+    shall be one ground. All who dwell in the worlds shall walk the same road, and
+    see one another, and be seen. The eye of flesh shall no longer be too coarse
+    to see them, for there shall be nothing left to hide behind.
+
+
+    The Speakers
+    call it ascent. The worlds do not die on that day. They are fulfilled. Yet the
+    Lamp-Teachers also record that some shall name the Day by another word, and the
+    word is ruin. For a house built upon the division of the worlds cannot stand
+    when the division is taken away.
+
+
+    <b>IV. The Signs</b>
+
+    Seven signs
+    go before the Day, one for each world that remains. They are not hidden. The
+    Lamp-Teachers say only that they are seen last by those who most refuse to look.
+
+
+    The
+    first sign is the shape at the edge of sight. It is there when the eye turns
+    away, and gone when the eye returns.
+
+
+    The second sign is the voice without
+    a throat. It cries out with no breath behind it, and the works of men break at
+    the sound.
+
+
+    The third sign is the watcher in the dark. It stands in the
+    unlit corner and does not move while it is looked upon. It moves when it is not.
+
+
+    The
+    fourth sign is the stillness: rooms where no living thing has been, and which
+    are not empty.
+
+
+    The fifth sign is the stirring of dead matter. Stone and
+    iron tremble, as they trembled at the Second Utterance, when the Great Prana
+    first ran through them.
+
+
+    The sixth sign is the forgotten name. Men shall
+    lose the names of things they have always known, and begin to speak names for
+    things they have never seen.
+
+
+    The seventh sign is the Speaker. For when
+    the space is nearly gone, one shall come who may speak the True Manifest, and
+    who alone may change the truth made plain. He walks before the rest.
+
+
+    <b>V.
+    The Counsel</b>
+
+    Therefore the Lamp-Teachers counsel the common man, and
+    this is their counsel.
+
+
+    Do not blind yourself. The one who keeps watch is
+    not the one who is taken unawares. Fear not what is seen. Fear the day when you
+    can no longer see.
+
+
+    Train the mind until the divine eye opens, and you shall
+    walk into the one world as into a house you know. Strive. Evolve. Seek the True
+    Manifest, and do not turn from the unseen, for the unseen has never turned from
+    you.
+
+
+    What is ordained is ordained, and no hand may unwrite it. Accept your
+    path, and follow the Wayfarer.
+
+
+    <b>VI. After the Day</b>
+
+    When the seven
+    are one, the oneness shall hold a little while, as the First Utterance held at
+    the center of the Void. Then the Universe shall draw its breath. All that has
+    risen shall be gathered back into the perfect emptiness, spirit from matter and
+    matter from spirit, and the Great Prana shall be still.
+
+
+    And in that stillness
+    the cosmos shall speak again. A new First Utterance shall be spoken at a new
+    center, and a point of light shall appear upon the dark canvas. For this is the
+    cycle, which has no beginning, and shall have no end.'
   attachment: {fileID: 0}

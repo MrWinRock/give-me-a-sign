@@ -13,8 +13,121 @@ MonoBehaviour:
   m_Name: Mail_003_Demon
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.MailData
   emailId: mail_003_demon
-  unlockDay: 1
-  sender: "C.N.A. — O.T.U."
+  unlockDay: 5
+  sender: "C.N.A. \u2014 O.T.U."
   subject: Demon (C-Demon004-CR)
-  body: "<b>C.N.A. \u2014 ANOMALY FIELD RECORD</b>\nCONTROLLED DOCUMENT \u2014 INTERNAL USE ONLY\n\n<b>DEPARTMENT:</b> Observation and Telemetry Unit (O.T.U.)\n<b>DOCUMENT TYPE:</b> Anomaly Identification & Response Record\n<b>DESIGNATION:</b> C-Demon004-CR\n<b>REGISTERED NAME:</b> DEMON\n<b>THREAT LEVEL:</b> 4 \u2014 CRITICAL\n<b>BEHAVIOR CLASS:</b> AGGRESSIVE\n<b>RESPONSE AUTHORITY:</b> C.R.U. \u2014 Containment and Response Unit\n<b>O.T.U. INTERVENTION:</b> AUTHORIZED \u2014 AUDIO DETERRENCE ONLY\n<b>C.R.U. DEPLOYMENT:</b> REQUIRED\n<b>RECORD STATUS:</b> ACTIVE\n\n<b>01. GENERAL DESCRIPTION</b>\nDemon is an aggressive humanoid anomaly exhibiting an immediate hostile response toward active surveillance equipment.\nThe entity possesses a tall, narrow body structure and unusually elongated upper limbs. Its physical appearance closely resembles that of another registered anomaly, Watcher.\nThe primary distinguishing characteristic is the complete absence of visible eyes.\nDespite this absence, Demon demonstrates an apparent ability to detect active surveillance cameras and respond to their presence.\nUpon detection, the entity will rapidly approach the camera and remain directly in front of its lens.\nDemon exhibits an extreme sensitivity to high-intensity sound transmitted through the observation system.\nAlthough the anomaly can be temporarily repelled using standard O.T.U. audio equipment, permanent containment remains the responsibility of the C.R.U.\n\n<b>02. PHYSICAL CHARACTERISTICS</b>\nDemon possesses several identifiable physical features:\n\u2022 A tall, narrow humanoid structure.\n\u2022 Exceptionally long upper limbs.\n\u2022 A body silhouette closely resembling that of Watcher.\n\u2022 A head structure lacking visible eyes.\n\u2022 No observable ocular organs or recognizable eye sockets.\nThe absence of eyes is considered the most reliable characteristic for distinguishing Demon from Watcher.\nPersonnel must exercise caution when identifying the entity through low-resolution or poorly illuminated surveillance footage.\nBody shape alone is insufficient for positive identification.\nThe mechanism by which Demon detects surveillance equipment without visible ocular organs remains undetermined.\nDirect physical examination is restricted to authorized C.R.U. personnel.\n\n<b>03. OBSERVED BEHAVIOR</b>\nDemon exhibits immediate aggressive behavior upon detecting an active surveillance camera.\nThe entity may initially appear stationary within a monitored area.\nOnce the camera is detected, Demon will rapidly advance toward the observation device.\nThis movement may occur with little or no warning.\nUpon reaching the camera, the entity will position itself directly in front of the lens and remain there.\nThe resulting behavior closely resembles that of Watcher.\nHowever, the two anomalies demonstrate opposing responses to sound.\nWatcher reacts to audible activity from surveillance personnel.\nDemon, by contrast, exhibits a strong adverse reaction to high-volume audio signals.\nWhen exposed to sufficiently loud sound transmitted through the observation system, Demon may display visible instability, including involuntary movement and distortion of its physical appearance.\nContinued exposure at the required intensity causes the entity to disappear from the affected camera feed.\nThis disappearance is classified as a successful deterrence event.\nIt must not be interpreted as confirmation of permanent neutralization.\n\n<b>04. THREAT ASSESSMENT</b>\nDemon is classified as a Level 4 aggressive anomaly due to its rapid approach behavior, immediate proximity to surveillance equipment, and potentially fatal consequences of incorrect response procedures.\nThe primary operational concern is misidentification.\nDemon and Watcher possess sufficiently similar physical characteristics to create a significant risk of classification error.\nThe response procedures for these two anomalies are directly opposed.\nSilence is required when encountering Watcher.\nHigh-volume audio is required when encountering Demon.\nApplying the incorrect response procedure may leave personnel exposed to an unresolved threat.\nThe full extent of Demon\u2019s ability to locate or reach observation personnel remains undetermined.\nPersonnel must treat every confirmed manifestation as an immediate critical threat.\n\n<b>05. IDENTIFICATION PROCEDURE</b>\nDemon must be identified through direct visual inspection of its facial structure.\nO.T.U. personnel are required to distinguish the entity from Watcher before initiating an audio response.\nUpon encountering a humanoid anomaly approaching a surveillance camera:\n1. Maintain visual observation of the affected camera feed.\n2. Examine the entity\u2019s head and facial structure.\n3. Determine whether visible eyes are present.\n4. Compare the observed features with the Field Manual.\n5. Confirm the anomaly designation before initiating the appropriate response.\n<b>WATCHER:</b> Two large, round eyes are present.\n<b>DEMON:</b> No visible eyes are present.\nPersonnel must not rely exclusively on body proportions, movement patterns, or proximity to the camera.\nIf identification remains uncertain, additional visual confirmation should be obtained without unnecessary delay.\nIncorrect identification may result in a fatal response error.\n\n<b>06. RESPONSE PROCEDURE</b>\nDemon is vulnerable to high-intensity audio transmitted through the surveillance system.\nO.T.U. personnel are authorized to perform immediate audio deterrence using the assigned microphone.\nUpon positive identification:\n1. Maintain the affected camera channel on screen.\n2. Activate the microphone.\n3. Verbally report the anomaly\u2019s designation and location.\n4. Increase vocal output while monitoring the audio gain meter.\n5. Continue until the meter reaches the RED zone.\n6. Maintain the required audio level until Demon disappears.\n7. Confirm that the affected camera feed has returned to its normal condition.\n8. Notify the C.R.U. and resume standard observation duties as instructed.\nNormal speaking volume is insufficient for effective deterrence.\nThe microphone input must reach the designated RED zone before the response can be considered effective.\nPersonnel must maintain the required audio level throughout the deterrence process.\nPremature interruption may prevent successful removal of the entity from the camera feed.\nDo not terminate audio transmission until the anomaly has completely disappeared.\n\n<b>07. AUDIO RESPONSE CHARACTERISTICS</b>\nDemon demonstrates an adverse reaction to audio signals exceeding the standard operational range.\nDuring successful deterrence, the following effects may be observed:\n\u2022 Sudden involuntary movement.\n\u2022 Visible instability of the entity\u2019s body.\n\u2022 Distortion or blurring of its physical appearance.\n\u2022 Progressive loss of visual definition.\n\u2022 Complete disappearance from the monitored area.\nThe RED zone of the audio gain meter serves as the designated operational threshold for O.T.U. deterrence procedures.\nThe precise physiological mechanism responsible for the entity\u2019s reaction has not been established.\nPersonnel must not attempt to approach the anomaly or reproduce this effect using unapproved equipment.\nThe assigned surveillance microphone is the only authorized means of immediate O.T.U. intervention.\n\n<b>08. FAILURE CONDITIONS</b>\nFailure to identify and repel Demon may result in personnel loss.\nThe following conditions significantly increase operational risk:\n\u2022 Mistaking Demon for Watcher.\n\u2022 Remaining silent after positive identification.\n\u2022 Failing to activate the microphone.\n\u2022 Using insufficient vocal volume.\n\u2022 Failing to reach the RED zone of the audio gain meter.\n\u2022 Interrupting transmission before the anomaly disappears.\n\u2022 Switching camera channels during the response.\n\u2022 Delaying the response to request additional authorization.\nA temporary reduction in movement does not indicate successful deterrence.\nDemon must disappear completely before the immediate response is considered successful.\n\n<b>09. POST-ENCOUNTER PROCEDURE</b>\nFollowing successful audio deterrence, O.T.U. personnel must verify that the affected camera remains operational.\nThe incident must be reported to the Containment and Response Unit.\nThe report should include:\n\u2022 Anomaly designation.\n\u2022 Camera channel.\n\u2022 Last confirmed location.\n\u2022 Observed behavior.\n\u2022 Confirmation of successful audio deterrence.\nThe disappearance of Demon does not constitute permanent containment.\nFurther manifestations may occur during the same observation shift.\nC.R.U. personnel remain responsible for subsequent containment and response operations.\nO.T.U. personnel must remain at their assigned stations unless otherwise instructed.\n\n<b>10. O.T.U. PERSONNEL DIRECTIVE</b>\nDemon must be positively identified and repelled immediately upon detection.\n\n<b>DO NOT CONFUSE DEMON WITH WATCHER.\nVERIFY THE ABSENCE OF EYES.\nDO NOT REMAIN SILENT.\nUSE THE ASSIGNED MICROPHONE.\nMAINTAIN RED-LEVEL AUDIO UNTIL THE ANOMALY DISAPPEARS.\nREPORT THE INCIDENT TO THE C.R.U.</b>\n\n<b>C.N.A. \u2014 OBSERVATION AND TELEMETRY UNIT</b>\nOBSERVE. IDENTIFY. REPORT.\n<i>The correct response depends on what you identify. An incorrect response may be fatal.</i>"
+  body: "<b>C.N.A. \u2014 ANOMALY FIELD RECORD</b>\nCONTROLLED DOCUMENT \u2014 INTERNAL
+    USE ONLY\n\n<b>DEPARTMENT:</b> Observation and Telemetry Unit (O.T.U.)\n<b>DOCUMENT
+    TYPE:</b> Anomaly Identification & Response Record\n<b>DESIGNATION:</b> C-Demon004-CR\n<b>REGISTERED
+    NAME:</b> DEMON\n<b>THREAT LEVEL:</b> 4 \u2014 CRITICAL\n<b>BEHAVIOR CLASS:</b>
+    AGGRESSIVE\n<b>RESPONSE AUTHORITY:</b> C.R.U. \u2014 Containment and Response
+    Unit\n<b>O.T.U. INTERVENTION:</b> AUTHORIZED \u2014 AUDIO DETERRENCE ONLY\n<b>C.R.U.
+    DEPLOYMENT:</b> REQUIRED\n<b>RECORD STATUS:</b> ACTIVE\n\n<b>01. GENERAL DESCRIPTION</b>\nDemon
+    is an aggressive humanoid anomaly exhibiting an immediate hostile response toward
+    active surveillance equipment.\nThe entity possesses a tall, narrow body structure
+    and unusually elongated upper limbs. Its physical appearance closely resembles
+    that of another registered anomaly, Watcher.\nThe primary distinguishing characteristic
+    is the complete absence of visible eyes.\nDespite this absence, Demon demonstrates
+    an apparent ability to detect active surveillance cameras and respond to their
+    presence.\nUpon detection, the entity will rapidly approach the camera and remain
+    directly in front of its lens.\nDemon exhibits an extreme sensitivity to high-intensity
+    sound transmitted through the observation system.\nAlthough the anomaly can be
+    temporarily repelled using standard O.T.U. audio equipment, permanent containment
+    remains the responsibility of the C.R.U.\n\n<b>02. PHYSICAL CHARACTERISTICS</b>\nDemon
+    possesses several identifiable physical features:\n\u2022 A tall, narrow humanoid
+    structure.\n\u2022 Exceptionally long upper limbs.\n\u2022 A body silhouette
+    closely resembling that of Watcher.\n\u2022 A head structure lacking visible
+    eyes.\n\u2022 No observable ocular organs or recognizable eye sockets.\nThe absence
+    of eyes is considered the most reliable characteristic for distinguishing Demon
+    from Watcher.\nPersonnel must exercise caution when identifying the entity through
+    low-resolution or poorly illuminated surveillance footage.\nBody shape alone
+    is insufficient for positive identification.\nThe mechanism by which Demon detects
+    surveillance equipment without visible ocular organs remains undetermined.\nDirect
+    physical examination is restricted to authorized C.R.U. personnel.\n\n<b>03.
+    OBSERVED BEHAVIOR</b>\nDemon exhibits immediate aggressive behavior upon detecting
+    an active surveillance camera.\nThe entity may initially appear stationary within
+    a monitored area.\nOnce the camera is detected, Demon will rapidly advance toward
+    the observation device.\nThis movement may occur with little or no warning.\nUpon
+    reaching the camera, the entity will position itself directly in front of the
+    lens and remain there.\nThe resulting behavior closely resembles that of Watcher.\nHowever,
+    the two anomalies demonstrate opposing responses to sound.\nWatcher reacts to
+    audible activity from surveillance personnel.\nDemon, by contrast, exhibits a
+    strong adverse reaction to high-volume audio signals.\nWhen exposed to sufficiently
+    loud sound transmitted through the observation system, Demon may display visible
+    instability, including involuntary movement and distortion of its physical appearance.\nContinued
+    exposure at the required intensity causes the entity to disappear from the affected
+    camera feed.\nThis disappearance is classified as a successful deterrence event.\nIt
+    must not be interpreted as confirmation of permanent neutralization.\n\n<b>04.
+    THREAT ASSESSMENT</b>\nDemon is classified as a Level 4 aggressive anomaly due
+    to its rapid approach behavior, immediate proximity to surveillance equipment,
+    and potentially fatal consequences of incorrect response procedures.\nThe primary
+    operational concern is misidentification.\nDemon and Watcher possess sufficiently
+    similar physical characteristics to create a significant risk of classification
+    error.\nThe response procedures for these two anomalies are directly opposed.\nSilence
+    is required when encountering Watcher.\nHigh-volume audio is required when encountering
+    Demon.\nApplying the incorrect response procedure may leave personnel exposed
+    to an unresolved threat.\nThe full extent of Demon\u2019s ability to locate or
+    reach observation personnel remains undetermined.\nPersonnel must treat every
+    confirmed manifestation as an immediate critical threat.\n\n<b>05. IDENTIFICATION
+    PROCEDURE</b>\nDemon must be identified through direct visual inspection of its
+    facial structure.\nO.T.U. personnel are required to distinguish the entity from
+    Watcher before initiating an audio response.\nUpon encountering a humanoid anomaly
+    approaching a surveillance camera:\n1. Maintain visual observation of the affected
+    camera feed.\n2. Examine the entity\u2019s head and facial structure.\n3. Determine
+    whether visible eyes are present.\n4. Compare the observed features with the
+    Field Manual.\n5. Confirm the anomaly designation before initiating the appropriate
+    response.\n<b>WATCHER:</b> Two large, round eyes are present.\n<b>DEMON:</b>
+    No visible eyes are present.\nPersonnel must not rely exclusively on body proportions,
+    movement patterns, or proximity to the camera.\nIf identification remains uncertain,
+    additional visual confirmation should be obtained without unnecessary delay.\nIncorrect
+    identification may result in a fatal response error.\n\n<b>06. RESPONSE PROCEDURE</b>\nDemon
+    is vulnerable to high-intensity audio transmitted through the surveillance system.\nO.T.U.
+    personnel are authorized to perform immediate audio deterrence using the assigned
+    microphone.\nUpon positive identification:\n1. Maintain the affected camera channel
+    on screen.\n2. Activate the microphone.\n3. Verbally report the anomaly\u2019s
+    designation and location.\n4. Increase vocal output while monitoring the audio
+    gain meter.\n5. Continue until the meter reaches the RED zone.\n6. Maintain the
+    required audio level until Demon disappears.\n7. Confirm that the affected camera
+    feed has returned to its normal condition.\n8. Notify the C.R.U. and resume standard
+    observation duties as instructed.\nNormal speaking volume is insufficient for
+    effective deterrence.\nThe microphone input must reach the designated RED zone
+    before the response can be considered effective.\nPersonnel must maintain the
+    required audio level throughout the deterrence process.\nPremature interruption
+    may prevent successful removal of the entity from the camera feed.\nDo not terminate
+    audio transmission until the anomaly has completely disappeared.\n\n<b>07. AUDIO
+    RESPONSE CHARACTERISTICS</b>\nDemon demonstrates an adverse reaction to audio
+    signals exceeding the standard operational range.\nDuring successful deterrence,
+    the following effects may be observed:\n\u2022 Sudden involuntary movement.\n\u2022
+    Visible instability of the entity\u2019s body.\n\u2022 Distortion or blurring
+    of its physical appearance.\n\u2022 Progressive loss of visual definition.\n\u2022
+    Complete disappearance from the monitored area.\nThe RED zone of the audio gain
+    meter serves as the designated operational threshold for O.T.U. deterrence procedures.\nThe
+    precise physiological mechanism responsible for the entity\u2019s reaction has
+    not been established.\nPersonnel must not attempt to approach the anomaly or
+    reproduce this effect using unapproved equipment.\nThe assigned surveillance
+    microphone is the only authorized means of immediate O.T.U. intervention.\n\n<b>08.
+    FAILURE CONDITIONS</b>\nFailure to identify and repel Demon may result in personnel
+    loss.\nThe following conditions significantly increase operational risk:\n\u2022
+    Mistaking Demon for Watcher.\n\u2022 Remaining silent after positive identification.\n\u2022
+    Failing to activate the microphone.\n\u2022 Using insufficient vocal volume.\n\u2022
+    Failing to reach the RED zone of the audio gain meter.\n\u2022 Interrupting transmission
+    before the anomaly disappears.\n\u2022 Switching camera channels during the response.\n\u2022
+    Delaying the response to request additional authorization.\nA temporary reduction
+    in movement does not indicate successful deterrence.\nDemon must disappear completely
+    before the immediate response is considered successful.\n\n<b>09. POST-ENCOUNTER
+    PROCEDURE</b>\nFollowing successful audio deterrence, O.T.U. personnel must verify
+    that the affected camera remains operational.\nThe incident must be reported
+    to the Containment and Response Unit.\nThe report should include:\n\u2022 Anomaly
+    designation.\n\u2022 Camera channel.\n\u2022 Last confirmed location.\n\u2022
+    Observed behavior.\n\u2022 Confirmation of successful audio deterrence.\nThe
+    disappearance of Demon does not constitute permanent containment.\nFurther manifestations
+    may occur during the same observation shift.\nC.R.U. personnel remain responsible
+    for subsequent containment and response operations.\nO.T.U. personnel must remain
+    at their assigned stations unless otherwise instructed.\n\n<b>10. O.T.U. PERSONNEL
+    DIRECTIVE</b>\nDemon must be positively identified and repelled immediately upon
+    detection.\n\n<b>DO NOT CONFUSE DEMON WITH WATCHER.\nVERIFY THE ABSENCE OF EYES.\nDO
+    NOT REMAIN SILENT.\nUSE THE ASSIGNED MICROPHONE.\nMAINTAIN RED-LEVEL AUDIO UNTIL
+    THE ANOMALY DISAPPEARS.\nREPORT THE INCIDENT TO THE C.R.U.</b>\n\n<b>C.N.A. \u2014
+    OBSERVATION AND TELEMETRY UNIT</b>\nOBSERVE. IDENTIFY. REPORT.\n<i>The correct
+    response depends on what you identify. An incorrect response may be fatal.</i>"
   attachment: {fileID: 0}

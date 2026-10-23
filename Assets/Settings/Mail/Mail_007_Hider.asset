@@ -13,8 +13,91 @@ MonoBehaviour:
   m_Name: Mail_007_Hider
   m_EditorClassIdentifier: Assembly-CSharp::GameLogic.Data.MailData
   emailId: mail_007_hider
-  unlockDay: 1
+  unlockDay: 2
   sender: "C.N.A. \u2014 O.T.U."
-  subject: "Unidentified-Hider013-OS"
-  body: "<b>C.N.A. \u2014 ANOMALY FIELD RECORD</b>\nCONTROLLED DOCUMENT \u2014 INTERNAL USE ONLY\n\n<b>DEPARTMENT:</b> Observation and Telemetry Unit (O.T.U.)\n<b>DOCUMENT TYPE:</b> Anomaly Identification & Response Record\n<b>DESIGNATION:</b> Unidentified-Hider013\n<b>REGISTERED NAME:</b> HIDER\n<b>THREAT LEVEL:</b> 3 \u2014 SEVERE\n<b>BEHAVIOR CLASS:</b> HOSTILE\n<b>RESPONSE AUTHORITY:</b> O.T.U. \u2014 Observation and Telemetry Unit\n<b>O.T.U. INTERVENTION:</b> AUTHORIZED\n<b>C.R.U. DEPLOYMENT:</b> NOT REQUIRED UNDER STANDARD CONDITIONS\n<b>RECORD STATUS:</b> ACTIVE\n\n<b>01. GENERAL DESCRIPTION</b>\nHider is a hostile humanoid anomaly primarily observed in poorly illuminated environments.\nThe entity possesses an unusually narrow body, elongated lower limbs, and a single large eye suspended above its upper body.\nHider demonstrates a consistent preference for darkness and concealed positions. It is capable of approaching occupied observation facilities without producing noticeable auditory disturbances.\nThe anomaly presents a significant threat to personnel assigned to surveillance duties.\nDespite its hostile behavior, Hider can be neutralized remotely using standard O.T.U. surveillance equipment.\n\n<b>02. PHYSICAL CHARACTERISTICS</b>\nHider possesses several identifiable physical features:\n\u2022 A tall, thin humanoid structure.\n\u2022 Exceptionally long and narrow legs.\n\u2022 A small upper body disproportionate to the lower limbs.\n\u2022 Two curved extensions rising from the shoulders, forming a V-shaped silhouette.\n\u2022 A single oversized eye suspended above the body without any visible physical attachment.\nThe suspended eye is the anomaly\u2019s most reliable identifying characteristic.\nUnder low-light conditions, the eye may remain visible while the rest of the body is obscured.\nThe mechanism by which the eye remains suspended has not been determined.\nPersonnel are advised to prioritize identification of the eye when reviewing dark surveillance areas.\n\n<b>03. OBSERVED BEHAVIOR</b>\nHider exhibits deliberate concealment and hostile movement patterns.\nThe anomaly typically occupies areas with limited visibility, including:\n\u2022 Unlit corners.\n\u2022 Doorways and recessed entrances.\n\u2022 Spaces between furniture or structural objects.\n\u2022 Areas beyond the effective reach of installed lighting.\nHider remains stationary while under direct visual observation.\nWhen observation is interrupted, the anomaly may relocate.\nThis behavior has been observed during camera channel changes and periods when the entity is no longer directly monitored.\nHider does not appear to move randomly.\nIts movement consistently progresses toward the assigned observation room.\nThe entity may advance closer each time surveillance personnel direct their attention elsewhere.\n\n<b>04. THREAT ASSESSMENT</b>\nHider is classified as a Level 3 hostile anomaly due to its ability to approach personnel without warning and its potentially fatal consequences upon reaching an occupied observation station.\nThe primary danger is not immediate contact during initial detection.\nIt is the progressive reduction of distance between the anomaly and the observation room.\nRepeated observation interruptions may allow Hider to advance beyond an effective response distance.\nPersonnel who fail to detect or neutralize Hider before it reaches the observation room are not recovered.\nThe exact method by which the entity causes personnel loss remains undetermined.\n\n<b>05. DETECTION PROCEDURE</b>\nHider is most reliably detected through careful visual inspection of surveillance feeds.\nO.T.U. personnel must inspect every assigned camera channel, with particular attention to areas of limited illumination.\nUpon conducting a visual inspection:\n1. Select the camera channel requiring inspection.\n2. Activate the camera\u2019s directional flashlight.\n3. Sweep the beam across corners, doorways, and concealed spaces.\n4. Look for the anomaly\u2019s suspended eye.\n5. Confirm the presence of the entity before initiating the response procedure.\nThe absence of a visible humanoid silhouette does not confirm that an area is clear.\nThe suspended eye may be the only visible indication of Hider\u2019s presence.\nDo not dismiss an apparently empty camera feed without examining its darker areas.\n\n<b>06. RESPONSE PROCEDURE</b>\nHider is vulnerable to sustained illumination.\nStandard O.T.U. camera-mounted flashlights are authorized for direct intervention.\nUpon positive identification:\n1. Keep the affected camera channel selected.\n2. Direct the flashlight beam toward Hider.\n3. Maintain continuous illumination on the anomaly.\n4. Continue until the entity disappears completely.\n5. Verify that the affected area has returned to its normal condition.\nSuccessful illumination will cause visible instability in the anomaly\u2019s appearance, followed by its disappearance.\nDo not interrupt the beam before neutralization is complete.\nDo not switch camera channels while the response is in progress.\nC.R.U. deployment is not required for standard Hider encounters.\nIf identification is uncertain, personnel may consult the Field Manual. However, consultation must not unnecessarily delay intervention.\n\n<b>07. FAILURE CONDITIONS</b>\nFailure to locate and neutralize Hider may result in its arrival at the observation room.\nThe following conditions significantly increase personnel risk:\n\u2022 Repeatedly changing camera channels without inspecting concealed areas.\n\u2022 Failing to identify the suspended eye.\n\u2022 Assuming an unlit area is empty.\n\u2022 Interrupting direct observation without initiating neutralization.\n\u2022 Removing the flashlight beam before the anomaly disappears.\n\u2022 Delaying intervention after positive identification.\nA temporary loss of visual contact must not be interpreted as successful neutralization.\nHider may remain active and continue approaching the observation room.\n\n<b>08. POST-NEUTRALIZATION PROCEDURE</b>\nFollowing successful neutralization, O.T.U. personnel must resume standard surveillance operations.\nThe disappearance of Hider does not indicate permanent removal.\nSubsequent manifestations remain possible during the same observation shift.\nContinue inspecting dark areas and maintain readiness to repeat the response procedure.\nNo additional C.R.U. intervention is required unless otherwise directed by supervisory personnel.\n\n<b>09. O.T.U. PERSONNEL DIRECTIVE</b>\nHider must be identified and neutralized before reaching the observation room.\n<b>DO NOT IGNORE UNLIT AREAS.</b>\n<b>DO NOT ALLOW THE ENTITY TO ADVANCE UNOBSERVED.</b>\n<b>USE THE CAMERA FLASHLIGHT TO MAINTAIN DIRECT ILLUMINATION.</b>\n<b>DO NOT INTERRUPT THE BEAM UNTIL NEUTRALIZATION IS CONFIRMED.</b>\n\n<b>C.N.A. \u2014 OBSERVATION AND TELEMETRY UNIT</b>\nOBSERVE. IDENTIFY. NEUTRALIZE.\n<i>An empty room is not necessarily a clear room.</i>"
+  subject: Unidentified-Hider013-OS
+  body: "<b>C.N.A. \u2014 ANOMALY FIELD RECORD</b>\nCONTROLLED DOCUMENT \u2014 INTERNAL
+    USE ONLY\n\n<b>DEPARTMENT:</b> Observation and Telemetry Unit (O.T.U.)\n<b>DOCUMENT
+    TYPE:</b> Anomaly Identification & Response Record\n<b>DESIGNATION:</b> Unidentified-Hider013\n<b>REGISTERED
+    NAME:</b> HIDER\n<b>THREAT LEVEL:</b> 3 \u2014 SEVERE\n<b>BEHAVIOR CLASS:</b>
+    HOSTILE\n<b>RESPONSE AUTHORITY:</b> O.T.U. \u2014 Observation and Telemetry Unit\n<b>O.T.U.
+    INTERVENTION:</b> AUTHORIZED\n<b>C.R.U. DEPLOYMENT:</b> NOT REQUIRED UNDER STANDARD
+    CONDITIONS\n<b>RECORD STATUS:</b> ACTIVE\n\n<b>01. GENERAL DESCRIPTION</b>\nHider
+    is a hostile humanoid anomaly primarily observed in poorly illuminated environments.\nThe
+    entity possesses an unusually narrow body, elongated lower limbs, and a single
+    large eye suspended above its upper body.\nHider demonstrates a consistent preference
+    for darkness and concealed positions. It is capable of approaching occupied observation
+    facilities without producing noticeable auditory disturbances.\nThe anomaly presents
+    a significant threat to personnel assigned to surveillance duties.\nDespite its
+    hostile behavior, Hider can be neutralized remotely using standard O.T.U. surveillance
+    equipment.\n\n<b>02. PHYSICAL CHARACTERISTICS</b>\nHider possesses several identifiable
+    physical features:\n\u2022 A tall, thin humanoid structure.\n\u2022 Exceptionally
+    long and narrow legs.\n\u2022 A small upper body disproportionate to the lower
+    limbs.\n\u2022 Two curved extensions rising from the shoulders, forming a V-shaped
+    silhouette.\n\u2022 A single oversized eye suspended above the body without any
+    visible physical attachment.\nThe suspended eye is the anomaly\u2019s most reliable
+    identifying characteristic.\nUnder low-light conditions, the eye may remain visible
+    while the rest of the body is obscured.\nThe mechanism by which the eye remains
+    suspended has not been determined.\nPersonnel are advised to prioritize identification
+    of the eye when reviewing dark surveillance areas.\n\n<b>03. OBSERVED BEHAVIOR</b>\nHider
+    exhibits deliberate concealment and hostile movement patterns.\nThe anomaly typically
+    occupies areas with limited visibility, including:\n\u2022 Unlit corners.\n\u2022
+    Doorways and recessed entrances.\n\u2022 Spaces between furniture or structural
+    objects.\n\u2022 Areas beyond the effective reach of installed lighting.\nHider
+    remains stationary while under direct visual observation.\nWhen observation is
+    interrupted, the anomaly may relocate.\nThis behavior has been observed during
+    camera channel changes and periods when the entity is no longer directly monitored.\nHider
+    does not appear to move randomly.\nIts movement consistently progresses toward
+    the assigned observation room.\nThe entity may advance closer each time surveillance
+    personnel direct their attention elsewhere.\n\n<b>04. THREAT ASSESSMENT</b>\nHider
+    is classified as a Level 3 hostile anomaly due to its ability to approach personnel
+    without warning and its potentially fatal consequences upon reaching an occupied
+    observation station.\nThe primary danger is not immediate contact during initial
+    detection.\nIt is the progressive reduction of distance between the anomaly and
+    the observation room.\nRepeated observation interruptions may allow Hider to
+    advance beyond an effective response distance.\nPersonnel who fail to detect
+    or neutralize Hider before it reaches the observation room are not recovered.\nThe
+    exact method by which the entity causes personnel loss remains undetermined.\n\n<b>05.
+    DETECTION PROCEDURE</b>\nHider is most reliably detected through careful visual
+    inspection of surveillance feeds.\nO.T.U. personnel must inspect every assigned
+    camera channel, with particular attention to areas of limited illumination.\nUpon
+    conducting a visual inspection:\n1. Select the camera channel requiring inspection.\n2.
+    Activate the camera\u2019s directional flashlight.\n3. Sweep the beam across
+    corners, doorways, and concealed spaces.\n4. Look for the anomaly\u2019s suspended
+    eye.\n5. Confirm the presence of the entity before initiating the response procedure.\nThe
+    absence of a visible humanoid silhouette does not confirm that an area is clear.\nThe
+    suspended eye may be the only visible indication of Hider\u2019s presence.\nDo
+    not dismiss an apparently empty camera feed without examining its darker areas.\n\n<b>06.
+    RESPONSE PROCEDURE</b>\nHider is vulnerable to sustained illumination.\nStandard
+    O.T.U. camera-mounted flashlights are authorized for direct intervention.\nUpon
+    positive identification:\n1. Keep the affected camera channel selected.\n2. Direct
+    the flashlight beam toward Hider.\n3. Maintain continuous illumination on the
+    anomaly.\n4. Continue until the entity disappears completely.\n5. Verify that
+    the affected area has returned to its normal condition.\nSuccessful illumination
+    will cause visible instability in the anomaly\u2019s appearance, followed by
+    its disappearance.\nDo not interrupt the beam before neutralization is complete.\nDo
+    not switch camera channels while the response is in progress.\nC.R.U. deployment
+    is not required for standard Hider encounters.\nIf identification is uncertain,
+    personnel may consult the Field Manual. However, consultation must not unnecessarily
+    delay intervention.\n\n<b>07. FAILURE CONDITIONS</b>\nFailure to locate and neutralize
+    Hider may result in its arrival at the observation room.\nThe following conditions
+    significantly increase personnel risk:\n\u2022 Repeatedly changing camera channels
+    without inspecting concealed areas.\n\u2022 Failing to identify the suspended
+    eye.\n\u2022 Assuming an unlit area is empty.\n\u2022 Interrupting direct observation
+    without initiating neutralization.\n\u2022 Removing the flashlight beam before
+    the anomaly disappears.\n\u2022 Delaying intervention after positive identification.\nA
+    temporary loss of visual contact must not be interpreted as successful neutralization.\nHider
+    may remain active and continue approaching the observation room.\n\n<b>08. POST-NEUTRALIZATION
+    PROCEDURE</b>\nFollowing successful neutralization, O.T.U. personnel must resume
+    standard surveillance operations.\nThe disappearance of Hider does not indicate
+    permanent removal.\nSubsequent manifestations remain possible during the same
+    observation shift.\nContinue inspecting dark areas and maintain readiness to
+    repeat the response procedure.\nNo additional C.R.U. intervention is required
+    unless otherwise directed by supervisory personnel.\n\n<b>09. O.T.U. PERSONNEL
+    DIRECTIVE</b>\nHider must be identified and neutralized before reaching the observation
+    room.\n<b>DO NOT IGNORE UNLIT AREAS.</b>\n<b>DO NOT ALLOW THE ENTITY TO ADVANCE
+    UNOBSERVED.</b>\n<b>USE THE CAMERA FLASHLIGHT TO MAINTAIN DIRECT ILLUMINATION.</b>\n<b>DO
+    NOT INTERRUPT THE BEAM UNTIL NEUTRALIZATION IS CONFIRMED.</b>\n\n<b>C.N.A. \u2014
+    OBSERVATION AND TELEMETRY UNIT</b>\nOBSERVE. IDENTIFY. NEUTRALIZE.\n<i>An empty
+    room is not necessarily a clear room.</i>"
   attachment: {fileID: 0}

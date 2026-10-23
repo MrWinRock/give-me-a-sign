@@ -50,6 +50,13 @@ namespace MainMenu
         void Awake()
         {
             SetSelected(false);
+            // The mailbox window may be hidden, so look it up including inactive objects and hand over
+            // the unlockDay-0 documents now - the unread dot then shows on the very first launch.
+            if (action == DesktopAction.OpenMail)
+            {
+                var mailWindow = FindFirstObjectByType<MailWindow>(FindObjectsInactive.Include);
+                if (mailWindow != null) mailWindow.GrantStartingMail();
+            }
             EnsureBadge();
             RefreshBadge();
         }

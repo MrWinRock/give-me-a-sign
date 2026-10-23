@@ -19,8 +19,8 @@ namespace GameLogic.Data
         [Tooltip("Permanent unique key for this document.")]
         public string emailId = "";
 
-        [Tooltip("Shift this document's MailPickup is active during (1 = the first shift). It only shows up in the mailbox once actually clicked in the world that day - see MailPickup.")]
-        [Min(1)] public int unlockDay = 1;
+        [Tooltip("Shift this document's MailPickup is active during (1 = the first shift). It only shows up in the mailbox once actually clicked in the world that day - see MailPickup. 0 = already in the mailbox from the very start of the game, no pickup needed.")]
+        [Min(0)] public int unlockDay = 1;
 
         [Header("Header")]
         [GG.Required] public string sender = "";
@@ -37,6 +37,9 @@ namespace GameLogic.Data
             !string.IsNullOrWhiteSpace(emailId) &&
             !string.IsNullOrWhiteSpace(sender) &&
             !string.IsNullOrWhiteSpace(subject);
+
+        /// <summary>unlockDay 0: handed to the player automatically when the mailbox first loads.</summary>
+        public bool IsStartingMail => unlockDay <= 0;
 
         /// <summary>True while the player is on the shift this document's MailPickup can be found during.</summary>
         public bool IsScheduledForDay(int currentDay) => currentDay == unlockDay;

@@ -69,9 +69,29 @@ namespace GameLogic.DebugTools
         {
             var list = new List<DebugEntry>();
             AddSpawn(list, info);
+            AddMail(list, info);
             AddCamera(list, info);
             AddNoise(list, info);
             return list;
+        }
+
+        // ── Mail pickups (Paper / Book) ────────────────────────────────────────────────
+
+        private static void AddMail(List<DebugEntry> list, Action<string> info)
+        {
+            const string group = "Mail pickups  (Paper / Book in this scene)";
+            list.Add(new DebugEntry
+            {
+                group = group,
+                label = "Show ALL Paper + Book (ignore day / found)",
+                run = () => info($"Showing {MailPickup.DebugSetAllVisible(true)} mail pickup(s). Click one to collect it."),
+            });
+            list.Add(new DebugEntry
+            {
+                group = group,
+                label = "Hide all Paper + Book (back to normal rules)",
+                run = () => info($"Reset {MailPickup.DebugSetAllVisible(false)} mail pickup(s). Normal rules apply again after a scene reload."),
+            });
         }
 
         // ── QA checklist ─────────────────────────────────────────────────────────────────

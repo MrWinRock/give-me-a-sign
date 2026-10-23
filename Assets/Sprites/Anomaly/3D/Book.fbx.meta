@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: 20260926_183152
     second: {fileID: 2800000, guid: 87aeba2d29905e04facc1972f0dfdd2f, type: 3}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BookHP.001
+    second: {fileID: 2100000, guid: 3c0010f8a0fc4a89973d089216eb6b8e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
