@@ -19,6 +19,26 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: denim_fabric_06_diff_4k
     second: {fileID: 2800000, guid: 50615b45bb3e44d41bcdbb64c25ceb05, type: 3}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Demon1
+    second: {fileID: 2100000, guid: 4eee8f34733341b380f5278c6ac04116, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BlackFabric
+    second: {fileID: 2100000, guid: 6ea0b6b33abf43da9fb520d2b19dd19c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Eye1
+    second: {fileID: 2100000, guid: ba54353168454be891a240fd1fd93c23, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Eye1.001
+    second: {fileID: 2100000, guid: ba54353168454be891a240fd1fd93c23, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
