@@ -1,0 +1,897 @@
+fileFormatVersion: 2
+guid: 66c5ff0ab3a05f147971b284e81f1a01
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6333213987354165365
+    second: HandCam1_0
+  - first:
+      213: -2075151953398985726
+    second: HandCam1_1
+  - first:
+      213: -3119041998575549059
+    second: HandCam1_2
+  - first:
+      213: -1899299859631324697
+    second: HandCam1_3
+  - first:
+      213: -4076012227614505407
+    second: HandCam1_4
+  - first:
+      213: 4739072946542849518
+    second: HandCam1_5
+  - first:
+      213: 7747996062761755365
+    second: HandCam1_6
+  - first:
+      213: 816368261103019875
+    second: HandCam1_7
+  - first:
+      213: 8020929879457081800
+    second: HandCam1_8
+  - first:
+      213: -3452047778749977566
+    second: HandCam1_9
+  - first:
+      213: -4954959037141547114
+    second: HandCam1_10
+  - first:
+      213: 5025399691802472677
+    second: HandCam1_11
+  - first:
+      213: 2422279676153364263
+    second: HandCam1_12
+  - first:
+      213: -4266339964579406874
+    second: HandCam1_13
+  - first:
+      213: -9098731479679108209
+    second: HandCam1_14
+  - first:
+      213: -7759550040069142754
+    second: HandCam1_15
+  - first:
+      213: -8907240241978818568
+    second: HandCam1_16
+  - first:
+      213: 2637180343942878781
+    second: HandCam1_17
+  - first:
+      213: -122306398610701382
+    second: HandCam1_18
+  - first:
+      213: 2002364668875129888
+    second: HandCam1_19
+  - first:
+      213: -3014555244138694112
+    second: HandCam1_20
+  - first:
+      213: -4194588877865913914
+    second: HandCam1_21
+  - first:
+      213: 8407540098560178596
+    second: HandCam1_22
+  - first:
+      213: 5582210542274840584
+    second: HandCam1_23
+  - first:
+      213: 8047368695492630645
+    second: HandCam1_24
+  - first:
+      213: -8533822384148889064
+    second: HandCam1_25
+  - first:
+      213: 4154782397516149796
+    second: HandCam1_26
+  - first:
+      213: 2308017788760739808
+    second: HandCam1_27
+  - first:
+      213: -130592708652300449
+    second: HandCam1_28
+  - first:
+      213: 1340122403173978159
+    second: HandCam1_29
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: HandCam1_0
+      rect:
+        serializedVersion: 2
+        x: 1593
+        y: 505
+        width: 33
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8f383dee67eb18a0800000000000000
+      internalID: -6333213987354165365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_1
+      rect:
+        serializedVersion: 2
+        x: 1626
+        y: 543
+        width: 53
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20c02b20b449333e0800000000000000
+      internalID: -2075151953398985726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_2
+      rect:
+        serializedVersion: 2
+        x: 1650
+        y: 513
+        width: 16
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d754163e3dfe6b4d0800000000000000
+      internalID: -3119041998575549059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_3
+      rect:
+        serializedVersion: 2
+        x: 1674
+        y: 507
+        width: 57
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e1c9b037d454a5e0800000000000000
+      internalID: -1899299859631324697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_4
+      rect:
+        serializedVersion: 2
+        x: 1681
+        y: 537
+        width: 27
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14683e089781f67c0800000000000000
+      internalID: -4076012227614505407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_5
+      rect:
+        serializedVersion: 2
+        x: 1705
+        y: 541
+        width: 6
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eeda9577cb194c140800000000000000
+      internalID: 4739072946542849518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_6
+      rect:
+        serializedVersion: 2
+        x: 1728
+        y: 540
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e22a025e59668b60800000000000000
+      internalID: 7747996062761755365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_7
+      rect:
+        serializedVersion: 2
+        x: 1462
+        y: 509
+        width: 26
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 367e2f0bb92545b00800000000000000
+      internalID: 816368261103019875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_8
+      rect:
+        serializedVersion: 2
+        x: 1498
+        y: 513
+        width: 42
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c92b598a31105f60800000000000000
+      internalID: 8020929879457081800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_9
+      rect:
+        serializedVersion: 2
+        x: 1626
+        y: 521
+        width: 23
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22c6eefb5dcd710d0800000000000000
+      internalID: -3452047778749977566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_10
+      rect:
+        serializedVersion: 2
+        x: 1477
+        y: 504
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 697019a12037c3bb0800000000000000
+      internalID: -4954959037141547114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_11
+      rect:
+        serializedVersion: 2
+        x: 1486
+        y: 477
+        width: 26
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e07e3cd46ecdb540800000000000000
+      internalID: 5025399691802472677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_12
+      rect:
+        serializedVersion: 2
+        x: 1616
+        y: 509
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72ff4cb188aad9120800000000000000
+      internalID: 2422279676153364263
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_13
+      rect:
+        serializedVersion: 2
+        x: 1526
+        y: 488
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6eb1130086aeac4c0800000000000000
+      internalID: -4266339964579406874
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_14
+      rect:
+        serializedVersion: 2
+        x: 1529
+        y: 312
+        width: 205
+        height: 188
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8bff072defcab180800000000000000
+      internalID: -9098731479679108209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_15
+      rect:
+        serializedVersion: 2
+        x: 1628
+        y: 497
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e178fc4b95a805490800000000000000
+      internalID: -7759550040069142754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_16
+      rect:
+        serializedVersion: 2
+        x: 1481
+        y: 481
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ffb9c74130236480800000000000000
+      internalID: -8907240241978818568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_17
+      rect:
+        serializedVersion: 2
+        x: 1060
+        y: 204
+        width: 243
+        height: 271
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d369b59ec85299420800000000000000
+      internalID: 2637180343942878781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_18
+      rect:
+        serializedVersion: 2
+        x: 1266
+        y: 455
+        width: 15
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab34d0d7afa7d4ef0800000000000000
+      internalID: -122306398610701382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_19
+      rect:
+        serializedVersion: 2
+        x: 1285
+        y: 262
+        width: 216
+        height: 215
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 024481fae04d9cb10800000000000000
+      internalID: 2002364668875129888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_20
+      rect:
+        serializedVersion: 2
+        x: 1285
+        y: 455
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02a725d2af52a26d0800000000000000
+      internalID: -3014555244138694112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_21
+      rect:
+        serializedVersion: 2
+        x: 1508
+        y: 449
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c17ff3b3a3d9c5c0800000000000000
+      internalID: -4194588877865913914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_22
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 84
+        width: 238
+        height: 256
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a93881bc259da470800000000000000
+      internalID: 8407540098560178596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_23
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 180
+        width: 232
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8088bb199eef77d40800000000000000
+      internalID: 5582210542274840584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_24
+      rect:
+        serializedVersion: 2
+        x: 521
+        y: 340
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 578df67113ffdaf60800000000000000
+      internalID: 8047368695492630645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_25
+      rect:
+        serializedVersion: 2
+        x: 779
+        y: 201
+        width: 203
+        height: 210
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 812478871c5c19980800000000000000
+      internalID: -8533822384148889064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_26
+      rect:
+        serializedVersion: 2
+        x: 308
+        y: 325
+        width: 32
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 424fefad390c8a930800000000000000
+      internalID: 4154782397516149796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_27
+      rect:
+        serializedVersion: 2
+        x: 1554
+        y: 332
+        width: 12
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0efcd5253f9b70020800000000000000
+      internalID: 2308017788760739808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_28
+      rect:
+        serializedVersion: 2
+        x: 817
+        y: 187
+        width: 17
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5706869f9a003ef0800000000000000
+      internalID: -130592708652300449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HandCam1_29
+      rect:
+        serializedVersion: 2
+        x: 550
+        y: 110
+        width: 74
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f205ab4b932199210800000000000000
+      internalID: 1340122403173978159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      HandCam1_0: -6333213987354165365
+      HandCam1_1: -2075151953398985726
+      HandCam1_10: -4954959037141547114
+      HandCam1_11: 5025399691802472677
+      HandCam1_12: 2422279676153364263
+      HandCam1_13: -4266339964579406874
+      HandCam1_14: -9098731479679108209
+      HandCam1_15: -7759550040069142754
+      HandCam1_16: -8907240241978818568
+      HandCam1_17: 2637180343942878781
+      HandCam1_18: -122306398610701382
+      HandCam1_19: 2002364668875129888
+      HandCam1_2: -3119041998575549059
+      HandCam1_20: -3014555244138694112
+      HandCam1_21: -4194588877865913914
+      HandCam1_22: 8407540098560178596
+      HandCam1_23: 5582210542274840584
+      HandCam1_24: 8047368695492630645
+      HandCam1_25: -8533822384148889064
+      HandCam1_26: 4154782397516149796
+      HandCam1_27: 2308017788760739808
+      HandCam1_28: -130592708652300449
+      HandCam1_29: 1340122403173978159
+      HandCam1_3: -1899299859631324697
+      HandCam1_4: -4076012227614505407
+      HandCam1_5: 4739072946542849518
+      HandCam1_6: 7747996062761755365
+      HandCam1_7: 816368261103019875
+      HandCam1_8: 8020929879457081800
+      HandCam1_9: -3452047778749977566
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
