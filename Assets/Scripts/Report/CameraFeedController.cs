@@ -62,7 +62,8 @@ namespace Report
         public bool IsGlitchActive => _running.Count > 0;
 
         // Ghost Room and Mirror need a camera that can move to another room.
-        public bool GhostRoomAvailable => CanChangeRooms;
+        // Switched off for release (not finished): never rolls and cannot be triggered. Restore to CanChangeRooms to bring it back.
+        public bool GhostRoomAvailable => false;
 
         // Mirror also needs the player's picture (Wallpaper Engine, else the Windows wallpaper); without one it never happens.
         public bool MirrorAvailable => useWallpaper && CanChangeRooms && PlayerWallpaper.CanShow;

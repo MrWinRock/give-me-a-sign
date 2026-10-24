@@ -52,6 +52,9 @@ namespace Score
         [SerializeField] private GameObject[] normalResultObjects; // Objects to activate for normal results
 
         [Header("Debug")]
+        [Tooltip("A loss with at least this many wrong reports says 'too many wrong reports' instead of the generic line.")]
+        [Min(1)] [SerializeField] private int wrongReportsMessageThreshold = 3;
+
         [SerializeField] private bool showDebugInfo;
 
         private int _resultSeed;
@@ -164,11 +167,12 @@ namespace Score
             // so it gets its own objects and copy.
             if (result.KilledByThreat || result.outcome == NightOutcome.Negligence)
             {
+                bool manyWrong = result.reportsFailed >= wrongReportsMessageThreshold;
                 SetTexts(
                     status: "YOU LOSE!",
                     statusColor: loseColor,
                     score: result.outcome == NightOutcome.Negligence
-                        ? "Too many anomalies were left unchecked..."
+                        ? (manyWrong ? "You made too many wrong reports..." : "Too many anomalies were left unchecked...")
                         : "You were consumed by the darkness...",
                     threshold: "");
 
@@ -193,7 +197,9 @@ namespace Score
                 SetTexts(
                     status: result.Won ? "YOU WIN!" : "YOU LOSE!",
                     statusColor: result.Won ? winColor : loseColor,
-                    score: "",
+                    score: result.Won ? ""
+                        : result.reportsFailed >= wrongReportsMessageThreshold ? "You made too many wrong reports..."
+                        : "You did not report enough anomalies...",
                     threshold: "");
 
                 SetActiveAll(normalResultObjects, true);

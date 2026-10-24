@@ -26,6 +26,8 @@ namespace GameLogic.Flow
         [Header("Scenes")]
         [Tooltip("The XP desktop / main menu scene, returned to between days.")]
         [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [Tooltip("Seconds the black fades away when the main menu appears after a day ends. 0 = hard cut.")]
+        [Min(0f)] [SerializeField] private float mainMenuFadeSeconds = 1.5f;
         [Tooltip("The Incident Report gameplay scene.")]
         [SerializeField] private string gameplaySceneName = "GamePlay";
         [Tooltip("Shown after a loss, before the day restarts - death cause, score vs required, seed, retry button.")]
@@ -503,6 +505,10 @@ namespace GameLogic.Flow
                 Debug.LogError($"GameFlowManager: {label} scene '{sceneName}' is not in Build Settings.", this);
                 return false;
             }
+
+            // Every way back to the menu (win, loss, abandon, ending) fades in from black instead of cutting.
+            if (sceneName == mainMenuSceneName && mainMenuFadeSeconds > 0f)
+                MicSetup.ScreenFade.CutToBlack(mainMenuFadeSeconds);
 
             SceneManager.LoadSceneAsync(sceneName); // async: the old scene keeps rendering instead of freezing on the last frame
             return true;

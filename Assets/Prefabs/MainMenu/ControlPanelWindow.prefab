@@ -1882,14 +1882,14 @@ MonoBehaviour:
   masterVolumeSlider: {fileID: 1830853471038262898}
   ambienceVolumeSlider: {fileID: 4507622419541189872}
   micGainSlider: {fileID: 3285113340557330623}
-  subtitlesToggle: {fileID: 7762940374103453770}
-  reduceFlashingToggle: {fileID: 7034854091685443007}
+  subtitlesToggle: {fileID: 0}
+  reduceFlashingToggle: {fileID: 0}
   mirrorWallpaperToggle: {fileID: 0}
-  resolutionDropdown: {fileID: 5954272407670317767}
-  fullscreenToggle: {fileID: 4761873888474651440}
-  pushToTalkRebindButton: {fileID: 4562322599455647853}
-  pushToTalkKeyLabel: {fileID: 3131801337657199190}
-  micDeviceDropdown: {fileID: 4782201156384265498}
+  resolutionDropdown: {fileID: 0}
+  fullscreenToggle: {fileID: 0}
+  pushToTalkRebindButton: {fileID: 0}
+  pushToTalkKeyLabel: {fileID: 0}
+  micDeviceDropdown: {fileID: 0}
   rebindPromptText: Press any key...
   micSetupWizardPrefab: {fileID: 0}
   recalibrateButton: {fileID: 0}
@@ -3835,7 +3835,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2467170898191358965
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6363,7 +6363,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &9036387994178229107
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7738,7 +7738,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1848517165541678229
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8214,7 +8214,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2886508451780788715
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9561,7 +9561,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6913335395656375125
 RectTransform:
   m_ObjectHideFlags: 0

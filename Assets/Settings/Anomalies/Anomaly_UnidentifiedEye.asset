@@ -22,6 +22,7 @@ MonoBehaviour:
   respondType: 0
   threatCost: 1
   minNightIndex: 1
+  hideInManual: 1
   allowedRooms: []
   moveSpeed: 3
   threatTimeoutSeconds: 0

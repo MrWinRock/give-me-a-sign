@@ -275,6 +275,12 @@ namespace GameLogic.Story
                 yield return null;
             }
 
+            // Direct audio output bypasses every AudioSource, so apply the player's Master x SFX sliders by hand.
+            var audioManager = Audio.AudioManager.Instance;
+            if (audioManager != null)
+                for (ushort track = 0; track < _videoPlayer.audioTrackCount; track++)
+                    _videoPlayer.SetDirectAudioVolume(track, audioManager.GetEffectiveVolume(Audio.AudioChannel.Sfx));
+
             _videoPlayer.Play();
 
             // isPlaying can still read false on the frame right after Play() - give it a frame

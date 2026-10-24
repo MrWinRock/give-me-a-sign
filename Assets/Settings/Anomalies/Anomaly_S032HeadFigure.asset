@@ -21,6 +21,7 @@ MonoBehaviour:
   respondType: 0
   threatCost: 1
   minNightIndex: 1
+  hideInManual: 1
   allowedRooms:
   - {fileID: 11400000, guid: 249225c315374fc8b55159b4b15b8a62, type: 2}
   moveSpeed: 3

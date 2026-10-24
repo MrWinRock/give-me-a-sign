@@ -156,9 +156,15 @@ namespace GameLogic
 
             foreach (var def in library.anomalies)
             {
-                if (def != null) entries.Add(def);
+                if (def == null || def.hideInManual || IsOrdinaryKind(def)) continue;
+                entries.Add(def);
             }
             entries.Sort((a, b) => a.minNightIndex.CompareTo(b.minNightIndex));
+
+            // Ordinary shadow/paranormal anomalies are explained once per TYPE, listed first.
+            var types = Resources.LoadAll<AnomalyDefinition>("ManualTypes");
+            System.Array.Sort(types, (a, b) => a.observation.CompareTo(b.observation));
+            for (int i = 0; i < types.Length; i++) entries.Insert(i, types[i]);
         }
 
         private void EnsureRows()
@@ -200,7 +206,8 @@ namespace GameLogic
                 _rows[i].SetLocked(IsLocked(entries[i]));
         }
 
-        private bool IsLocked(AnomalyDefinition def) => useLockedEntries && !IsDiscovered(def);
+        // Type guides (no prefab) are the player's basic lesson, so they are never hidden behind "???".
+        private bool IsLocked(AnomalyDefinition def) => useLockedEntries && def != null && def.prefab != null && !IsDiscovered(def);
 
         private void Select(int index)
         {
@@ -366,8 +373,24 @@ namespace GameLogic
             return (words.Count > 0 ? $"\"{string.Join("\", \"", words)}\"" : "(no words configured)") + volume;
         }
 
-        private static bool IsDiscovered(AnomalyDefinition def) =>
-            def != null && SaveManager.Current.IsAnomalySeen(def.anomalyId);
+        // Shadow/paranormal kinds pinned to a single room with no dossier of their own are covered by the type entries.
+        private static bool IsOrdinaryKind(AnomalyDefinition def) =>
+            (def.observation == ObservationType.Shadow || def.observation == ObservationType.Paranormal)
+            && def.allowedRooms != null && def.allowedRooms.Length == 1
+            && !HasDossier(def);
+
+        private static bool IsDiscovered(AnomalyDefinition def)
+        {
+            if (def == null) return false;
+            if (def.prefab != null) return SaveManager.Current.IsAnomalySeen(def.anomalyId);
+
+            // A type entry: known once any anomaly of that type has been seen.
+            var library = NightContentLibrary.Load();
+            if (library == null) return false;
+            foreach (var d in library.anomalies)
+                if (d != null && d.observation == def.observation && SaveManager.Current.IsAnomalySeen(d.anomalyId)) return true;
+            return false;
+        }
 
         private void RefreshStatusBar()
         {

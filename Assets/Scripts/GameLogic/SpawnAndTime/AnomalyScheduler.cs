@@ -304,7 +304,8 @@ namespace GameLogic.SpawnAndTime
             if (item.room != null)
             {
                 var roomAnchor = RoomRegistry.Get(item.room);
-                if (roomAnchor != null && roomAnchor.SpawnPointCount > 0 && item.prefab.GetComponent<AttachToRoomOverlay>() == null)
+                if (roomAnchor != null && roomAnchor.SpawnPointCount > 0 && item.prefab.GetComponent<AttachToRoomOverlay>() == null
+                    && item.prefab.GetComponentInChildren<ReplaceRoomBackground>(true) == null)
                 {
                     item.point = roomAnchor.GetSpawnPoint(_rng, DefinitionOf(item.prefab), IsPointFree);
                     if (item.point == null)
@@ -423,7 +424,12 @@ namespace GameLogic.SpawnAndTime
             }
 
             var prefab = _penaltyPool[_rng.Next(_penaltyPool.Count)];
-            var anchor = RoomRegistry.Count > 0 ? RoomRegistry.All[_rng.Next(RoomRegistry.Count)] : null;
+            // Only rooms this kind is allowed in; a random room would be rejected for any room-locked kind.
+            var penaltyDef = DefinitionOf(prefab);
+            var okAnchors = new System.Collections.Generic.List<RoomAnchor>();
+            foreach (var a in RoomRegistry.All)
+                if (a != null && (penaltyDef == null || penaltyDef.AllowsRoom(a.Room))) okAnchors.Add(a);
+            var anchor = okAnchors.Count > 0 ? okAnchors[_rng.Next(okAnchors.Count)] : null;
 
             var spawn = new ScheduledSpawn
             {

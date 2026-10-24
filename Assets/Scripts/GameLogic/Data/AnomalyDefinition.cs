@@ -47,6 +47,12 @@ namespace GameLogic.Data
         [Tooltip("ห้ามโผล่ก่อนคืนที่เท่าไหร่ (1 = โผล่ได้ตั้งแต่คืนแรก).")]
         [Min(1)] public int minNightIndex = 1;
 
+        [Tooltip("Debut night: the night generator MUST include at least one of this kind on exactly this night (if a room for it is open). 0 = no forced debut.")]
+        [Min(0)] public int debutNight = 0;
+
+        [Tooltip("Hide this kind from the Field Manual list. It still spawns in the game as normal.")]
+        public bool hideInManual = false;
+
         [Tooltip("เว้นว่าง = เกิดได้ทุกห้อง. Restricts which rooms the generator may place this in.")]
         public RoomDefinition[] allowedRooms;
 

@@ -123,6 +123,8 @@ namespace GameLogic.Night
             if (_library == null || _difficulty == null) return selected;
 
             var pool = _library.AvailableOn(nightIndex);
+            // Only the open sector's cameras exist today: drop kinds locked to another sector's rooms.
+            if (_rooms.Count > 0) pool.RemoveAll(d => _library.RoomsFor(d, _rooms).Count == 0);
             if (pool.Count == 0)
             {
                 Debug.LogWarning($"NightPlanGenerator: no anomaly kinds are unlocked on night {nightIndex}.");
@@ -131,6 +133,17 @@ namespace GameLogic.Night
 
             int budget = _difficulty.ThreatBudgetFor(nightIndex);
             AnomalyDefinition previous = null;
+
+            // Debut guarantee: a kind introduced tonight always appears at least once.
+            foreach (var d in pool)
+            {
+                if (d.debutNight != nightIndex) continue;
+                int cost = Mathf.Max(1, d.threatCost);
+                if (cost > budget) continue;
+                selected.Add(d);
+                budget -= cost;
+                previous = d;
+            }
 
             // Cheapest kind decides when the budget can no longer buy anything.
             int cheapest = int.MaxValue;

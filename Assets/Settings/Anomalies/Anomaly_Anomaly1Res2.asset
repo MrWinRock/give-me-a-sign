@@ -21,6 +21,7 @@ MonoBehaviour:
   respondType: 2
   threatCost: 2
   minNightIndex: 3
+  debutNight: 3
   allowedRooms:
   - {fileID: 11400000, guid: 631db6f8dc8d4533b2e1fb0578f635ab, type: 2}
   - {fileID: 11400000, guid: 9f8b3df223e0445db58ed1e5f46f27c6, type: 2}

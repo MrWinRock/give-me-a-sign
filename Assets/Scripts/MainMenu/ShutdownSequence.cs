@@ -98,7 +98,7 @@ namespace MainMenu
             var builder = new StringBuilder();
             for (int i = 0; i < bootLines.Count; i++)
             {
-                builder.AppendLine(bootLines[i]);
+                builder.AppendLine(WithSector(bootLines[i]));
                 if (overlayText != null)
                     overlayText.text = builder.ToString();
 
@@ -107,6 +107,14 @@ namespace MainMenu
 
             load.allowSceneActivation = true;
             _routine = null;
+        }
+
+        // The officer line names the sector of the day about to be played (SEC-04 becomes SECTOR_S032).
+        private static string WithSector(string line)
+        {
+            if (string.IsNullOrEmpty(line) || !line.Contains("SEC-04")) return line;
+            string sector = GameLogic.Data.SectorLabels.ForDay(GameLogic.Flow.GameFlowManager.CurrentDay);
+            return string.IsNullOrEmpty(sector) ? line : line.Replace("SEC-04", sector);
         }
 
         // =======================================================================================
